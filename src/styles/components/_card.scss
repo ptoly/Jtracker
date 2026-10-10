@@ -1,0 +1,51 @@
+@use 'pkg:octet-scss/abstracts' as *;
+
+// <section class="card">
+//   <div class="card__header">…</div>
+//   <div class="card__body">…</div>
+//   <div class="card__footer">…</div>
+// </section>
+// Untitled UI container: white, hairline border, soft shadow. Header and
+// footer are optional; a footer sits on the raised surface below a divider.
+// No overflow clipping by default, so popovers (e.g. a combobox menu) can
+// escape the card; add .card--clip when edge-to-edge content needs it.
+.card {
+  border: 1px solid var(--border-default);
+  border-radius: $radius-lg;
+  background-color: var(--surface-card);
+  @include elevation(1);
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: gridx(2);
+    padding: gridx(2) gridx(3);
+    border-bottom: 1px solid var(--border-default);
+
+    // Headings in a header bar are labels, not page-flow headings.
+    > :is(h2, h3) {
+      margin-bottom: 0;
+    }
+  }
+
+  &__body {
+    padding: gridx(3);
+  }
+
+  &__footer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: gridx(2);
+    padding: gridx(2) gridx(3);
+    border-top: 1px solid var(--border-default);
+    border-radius: 0 0 $radius-lg $radius-lg;
+    background-color: var(--surface-raised);
+  }
+
+  &--clip {
+    overflow: hidden;
+  }
+}

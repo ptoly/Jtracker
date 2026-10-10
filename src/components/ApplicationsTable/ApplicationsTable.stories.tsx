@@ -29,6 +29,14 @@ const meta = {
   title: 'ApplicationsTable',
   component: ApplicationsTable,
   args: { applications: sampleApplications, followUpDays: 10, today: STORY_TODAY },
+  // Rendered inside the card it sits in on the page.
+  decorators: [
+    (Story) => (
+      <section className="card card--clip" aria-label="Applications">
+        <Story />
+      </section>
+    ),
+  ],
 } satisfies Meta<typeof ApplicationsTable>;
 
 export default meta;

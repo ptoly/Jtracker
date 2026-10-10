@@ -1,26 +1,94 @@
 // =============================================================================
-//  Theme colors — Jtracker's palette overrides.
+//  Theme colors — Untitled UI light palette on octet's tokens.
 //  ---------------------------------------------------------------------------
-//  Loaded after octet base's :root, so anything set here wins. Empty for now,
-//  so Jtracker uses octet's default indigo/teal/amber palette.
+//  Loaded after octet base's :root, so everything here wins. Ramps are
+//  Untitled UI's (100 lightest → 900 darkest, same direction as octet's);
+//  semantic roles are re-pointed for a light UI, since octet's defaults
+//  assume a dark one.
 //
-//  Two ways to re-brand:
-//    1. Swap a whole ramp — every semantic token pointing at it follows.
-//       --brand, --brand-hover, --brand-active, --link and --focus-ring all
-//       read from the primary ramp, so overriding it re-brands the whole UI.
-//    2. Point individual semantic tokens at bespoke values, for a light touch.
+//  Contrast (WCAG AA) on white unless noted:
+//    text-primary 17.8 · text-secondary 7.7 · text-muted 5.0 (4.8 on raised)
+//    brand fill w/ white text 5.0 · link 6.6 · danger 4.8 · focus ring 5.0
+//    border-strong 5.0 — form-control edges need 3:1, so inputs use gray-500
+//    rather than Untitled's gray-300 (1.5:1). Cards and dividers use the
+//    lighter border-default, which is decorative.
 //
-//  Keep ramps in a single notation (hex) so tones stay comparable.
 //  Full token list: node_modules/octet-scss/abstracts/_colors.scss.
 // =============================================================================
 
 :root {
-  // ---- 1 · Full re-skin — swap the primary ramp ------------------------------
-  // --primary-100: #ffece5;
-  // …
-  // --primary-900: #4f1708;
+  color-scheme: light; // native controls (date picker, scrollbars) match
+  // ---- Ramps ----------------------------------------------------------------
+  // Primary — Untitled "Brand" purple
+  --primary-100: #f4ebff;
+  --primary-200: #e9d7fe;
+  --primary-300: #d6bbfb;
+  --primary-400: #b692f6;
+  --primary-500: #9e77ed;
+  --primary-600: #7f56d9;
+  --primary-700: #6941c6;
+  --primary-800: #53389e;
+  --primary-900: #42307d;
 
-  // ---- 2 · Light touch — retarget individual semantic roles ------------------
-  // --accent:    var(--secondary-400);
-  // --highlight: var(--tertiary-300);
+  // Secondary — Untitled "Success" green
+  --secondary-100: #d1fadf;
+  --secondary-200: #a6f4c5;
+  --secondary-300: #6ce9a6;
+  --secondary-400: #32d583;
+  --secondary-500: #12b76a;
+  --secondary-600: #039855;
+  --secondary-700: #027a48;
+  --secondary-800: #05603a;
+  --secondary-900: #054f31;
+
+  // Tertiary — Untitled "Warning" amber
+  --tertiary-100: #fef0c7;
+  --tertiary-200: #fedf89;
+  --tertiary-300: #fec84b;
+  --tertiary-400: #fdb022;
+  --tertiary-500: #f79009;
+  --tertiary-600: #dc6803;
+  --tertiary-700: #b54708;
+  --tertiary-800: #93370d;
+  --tertiary-900: #7a2e0e;
+
+  // Neutral — Untitled "Gray"
+  --neutral-100: #f2f4f7;
+  --neutral-200: #eaecf0;
+  --neutral-300: #d0d5dd;
+  --neutral-400: #98a2b3;
+  --neutral-500: #667085;
+  --neutral-600: #475467;
+  --neutral-700: #344054;
+  --neutral-800: #1d2939;
+  --neutral-900: #101828;
+
+  // ---- Semantic roles (light) -------------------------------------------------
+  --brand: var(--primary-600);
+  --brand-hover: var(--primary-700);
+  --brand-active: var(--primary-800);
+  --brand-subtle: #f9f5ff; // Untitled brand-50: tinted surface (highlighted options)
+
+  --accent: var(--secondary-600);
+  --highlight: var(--tertiary-500);
+
+  --link: var(--primary-700);
+  --link-hover: var(--primary-800);
+  --focus-ring: var(--primary-600);
+
+  --surface-page: #fff;
+  --surface-raised: #f9fafb; // Untitled gray-50: toolbars, table footers, tab tracks
+  --surface-card: #fff;
+  --surface-elevated: #fff; // menus and popovers (they lift with a shadow)
+
+  --text-primary: var(--neutral-900);
+  --text-secondary: var(--neutral-600);
+  --text-muted: var(--neutral-500);
+  --text-on-brand: #fff;
+
+  --border-subtle: var(--neutral-200);
+  --border-default: var(--neutral-200);
+  --border-strong: var(--neutral-500);
+
+  --danger: #d92d20; // Untitled error-600
 }

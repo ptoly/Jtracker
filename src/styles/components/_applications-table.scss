@@ -1,5 +1,7 @@
 @use 'pkg:octet-scss/abstracts' as *;
 
+// Sits inside a .card (see App). The toolbar, table and footer run edge to
+// edge; the card supplies the border and rounded corners.
 // <div class="applications-table">
 //   <div class="applications-table__controls">
 //     <div role="tablist" class="applications-table__tabs">
@@ -19,27 +21,34 @@
     align-items: center;
     justify-content: space-between;
     gap: gridx(2) gridx(3);
-    margin-bottom: gridx(3);
-  }
-
-  // Tabs ---------------------------------------------------------------------
-  &__tabs {
-    display: flex;
-    flex-wrap: wrap;
-    gap: gridx(1);
+    padding: gridx(2) gridx(3);
     border-bottom: 1px solid var(--border-default);
   }
 
+  // Tabs: a segmented track -----------------------------------------------------
+  // The selected tab is white with a strong border (3:1) and bold text; the
+  // white-on-gray fill alone would be too faint to carry the state.
+  &__tabs {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 4px;
+    border: 1px solid var(--border-default);
+    border-radius: $radius-lg;
+    background-color: var(--surface-raised);
+  }
+
   &__tab {
-    padding: gridx(1) gridx(2);
-    border: 0;
-    border-bottom: 2px solid transparent;
-    margin-bottom: -1px;
+    padding: 0 gridx(2);
+    height: gridx(5);
+    border: 1px solid transparent;
+    border-radius: $radius-md;
     background: none;
     color: var(--text-secondary);
     font: inherit;
+    font-weight: 600;
     cursor: pointer;
-    @include transition(color border-color, $duration-fast);
+    @include transition(color background-color border-color, $duration-fast);
 
     @include hover-only {
       &:hover {
@@ -48,20 +57,34 @@
     }
 
     &[aria-selected='true'] {
-      border-bottom-color: var(--brand);
+      border-color: var(--border-strong);
+      background-color: var(--surface-card);
       color: var(--text-primary);
-      font-weight: 600;
     }
   }
 
-  // Search -------------------------------------------------------------------
+  // Search ----------------------------------------------------------------------
+  &__search {
+    position: relative;
+  }
+
+  &__search-icon {
+    position: absolute;
+    top: 50%;
+    left: gridx(1.5);
+    color: var(--text-muted);
+    transform: translateY(-50%);
+    pointer-events: none;
+  }
+
   &__search-input {
-    width: gridx(32);
+    width: gridx(40);
     max-width: 100%;
-    padding: gridx(1) gridx(2);
+    height: gridx(5);
+    padding: 0 gridx(2) 0 gridx(5);
     border: 1px solid var(--border-strong);
-    border-radius: $radius-md;
-    background-color: var(--surface-raised);
+    border-radius: $radius-lg;
+    background-color: var(--surface-card);
     color: var(--text-primary);
     font: inherit;
 
@@ -70,12 +93,9 @@
     }
   }
 
-  // Table --------------------------------------------------------------------
+  // Table -----------------------------------------------------------------------
   &__scroll {
     overflow-x: auto;
-    border: 1px solid var(--border-default);
-    border-radius: $radius-lg;
-    background-color: var(--surface-card);
   }
 
   &__table {
@@ -89,17 +109,20 @@
     th,
     td {
       height: gridx(6);
-      padding: 0 gridx(2);
+      padding: 0 gridx(3);
       border-bottom: 1px solid var(--border-subtle);
       text-align: left;
       vertical-align: middle;
     }
 
     th {
-      background-color: var(--surface-raised);
       color: var(--text-secondary);
       font-weight: 600;
       white-space: nowrap;
+    }
+
+    td {
+      color: var(--text-secondary);
     }
 
     tbody tr:last-child td {
@@ -122,15 +145,19 @@
     white-space: nowrap;
   }
 
+  &__company {
+    color: var(--text-primary);
+    font-weight: 600;
+  }
+
   &__notes {
     max-width: gridx(32);
     overflow: hidden;
-    color: var(--text-muted);
     text-overflow: ellipsis;
     white-space: nowrap;
   }
 
-  // Sortable header button ---------------------------------------------------
+  // Sortable header button ------------------------------------------------------
   &__sort {
     display: inline-flex;
     align-items: center;
@@ -171,57 +198,79 @@
     }
   }
 
-  // Status badges ------------------------------------------------------------
+  // Status badges: Untitled's outlined badge with a color dot ------------------
+  // The text names the status; the dot is a secondary, decorative cue.
   &__badge {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    gap: gridx(1);
     padding: 0 gridx(1);
-    border-radius: $radius-sm;
+    border: 1px solid var(--neutral-300);
+    border-radius: $radius-md;
+    background-color: var(--surface-card);
+    color: var(--neutral-700);
     font-size: rem(16px);
-    line-height: rem(gridx(3)); // 24px at default size; scales with the text
     font-weight: 600;
+    line-height: rem(gridx(3));
     white-space: nowrap;
 
     &--follow-up-due {
-      background-color: var(--tertiary-900);
-      color: var(--tertiary-100);
-    }
-
-    &--followed-up {
-      background-color: var(--primary-800);
-      color: var(--primary-100);
-    }
-
-    &--interviewed {
-      background-color: var(--secondary-900);
-      color: var(--secondary-200);
-    }
-
-    &--rejected,
-    &--filled {
-      background-color: var(--surface-elevated);
-      color: var(--text-secondary);
+      border-color: var(--tertiary-300);
+      background-color: #fffaeb; // Untitled warning-50
+      color: var(--tertiary-700);
     }
   }
 
-  // Empty state & pagination -------------------------------------------------
+  &__badge-dot {
+    width: gridx(1);
+    height: gridx(1);
+    border-radius: 50%;
+    background-color: var(--neutral-500);
+
+    .applications-table__badge--follow-up-due & {
+      background-color: var(--tertiary-500);
+    }
+
+    .applications-table__badge--followed-up & {
+      background-color: var(--primary-500);
+    }
+
+    .applications-table__badge--interviewed & {
+      background-color: var(--secondary-500);
+    }
+
+    .applications-table__badge--rejected & {
+      background-color: var(--danger);
+    }
+  }
+
+  // Empty state & pagination ----------------------------------------------------
   &__empty {
+    max-width: none; // the theme caps paragraphs at a reading measure
     padding: gridx(6) gridx(3);
-    border: 1px dashed var(--border-default);
-    border-radius: $radius-lg;
     color: var(--text-secondary);
+    font-size: inherit;
     text-align: center;
   }
 
   &__pagination {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    justify-content: flex-end;
+    justify-content: space-between;
     gap: gridx(2);
-    margin-top: gridx(3);
+    padding: gridx(2) gridx(3);
+    border-top: 1px solid var(--border-default);
+    background-color: var(--surface-raised);
   }
 
   &__page {
     color: var(--text-secondary);
     font-size: rem(16px);
+  }
+
+  &__page-buttons {
+    display: flex;
+    gap: gridx(1.5);
   }
 }

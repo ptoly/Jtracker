@@ -1,14 +1,9 @@
 import type { Application } from '../types/application';
+import { parseIsoDate } from './dates';
 
 export const DEFAULT_FOLLOW_UP_DAYS = 10;
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
-
-/** Parse YYYY-MM-DD as a local calendar date (avoids the UTC off-by-one of `new Date(iso)`). */
-export function parseIsoDate(iso: string): Date {
-  const [y, m, d] = iso.split('-').map(Number);
-  return new Date(y ?? NaN, (m ?? NaN) - 1, d ?? NaN);
-}
 
 function startOfDay(date: Date): Date {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate());

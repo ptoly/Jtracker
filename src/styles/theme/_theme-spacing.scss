@@ -23,7 +23,7 @@
 
 // Space between stacked sections.
 section {
-  @include scaled-spacing(margin-bottom, 5, 88px);
+  @include scaled-spacing(margin-bottom, 3, 32px);   // tight, app-like rhythm (starter: 5, 88px)
 }
 
 // List item rhythm.

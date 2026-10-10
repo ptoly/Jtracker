@@ -1,11 +1,9 @@
+import { toIsoDate } from '../lib/dates';
 import type { NewApplication, Status } from '../types/application';
 
 /** ISO date `n` days before `today`, so sample ages stay realistic whenever the app runs. */
 function daysAgo(n: number, today: Date): string {
-  const d = new Date(today.getFullYear(), today.getMonth(), today.getDate() - n);
-  const mm = String(d.getMonth() + 1).padStart(2, '0');
-  const dd = String(d.getDate()).padStart(2, '0');
-  return `${d.getFullYear()}-${mm}-${dd}`;
+  return toIsoDate(new Date(today.getFullYear(), today.getMonth(), today.getDate() - n));
 }
 
 // [company, position, status, appliedDaysAgo, followedUpDaysAgo?, notes?]

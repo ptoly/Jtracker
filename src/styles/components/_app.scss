@@ -1,0 +1,62 @@
+@use 'pkg:octet-scss/abstracts' as *;
+
+// <main class="app">
+//   <h1 class="app__title">…</h1>
+//   <div class="app__top">
+//     <section class="app__form">
+//       <div class="app__section-header"><h2>…</h2><p class="app__subtitle">…</p></div>
+//       …
+//     </section>
+//     <section class="app__stats">…</section>
+//   </div>
+//   <section class="card">…table…</section>
+// </main>
+// Between-block spacing comes from the theme (theme/_theme-spacing.scss).
+.app {
+  margin-inline: auto;
+  @include scaled-spacing(padding-top padding-bottom, 4, 32px);
+  @include scaled-spacing(padding-left padding-right, 4, 32px);
+
+  &__title {
+    @include scaled-spacing(margin-bottom, 4, 40px);
+  }
+
+  // Form left, stats right; both inset from the table's edges on wide screens.
+  &__top {
+    display: grid;
+    gap: gridx(4);
+
+    @include from(900px) {
+      grid-template-columns: minmax(0, 640px) minmax(0, 340px);
+      justify-content: space-between;
+    }
+
+    @include from(1280px) {
+      padding-inline: gridx(10);
+    }
+  }
+
+  // Heading + subtitle read as one group, so the heading drops its flow margin.
+  &__section-header {
+    margin-bottom: gridx(3);
+
+    > h2 {
+      margin-bottom: 0;
+    }
+  }
+
+  &__subtitle {
+    color: var(--text-secondary);
+    font-size: rem(16px);
+    line-height: rem(gridx(3));
+  }
+
+  &__stats-header {
+    padding-bottom: gridx(2);
+    border-bottom: 1px solid var(--border-default);
+  }
+
+  &__stats-placeholder {
+    min-height: gridx(30);
+  }
+}

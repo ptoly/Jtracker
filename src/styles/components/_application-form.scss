@@ -1,0 +1,156 @@
+@use 'pkg:octet-scss/abstracts' as *;
+
+// <form class="application-form">
+//   <div class="card">
+//     <div class="card__body application-form__fields">
+//       <div class="application-form__field">
+//         <label class="application-form__label">Company<span class="application-form__required">*</span></label>
+//         <input class="application-form__input" aria-invalid="true" aria-describedby="…">
+//         <span class="application-form__error">…</span>
+//       </div>
+//       … <div class="application-form__combobox"> input, toggle, <ul class="application-form__menu"> </div>
+//     </div>
+//     <div class="card__footer application-form__actions">…</div>
+//   </div>
+//   <div class="application-form__warning">…</div>
+// </form>
+.application-form {
+  display: grid;
+  gap: gridx(2);
+  font-size: rem(16px);
+  line-height: rem(gridx(3));
+
+  &__fields {
+    display: grid;
+    gap: gridx(3);
+  }
+
+  &__field {
+    display: grid;
+    gap: gridx(1);
+
+    &--date {
+      max-width: gridx(30);
+    }
+  }
+
+  &__label {
+    color: var(--neutral-700);
+    font-weight: 600;
+  }
+
+  &__required {
+    margin-left: 2px;
+    color: var(--brand);
+  }
+
+  &__optional,
+  &__hint {
+    color: var(--text-muted);
+    font-weight: 400;
+  }
+
+  &__input {
+    width: 100%;
+    height: gridx(6);
+    padding: 0 gridx(2);
+    border: 1px solid var(--border-strong);
+    border-radius: $radius-lg;
+    background-color: var(--surface-card);
+    color: var(--text-primary);
+    font: inherit;
+
+    &[aria-invalid='true'] {
+      border-color: var(--danger);
+    }
+
+    &--combobox {
+      padding-right: gridx(6); // room for the toggle
+    }
+  }
+
+  &__textarea {
+    height: auto;
+    min-height: gridx(12);
+    padding: gridx(1) gridx(2);
+    resize: vertical;
+  }
+
+  &__error {
+    color: var(--danger);
+  }
+
+  // Position combobox -----------------------------------------------------------
+  &__combobox {
+    position: relative;
+  }
+
+  &__toggle {
+    position: absolute;
+    top: 0;
+    right: 0;
+    display: grid;
+    place-items: center;
+    width: gridx(6);
+    height: gridx(6);
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--text-muted);
+    cursor: pointer;
+
+    &[hidden] {
+      display: none;
+    }
+  }
+
+  &__menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    left: 0;
+    z-index: $z-overlay;
+    max-height: gridx(30);
+    margin-top: gridx(1);
+    padding: gridx(0.5) 0;
+    overflow-y: auto;
+    border: 1px solid var(--border-default);
+    border-radius: $radius-lg;
+    background-color: var(--surface-elevated);
+    list-style: none;
+    @include elevation(4);
+
+    &--open {
+      display: block;
+    }
+  }
+
+  &__option {
+    padding: gridx(1) gridx(2);
+    color: var(--text-primary);
+    cursor: pointer;
+
+    &--highlighted {
+      background-color: var(--brand-subtle);
+    }
+  }
+
+  // Footer, warnings ------------------------------------------------------------
+  &__actions {
+    // card__footer lays out the row; the hint takes the left, the button the right.
+    font-size: rem(16px);
+  }
+
+  &__warning-region:empty {
+    display: none;
+  }
+
+  &__warning {
+    padding: gridx(2) gridx(3);
+    border: 1px solid var(--tertiary-300);
+    border-radius: $radius-lg;
+    background-color: #fffaeb; // Untitled warning-50
+    color: var(--tertiary-700);
+  }
+}

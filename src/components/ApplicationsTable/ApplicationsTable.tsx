@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, useState, type KeyboardEvent } from 'react';
 import type { Application } from '../../types/application';
-import { ageInDays, DEFAULT_FOLLOW_UP_DAYS, isFollowUpDue, parseIsoDate } from '../../lib/derive';
+import { ageInDays, DEFAULT_FOLLOW_UP_DAYS, isFollowUpDue } from '../../lib/derive';
+import { DateText } from '../DateText/DateText';
 
 const PAGE_SIZE = 100;
 
@@ -52,29 +53,6 @@ export interface ApplicationsTableProps {
   followUpDays?: number;
   /** Reference date for age, follow-up-due and year display. Calculate once and pass down. */
   today: Date;
-}
-
-const spokenDate = new Intl.DateTimeFormat('en-US', {
-  month: 'long',
-  day: 'numeric',
-  year: 'numeric',
-});
-
-/** m.d.yy, e.g. "10.9.26". */
-function formatDate(date: Date): string {
-  const yy = String(date.getFullYear() % 100).padStart(2, '0');
-  return `${date.getMonth() + 1}.${date.getDate()}.${yy}`;
-}
-
-/** Shows m.d.yy; screen readers get "October 9, 2026" instead of "10 point 9 point 26". */
-function TableDate({ iso }: { iso: string }) {
-  const date = parseIsoDate(iso);
-  return (
-    <time dateTime={iso}>
-      <span aria-hidden="true">{formatDate(date)}</span>
-      <span className="sr-only">{spokenDate.format(date)}</span>
-    </time>
-  );
 }
 
 function pluralize(count: number, noun: string): string {
@@ -288,6 +266,23 @@ export function ApplicationsTable({
           <label htmlFor={searchId} className="sr-only">
             Search company, position and notes
           </label>
+          <svg
+            className="applications-table__search-icon"
+            viewBox="0 0 20 20"
+            width="20"
+            height="20"
+            aria-hidden="true"
+            focusable="false"
+          >
+            <path
+              d="M17.5 17.5l-3.625-3.625M15.833 9.167a6.667 6.667 0 11-13.333 0 6.667 6.667 0 0113.333 0z"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.67"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
           <input
             id={searchId}
             type="search"
@@ -342,9 +337,9 @@ export function ApplicationsTable({
                   {pageRows.map(({ app, statusLabel, age }) => (
                     <tr key={app.id}>
                       <td className="applications-table__cell--nowrap">
-                        <TableDate iso={app.dateApplied} />
+                        <DateText iso={app.dateApplied} />
                       </td>
-                      <td>{app.company}</td>
+                      <td className="applications-table__company">{app.company}</td>
                       <td>{app.position}</td>
                       <td>
                         {/* Applied is the default state, so it gets no badge; screen readers still hear it. */}
@@ -354,6 +349,7 @@ export function ApplicationsTable({
                           <span
                             className={`applications-table__badge applications-table__badge--${toModifier(statusLabel)}`}
                           >
+                            <span className="applications-table__badge-dot" aria-hidden="true" />
                             {statusLabel}
                           </span>
                         )}
@@ -370,7 +366,7 @@ export function ApplicationsTable({
                       </td>
                       <td className="applications-table__cell--nowrap">
                         {app.followedUpDate ? (
-                          <TableDate iso={app.followedUpDate} />
+                          <DateText iso={app.followedUpDate} />
                         ) : (
                           <>
                             <span aria-hidden="true">—</span>
@@ -388,25 +384,27 @@ export function ApplicationsTable({
             </div>
 
             <nav className="applications-table__pagination" aria-label="Pagination">
-              <button
-                type="button"
-                className="btn"
-                disabled={currentPage === 1}
-                onClick={() => setPage(currentPage - 1)}
-              >
-                Previous
-              </button>
               <span className="applications-table__page">
                 Page {currentPage} of {pageCount}
               </span>
-              <button
-                type="button"
-                className="btn"
-                disabled={currentPage === pageCount}
-                onClick={() => setPage(currentPage + 1)}
-              >
-                Next
-              </button>
+              <div className="applications-table__page-buttons">
+                <button
+                  type="button"
+                  className="btn"
+                  disabled={currentPage === 1}
+                  onClick={() => setPage(currentPage - 1)}
+                >
+                  Previous
+                </button>
+                <button
+                  type="button"
+                  className="btn"
+                  disabled={currentPage === pageCount}
+                  onClick={() => setPage(currentPage + 1)}
+                >
+                  Next
+                </button>
+              </div>
             </nav>
           </>
         )}
