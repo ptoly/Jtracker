@@ -1,0 +1,227 @@
+@use 'pkg:octet-scss/abstracts' as *;
+
+// <div class="applications-table">
+//   <div class="applications-table__controls">
+//     <div role="tablist" class="applications-table__tabs">
+//       <button role="tab" class="applications-table__tab">View all</button>
+//     </div>
+//     <div class="applications-table__search">…</div>
+//   </div>
+//   <div role="tabpanel" class="applications-table__panel">
+//     <div class="applications-table__scroll"><table class="applications-table__table">…</table></div>
+//     <nav class="applications-table__pagination">…</nav>
+//   </div>
+// </div>
+.applications-table {
+  &__controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: gridx(2) gridx(3);
+    margin-bottom: gridx(3);
+  }
+
+  // Tabs ---------------------------------------------------------------------
+  &__tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: gridx(1);
+    border-bottom: 1px solid var(--border-default);
+  }
+
+  &__tab {
+    padding: gridx(1) gridx(2);
+    border: 0;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    background: none;
+    color: var(--text-secondary);
+    font: inherit;
+    cursor: pointer;
+    @include transition(color border-color, $duration-fast);
+
+    @include hover-only {
+      &:hover {
+        color: var(--text-primary);
+      }
+    }
+
+    &[aria-selected='true'] {
+      border-bottom-color: var(--brand);
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+  }
+
+  // Search -------------------------------------------------------------------
+  &__search-input {
+    width: gridx(32);
+    max-width: 100%;
+    padding: gridx(1) gridx(2);
+    border: 1px solid var(--border-strong);
+    border-radius: $radius-md;
+    background-color: var(--surface-raised);
+    color: var(--text-primary);
+    font: inherit;
+
+    &::placeholder {
+      color: var(--text-muted);
+    }
+  }
+
+  // Table --------------------------------------------------------------------
+  &__scroll {
+    overflow-x: auto;
+    border: 1px solid var(--border-default);
+    border-radius: $radius-lg;
+    background-color: var(--surface-card);
+  }
+
+  &__table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: rem(16px); // reader-scalable like octet body copy; nothing in the table goes smaller
+    line-height: rem(gridx(3)); // 24px at default size; scales with the text
+
+    // Rows sit on the 8px grid at 48px. Height on a cell acts as a minimum,
+    // so a wrapped position grows to the next 24px line instead of clipping.
+    th,
+    td {
+      height: gridx(6);
+      padding: 0 gridx(2);
+      border-bottom: 1px solid var(--border-subtle);
+      text-align: left;
+      vertical-align: middle;
+    }
+
+    th {
+      background-color: var(--surface-raised);
+      color: var(--text-secondary);
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    tbody tr:last-child td {
+      border-bottom: 0;
+    }
+  }
+
+  &__cell--numeric {
+    text-align: right;
+    white-space: nowrap;
+
+    // th needs the extra specificity to beat the table's text-align.
+    th#{&},
+    td#{&} {
+      text-align: right;
+    }
+  }
+
+  &__cell--nowrap {
+    white-space: nowrap;
+  }
+
+  &__notes {
+    max-width: gridx(32);
+    overflow: hidden;
+    color: var(--text-muted);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  // Sortable header button ---------------------------------------------------
+  &__sort {
+    display: inline-flex;
+    align-items: center;
+    gap: gridx(1);
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+  }
+
+  // Unsorted columns show a stacked up/down pair; the sorted column shows only
+  // its direction. Shape carries the state, so every caret stays at full
+  // currentColor contrast instead of being dimmed.
+  &__sort-icon {
+    display: inline-flex;
+    flex-direction: column;
+    gap: 2px;
+
+    &::before,
+    &::after {
+      content: '';
+      border-inline: 4px solid transparent;
+    }
+
+    &::before {
+      border-bottom: 5px solid currentColor;
+    }
+
+    &::after {
+      border-top: 5px solid currentColor;
+    }
+
+    &--ascending::after,
+    &--descending::before {
+      display: none;
+    }
+  }
+
+  // Status badges ------------------------------------------------------------
+  &__badge {
+    display: inline-block;
+    padding: 0 gridx(1);
+    border-radius: $radius-sm;
+    font-size: rem(16px);
+    line-height: rem(gridx(3)); // 24px at default size; scales with the text
+    font-weight: 600;
+    white-space: nowrap;
+
+    &--follow-up-due {
+      background-color: var(--tertiary-900);
+      color: var(--tertiary-100);
+    }
+
+    &--followed-up {
+      background-color: var(--primary-800);
+      color: var(--primary-100);
+    }
+
+    &--interviewed {
+      background-color: var(--secondary-900);
+      color: var(--secondary-200);
+    }
+
+    &--rejected,
+    &--filled {
+      background-color: var(--surface-elevated);
+      color: var(--text-secondary);
+    }
+  }
+
+  // Empty state & pagination -------------------------------------------------
+  &__empty {
+    padding: gridx(6) gridx(3);
+    border: 1px dashed var(--border-default);
+    border-radius: $radius-lg;
+    color: var(--text-secondary);
+    text-align: center;
+  }
+
+  &__pagination {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: gridx(2);
+    margin-top: gridx(3);
+  }
+
+  &__page {
+    color: var(--text-secondary);
+    font-size: rem(16px);
+  }
+}
