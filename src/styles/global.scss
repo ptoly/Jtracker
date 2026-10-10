@@ -1,0 +1,5 @@
+// Load order per octet: abstracts → base → components/theme → utilities (last).
+@use 'pkg:octet-scss/abstracts' as *;
+@use 'pkg:octet-scss/base';
+@use 'components';
+@use 'pkg:octet-scss/utilities';
