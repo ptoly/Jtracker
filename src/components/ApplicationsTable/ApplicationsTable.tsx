@@ -10,6 +10,7 @@ import {
 } from '../../types/application';
 import { ConfirmDialog } from '../ConfirmDialog/ConfirmDialog';
 import { DateText } from '../DateText/DateText';
+import { IconButton } from '../IconButton/IconButton';
 import { PencilIcon, SearchIcon, TrashIcon } from '../Icons/Icons';
 import { EditRow } from './EditRow';
 
@@ -361,10 +362,7 @@ export function ApplicationsTable({
           onClick={() => handleSort(key)}
         >
           {label}
-          <span
-            className={`applications-table__sort-icon${active ? ` applications-table__sort-icon--${sort.direction}` : ''}`}
-            aria-hidden="true"
-          />
+          <span className="applications-table__sort-icon" aria-hidden="true" />
         </button>
       </th>
     );
@@ -470,7 +468,9 @@ export function ApplicationsTable({
                       buttonLabel: 'Sort by company',
                     })}
                     {sortHeader('status', 'Status')}
-                    {sortHeader('age', 'Age', { className: 'applications-table__cell--numeric' })}
+                    {sortHeader('age', 'Age', {
+                      className: 'applications-table__cell applications-table__cell--numeric',
+                    })}
                     <th scope="col">Followed Up</th>
                     <th scope="col">Notes</th>
                     <th scope="col">
@@ -499,8 +499,8 @@ export function ApplicationsTable({
                       );
                     }
                     return (
-                      <tr key={app.id}>
-                        <td className="applications-table__cell--nowrap">
+                      <tr key={app.id} className="applications-table__row">
+                        <td className="no-wrap">
                           <DateText iso={app.dateApplied} />
                         </td>
                         <td>
@@ -532,8 +532,10 @@ export function ApplicationsTable({
                             )}
                           </div>
                         </td>
-                        <td className="applications-table__cell--numeric">{ageCell}</td>
-                        <td className="applications-table__cell--nowrap">
+                        <td className="applications-table__cell applications-table__cell--numeric">
+                          {ageCell}
+                        </td>
+                        <td className="no-wrap">
                           {app.followedUpDate ? (
                             <DateText iso={app.followedUpDate} />
                           ) : (
@@ -545,26 +547,23 @@ export function ApplicationsTable({
                         </td>
                         <td>
                           <div className="applications-table__row-icons">
-                            <button
-                              type="button"
+                            <IconButton
                               id={deleteButtonId(app.id)}
-                              className="icon-button icon-button--danger"
-                              aria-label={`Delete ${app.company} application`}
+                              label={`Delete ${app.company} application`}
+                              tooltip="Delete"
+                              icon={<TrashIcon />}
+                              variant="danger"
                               disabled={editing}
                               onClick={() => setDeleting(app)}
-                            >
-                              <TrashIcon />
-                            </button>
-                            <button
-                              type="button"
+                            />
+                            <IconButton
                               id={editButtonId(app.id)}
-                              className="icon-button"
-                              aria-label={`Edit ${app.company} application`}
+                              label={`Edit ${app.company} application`}
+                              tooltip="Edit"
+                              icon={<PencilIcon />}
                               disabled={editing}
                               onClick={() => startEdit(app.id)}
-                            >
-                              <PencilIcon />
-                            </button>
+                            />
                           </div>
                         </td>
                       </tr>

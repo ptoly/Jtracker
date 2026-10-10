@@ -79,7 +79,7 @@ export function ConfirmDialog({
         {children}
       </div>
       {error && (
-        <div role="alert" className="field-error">
+        <div role="alert" className="confirm-dialog__error field-error">
           {error}
         </div>
       )}

@@ -80,7 +80,7 @@ export function EditRow({ app, positions, today, age, onSave, onCancel }: EditRo
 
   return (
     // Keyboard shortcuts are delegated from the fields to the row.
-    <tr className="applications-table__row--editing" onKeyDown={handleKeyDown}>
+    <tr className="applications-table__row" data-editing onKeyDown={handleKeyDown}>
       <td>
         <label htmlFor={ids.dateApplied} className="sr-only">
           Date applied
@@ -141,7 +141,7 @@ export function EditRow({ app, positions, today, age, onSave, onCancel }: EditRo
           ))}
         </select>
       </td>
-      <td className="applications-table__cell--numeric">{age}</td>
+      <td className="applications-table__cell applications-table__cell--numeric">{age}</td>
       <td>
         <label htmlFor={ids.followedUpDate} className="sr-only">
           Followed up

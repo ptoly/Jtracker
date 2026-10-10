@@ -12,9 +12,6 @@
 //      (tight for display h1–h4 + hero, text-like for h5–h6), on-grid always.
 // =============================================================================
 
-// Framework token (moved from abstracts/_variables.scss): body line-height [30px @ 18px].
-$body-line-height: 1.66667; // [30px]
-
 // ---- Base text --------------------------------------------------------------
 // body line-height lives in base/_document.scss. The family is overridden here:
 // Untitled UI's Inter, loaded from @fontsource/inter in src/styles/fonts.ts.
@@ -22,10 +19,7 @@ body {
   font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
 
-// Flow spacing — bottom margin on stacked text blocks.
-p:not(:last-child), blockquote, .rtf p, .bullet-list {
-  @include scaled-spacing(margin-bottom, 3, 32px);
-}
+// Flow spacing for text blocks and headings lives in _theme-spacing.scss.
 
 // Body / copy type — p, li, ol, etc. Authored in px but emitted as rem via
 // rem(), so reading text honors the reader's browser font-size (WCAG 1.4.4)
@@ -90,18 +84,12 @@ h1, h2, h3, h4, h5, h6,
   &.wrappable { line-height: 1.1667; }
 }
 
-// Structural spacing — h1 get generous bottom margin,
-// h2–h6 tighter.
 h1 {
   font-weight: 500;
-
-  @include scaled-spacing(margin-bottom, 4, 64px);
 }
 
 h2, h3, h4, h5, h6 {
   font-weight: 600;
-
-  @include scaled-spacing(margin-bottom, 4, 40px);
 }
 
 // -------------------------------------------------------------
@@ -175,7 +163,6 @@ blockquote {
 figcaption {
     font-family: $font-family-serif;
     font-size: rem(16px);
-    margin-top: 8px;
     color: var(--text-muted);
     max-width: $layout-readable-width;
     line-height: 1.5;
@@ -185,7 +172,7 @@ figcaption {
   font-size: 56px;
   position: absolute;
   left: 10px;
-  top: -24px;
+  top: gridx(-3);
 }
 
 

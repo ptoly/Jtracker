@@ -1,5 +1,4 @@
 @use 'pkg:octet-scss/abstracts' as *;
-@use '../theme/spacing-tokens' as *;
 
 // Sits inside a .card (see App). The toolbar, table and footer run edge to
 // edge; the card supplies the border and rounded corners.
@@ -22,8 +21,6 @@
     align-items: center;
     justify-content: space-between;
     gap: gridx(2) gridx(3);
-    padding-block: $bar-padding-block;
-    @include gutter;
     border-bottom: 1px solid var(--border-default);
   }
 
@@ -33,8 +30,8 @@
   &__tabs {
     display: inline-flex;
     flex-wrap: wrap;
-    gap: 4px;
-    padding: 4px;
+    gap: gridx(0.5);
+    padding: gridx(0.5);
     border: 1px solid var(--border-default);
     border-radius: $radius-lg;
     background-color: var(--surface-raised);
@@ -104,14 +101,12 @@
     width: 100%;
     border-collapse: collapse;
     font-size: rem(16px); // reader-scalable like octet body copy; nothing in the table goes smaller
-    line-height: $table-line-height;
+    line-height: rem(gridx(3)); // 24px at default size; scales with the text
 
-    // Height on a cell acts as a minimum, so a wrapped position grows to the
-    // next line instead of clipping. Spacing: theme/_spacing-tokens.scss.
+    // Cell padding lives in theme/_theme-spacing.scss; row height follows
+    // from it plus the content.
     th,
     td {
-      height: $table-row-height;
-      @include table-cell-padding;
       border-bottom: 1px solid var(--border-subtle);
       text-align: left;
       vertical-align: middle;
@@ -141,10 +136,6 @@
     td#{&} {
       text-align: right;
     }
-  }
-
-  &__cell--nowrap {
-    white-space: nowrap;
   }
 
   // Company / Position: two lines in one cell.
@@ -186,11 +177,11 @@
   }
 
   // Edit mode -------------------------------------------------------------------
-  &__row--editing {
+  // A row being edited (EditRow sets data-editing).
+  &__row[data-editing] {
     background-color: var(--brand-subtle);
 
     td {
-      padding-block: $table-edit-cell-padding-block;
       vertical-align: top;
     }
   }
@@ -236,7 +227,7 @@
 
   &__notes {
     max-width: gridx(32);
-    overflow: hidden;
+    overflow: clip;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
@@ -260,7 +251,7 @@
   &__sort-icon {
     display: inline-flex;
     flex-direction: column;
-    gap: 2px;
+    gap: gridx(0.25);
 
     &::before,
     &::after {
@@ -276,8 +267,9 @@
       border-top: 5px solid currentColor;
     }
 
-    &--ascending::after,
-    &--descending::before {
+    // The sorted column shows only its direction, read from the header's aria-sort.
+    [aria-sort='ascending'] &::after,
+    [aria-sort='descending'] &::before {
       display: none;
     }
   }
@@ -295,7 +287,7 @@
     color: var(--warning-text);
     font-size: rem(16px);
     font-weight: 600;
-    line-height: $table-line-height;
+    line-height: rem(gridx(3));
     white-space: nowrap;
   }
 
@@ -309,7 +301,8 @@
   // Empty state & pagination ----------------------------------------------------
   &__empty {
     max-width: none; // the theme caps paragraphs at a reading measure
-    @include empty-state-padding;
+    @include scaled-spacing(padding-top padding-bottom, 3, 48px);
+    @include fluid-gutter(padding-inline, 16px, 24px, 360px, 1441px);
     color: var(--text-secondary);
     font-size: inherit;
     text-align: center;
@@ -321,8 +314,6 @@
     align-items: center;
     justify-content: space-between;
     gap: gridx(2);
-    padding-block: $bar-padding-block;
-    @include gutter;
     border-top: 1px solid var(--border-default);
     background-color: var(--surface-raised);
   }

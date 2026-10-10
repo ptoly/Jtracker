@@ -1,5 +1,5 @@
 // =============================================================================
-//  Theme colors — Untitled UI light palette on octet's tokens.
+//  Brand — Untitled UI light palette on octet's tokens.
 //  ---------------------------------------------------------------------------
 //  Loaded after octet base's :root, so everything here wins. Ramps are
 //  Untitled UI's (100 lightest → 900 darkest, same direction as octet's);
@@ -88,7 +88,7 @@
 
   --border-subtle: var(--neutral-200);
   --border-default: var(--neutral-200);
-  --border-strong: var(--neutral-500);
+  --border-strong: var(--neutral-400);
 
   --danger: #d92d20; // Untitled error-600
 
@@ -98,6 +98,10 @@
   --warning-border: var(--tertiary-300);
   --warning-text: var(--tertiary-700); // 5.2:1 on --warning-surface
   --warning-indicator: var(--tertiary-500);
+
+  // Tooltips: inverted, like Untitled UI's dark tooltip. White on gray-900 is 17.8:1.
+  --tooltip-surface: var(--neutral-900);
+  --tooltip-text: #fff;
 
   // Scrim behind modal dialogs.
   --backdrop: rgb(16 24 40 / 0.7); // Untitled gray-900 at 70%

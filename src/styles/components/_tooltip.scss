@@ -1,0 +1,37 @@
+@use 'pkg:octet-scss/abstracts' as *;
+
+// <span class="tooltip">
+//   <button class="icon-button">…</button>
+//   <span class="tooltip__bubble" data-open aria-hidden="true">Delete</span>
+// </span>
+// Shown/hidden by IconButton (hover, focus, Escape) via [data-open]. The bubble
+// sits above the trigger, right-aligned so it stays inside clipping
+// containers at a row's end.
+.tooltip {
+  position: relative;
+  display: inline-flex;
+
+  &__bubble {
+    position: absolute;
+    right: 0;
+    bottom: calc(100% + #{gridx(0.5)});
+    z-index: $z-overlay;
+    padding: gridx(0.5) gridx(1.5);
+    border-radius: $radius-lg;
+    background-color: var(--tooltip-surface);
+    color: var(--tooltip-text);
+    font-size: rem(16px);
+    font-weight: 600;
+    line-height: rem(gridx(3));
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    @include elevation(4);
+    @include transition(opacity visibility, $duration-fast);
+
+    &[data-open] {
+      opacity: 1;
+      visibility: visible;
+    }
+  }
+}

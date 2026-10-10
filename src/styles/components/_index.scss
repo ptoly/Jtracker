@@ -1,7 +1,9 @@
 // One BEM partial per component.
+@forward 'btn';
 @forward 'card';
 @forward 'field-error';
 @forward 'icon-button';
+@forward 'tooltip';
 @forward 'confirm-dialog';
 @forward 'position-combobox';
 @forward 'app';

@@ -1,5 +1,5 @@
 import { useId, useState, type FormEvent, type KeyboardEvent } from 'react';
-import { distinctPositions, findDuplicate, type RequiredField } from '../../lib/applicationRules';
+import { distinctPositions, findDuplicate } from '../../lib/applicationRules';
 import { toIsoDate } from '../../lib/dates';
 import type { Application, NewApplication } from '../../types/application';
 import { FieldError } from '../ApplicationFields/FieldError';
@@ -66,11 +66,6 @@ export function ApplicationForm({ applications, today, onAdd }: ApplicationFormP
     }
   }
 
-  /** Company and Position use an inline label joined to the input, as in the mockup. */
-  function inlineGroupClass(field: RequiredField) {
-    return `application-form__inline${errors[field] ? ' application-form__inline--invalid' : ''}`;
-  }
-
   const required = (
     <span className="application-form__required" aria-hidden="true">
       *
@@ -98,7 +93,7 @@ export function ApplicationForm({ applications, today, onAdd }: ApplicationFormP
           </div>
 
           <div className="application-form__field">
-            <div className={inlineGroupClass('company')}>
+            <div className="application-form__inline">
               <label htmlFor={ids.company} className="application-form__inline-label">
                 Company{required}
               </label>
@@ -123,7 +118,7 @@ export function ApplicationForm({ applications, today, onAdd }: ApplicationFormP
               onValueChange={(value) => setField('position', value)}
               positions={positions}
               label={<>Position{required}</>}
-              className={inlineGroupClass('position')}
+              className="application-form__inline"
               labelClassName="application-form__inline-label"
               inputClassName="application-form__inline-input"
               errorProps={errorProps('position')}

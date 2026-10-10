@@ -1,19 +1,17 @@
 @use 'pkg:octet-scss/abstracts' as *;
-@use '../theme/spacing-tokens' as *;
 
 // <dialog class="confirm-dialog">
 //   <h2 class="confirm-dialog__title">…</h2>
 //   <div class="confirm-dialog__description">…</div>
+//   <div class="confirm-dialog__error field-error">…</div>   (only on failure)
 //   <div class="confirm-dialog__actions">…</div>
 // </dialog>
 .confirm-dialog {
   width: min(100% - #{gridx(4)}, #{gridx(50)});
-  padding: 0;
   border: 1px solid var(--border-default);
   border-radius: $radius-xl;
   background-color: var(--surface-card);
   color: var(--text-primary);
-  @include card-body-padding;
   @include elevation(8);
 
   &::backdrop {
@@ -25,25 +23,17 @@
   }
 
   &__description {
+    margin-bottom: gridx(4);
     color: var(--text-secondary);
+  }
+
+  &__error {
+    margin-bottom: gridx(2);
   }
 
   &__actions {
     display: flex;
     justify-content: flex-end;
     gap: gridx(1.5);
-    margin-top: gridx(4);
-  }
-}
-
-// Destructive fill, alongside octet's .btn--primary. White on --danger is 4.8:1.
-.btn--danger {
-  border-color: transparent;
-  background-color: var(--danger);
-  color: var(--text-on-brand);
-
-  &:hover {
-    border-color: transparent;
-    filter: brightness(0.92);
   }
 }

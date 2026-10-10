@@ -1,5 +1,4 @@
 @use 'pkg:octet-scss/abstracts' as *;
-@use '../theme/spacing-tokens' as *;
 
 // <form class="application-form">
 //   <div class="card">
@@ -36,12 +35,12 @@
   }
 
   &__label {
-    color: var(--neutral-700);
+    color: var(--text-primary);
     font-weight: 600;
   }
 
   &__required {
-    margin-left: 2px;
+    margin-left: gridx(0.25);
     color: var(--brand);
   }
 
@@ -90,7 +89,7 @@
       outline-offset: 2px;
     }
 
-    &--invalid {
+    &:has(> [aria-invalid='true']) {
       border-color: var(--danger);
     }
   }
@@ -101,7 +100,7 @@
     align-items: center;
     padding: 0 gridx(1.5) 0 gridx(2);
     border-right: 1px solid var(--border-strong);
-    color: var(--neutral-700);
+    color: var(--text-primary);
     font-weight: 600;
   }
 
@@ -132,8 +131,8 @@
   }
 
   &__warning {
-    padding-block: $bar-padding-block;
-    @include gutter;
+    padding-block: gridx(2);
+    @include fluid-gutter(padding-inline, 16px, 24px, 360px, 1441px);
     border: 1px solid var(--warning-border);
     border-radius: $radius-lg;
     background-color: var(--warning-surface);

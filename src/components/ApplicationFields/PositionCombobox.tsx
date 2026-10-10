@@ -90,16 +90,13 @@ export function PositionCombobox({
         <ChevronDownIcon />
       </button>
       <ul
-        className={`position-combobox__menu position-combobox__menu--${menu}${open ? ' position-combobox__menu--open' : ''}`}
+        className={`position-combobox__menu position-combobox__menu--${menu}`}
+        data-open={open ? '' : undefined}
         {...getMenuProps()}
       >
         {isOpen &&
           matches.map((item, index) => (
-            <li
-              key={item}
-              className={`position-combobox__option${highlightedIndex === index ? ' position-combobox__option--highlighted' : ''}`}
-              {...getItemProps({ item, index })}
-            >
+            <li key={item} className="position-combobox__option" {...getItemProps({ item, index })}>
               {item}
             </li>
           ))}

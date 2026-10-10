@@ -1,32 +1,44 @@
 @use "pkg:octet-scss/abstracts" as *;
 
 // =============================================================================
-//  Block spacing — the single home for layout spacing.
+//  Theme spacing — the only spacing file.
 //  ---------------------------------------------------------------------------
-//  Two rules, by design:
+//  Everything that has to stay consistent lives here, applied by selector:
+//    • rhythm BETWEEN blocks (sections, list items)
+//    • gutters and insets SHARED by several components, so their edges line up
+//  Padding that belongs to one component alone stays in that component's
+//  partial. Don't start a second spacing file or a layer of spacing mixins or
+//  variables; extend this one. (octet-scss CONVENTIONS.md §3)
 //
-//  1. One file. All *layout* spacing — the vertical rhythm between top-level
-//     blocks — lives here, not scattered across component partials. Rhythm in
-//     one place stays consistent and is auditable at a glance. Spacing that is
-//     internal to a component (padding inside a card, say) co-locates with it;
-//     it's the between-block spacing that centralizes.
-//
-//  2. margin-bottom, (almost) never margin-top (Consistent exception is margin-top
-//     for the page content below the header). Every block pushes the next one DOWN,
-//     so spacing flows one direction — top to bottom, the way you read it.
-//     Margins never fight or double up, and the gap between two blocks always
-//     lives on the block above = much more consistency.
-//
-//  Everything steps on the 8pt grid via scaled-spacing() across $breakpoints,
-//  so rhythm stays on the baseline as the viewport grows.
-//
-//  Spacing INSIDE components (card and table insets) lives in
-//  _spacing-tokens.scss.
+//  Vertical values step on the 8pt grid (gridx / scaled-spacing); horizontal
+//  values are fluid (fluid-gutter). Blocks are spaced with margin-bottom,
+//  mostly: each block pushes the next one down.
 // =============================================================================
+
+// ---- Block rhythm -------------------------------------------------------------
 
 // Space between stacked sections.
 section {
   @include scaled-spacing(margin-bottom, 3, 32px);   // tight, app-like rhythm (starter: 5, 88px)
+}
+
+// Flow spacing — bottom margin on stacked text blocks.
+p:not(:last-child), blockquote, .rtf p, .bullet-list {
+  @include scaled-spacing(margin-bottom, 3, 32px);
+}
+
+// Headings: h1 gets generous space below, h2–h6 tighter.
+h1 {
+  @include scaled-spacing(margin-bottom, 4, 64px);
+}
+
+h2, h3, h4, h5, h6 {
+  @include scaled-spacing(margin-bottom, 4, 40px);
+}
+
+// A caption sits just under the figure it describes.
+figcaption {
+  margin-top: gridx(1);
 }
 
 // List item rhythm.
@@ -35,4 +47,65 @@ ol {
   li:not(:last-child) {
     @include scaled-spacing(margin-bottom, 2, 16px);
   }
+}
+
+// ---- Page rhythm ----------------------------------------------------------------
+// Page title, then section headers (heading + subtitle read as one group).
+.app__title {
+  @include scaled-spacing(margin-bottom, 4, 40px);
+}
+
+.app__section-header {
+  margin-bottom: gridx(3);
+}
+
+// Headings that label a group or a bar drop their flow margin.
+.app__section-header > h2,
+.card__header > :is(h2, h3) {
+  margin-bottom: 0;
+}
+
+// ---- Shared gutter --------------------------------------------------------------
+// One horizontal inset for card content and the table toolbar and footer, so
+// their left edges align. 16px at 360px, growing to 24px at 1441px. (Table
+// cells step 16 → 24px on their own; see Table cells below.)
+.card__header,
+.card__body,
+.card__footer,
+.confirm-dialog,
+.applications-table__controls,
+.applications-table__pagination {
+  @include fluid-gutter(padding-inline, 16px, 24px, 360px, 1441px);
+}
+
+// ---- Table cells -------------------------------------------------------------
+// Untitled UI cell padding: 16px 24px on wide screens, scaling down in 4px
+// steps to 8px 16px on narrow ones (steps at 1366 and 1441px). Row height
+// follows from padding plus content, so rows stay on the 8pt grid.
+.applications-table__table th,
+.applications-table__table td {
+  @include scaled-spacing(padding-top padding-bottom, 3, 16px, 4);
+  @include scaled-spacing(padding-left padding-right, 3, 24px, 4);
+}
+
+// A row being edited: its fields are already 48px tall, so cells keep a
+// fixed 8px top and bottom at every width.
+.applications-table__row[data-editing] td {
+  padding-block: gridx(1);
+}
+
+// ---- Bars ---------------------------------------------------------------------
+// Vertical inset for header, toolbar and footer bars.
+.card__header,
+.card__footer,
+.applications-table__controls,
+.applications-table__pagination {
+  padding-block: gridx(2);
+}
+
+// ---- Card insets --------------------------------------------------------------
+// Vertical inset for card bodies and the card-styled confirm dialog.
+.card__body,
+.confirm-dialog {
+  @include scaled-spacing(padding-top padding-bottom, 2, 24px);
 }

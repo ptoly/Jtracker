@@ -1,0 +1,18 @@
+@use 'pkg:octet-scss/abstracts' as *;
+
+// Extensions to octet's .btn block (octet-scss/components/_buttons.scss).
+// <button class="btn btn--danger">Delete</button>
+
+// Destructive fill, alongside octet's .btn--primary. White on --danger is 4.8:1.
+.btn--danger {
+  border-color: transparent;
+  background-color: var(--danger);
+  color: var(--text-on-brand);
+
+  @include hover-only {
+    &:hover {
+      border-color: transparent;
+      filter: brightness(0.92);
+    }
+  }
+}

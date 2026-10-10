@@ -1,5 +1,4 @@
 @use 'pkg:octet-scss/abstracts' as *;
-@use '../theme/spacing-tokens' as *;
 
 // <section class="card">
 //   <div class="card__header">…</div>
@@ -21,18 +20,7 @@
     align-items: center;
     justify-content: space-between;
     gap: gridx(2);
-    padding-block: $bar-padding-block;
-    @include gutter;
     border-bottom: 1px solid var(--border-default);
-
-    // Headings in a header bar are labels, not page-flow headings.
-    > :is(h2, h3) {
-      margin-bottom: 0;
-    }
-  }
-
-  &__body {
-    @include card-body-padding;
   }
 
   &__footer {
@@ -41,14 +29,12 @@
     align-items: center;
     justify-content: space-between;
     gap: gridx(2);
-    padding-block: $bar-padding-block;
-    @include gutter;
     border-top: 1px solid var(--border-default);
     border-radius: 0 0 $radius-lg $radius-lg;
     background-color: var(--surface-raised);
   }
 
   &--clip {
-    overflow: hidden;
+    overflow: clip;
   }
 }
