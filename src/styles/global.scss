@@ -1,6 +1,8 @@
-// Load order per octet: abstracts → base → components/theme → utilities (last).
+// Load order: octet abstracts (no CSS) → octet base → theme → components → octet utilities.
+// Utilities load last so a utility class wins over a theme or component class.
 @use 'pkg:octet-scss/abstracts' as *;
 @use 'pkg:octet-scss/base';
+@use 'theme';
 @use 'pkg:octet-scss/components' as octet-components;
 @use 'components';
 @use 'pkg:octet-scss/utilities';

@@ -1,0 +1,35 @@
+@use "pkg:octet-scss/abstracts" as *;
+
+// =============================================================================
+//  Block spacing — the single home for layout spacing.
+//  ---------------------------------------------------------------------------
+//  Two rules, by design:
+//
+//  1. One file. All *layout* spacing — the vertical rhythm between top-level
+//     blocks — lives here, not scattered across component partials. Rhythm in
+//     one place stays consistent and is auditable at a glance. Spacing that is
+//     internal to a component (padding inside a card, say) co-locates with it;
+//     it's the between-block spacing that centralizes.
+//
+//  2. margin-bottom, (almost) never margin-top (Consistent exception is margin-top
+//     for the page content below the header). Every block pushes the next one DOWN,
+//     so spacing flows one direction — top to bottom, the way you read it.
+//     Margins never fight or double up, and the gap between two blocks always
+//     lives on the block above = much more consistency.
+//
+//  Everything steps on the 8pt grid via scaled-spacing() across $breakpoints,
+//  so rhythm stays on the baseline as the viewport grows.
+// =============================================================================
+
+// Space between stacked sections.
+section {
+  @include scaled-spacing(margin-bottom, 5, 88px);
+}
+
+// List item rhythm.
+.bullet-list,
+ol {
+  li:not(:last-child) {
+    @include scaled-spacing(margin-bottom, 2, 16px);
+  }
+}

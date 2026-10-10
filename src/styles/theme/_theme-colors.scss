@@ -1,0 +1,26 @@
+// =============================================================================
+//  Theme colors — Jtracker's palette overrides.
+//  ---------------------------------------------------------------------------
+//  Loaded after octet base's :root, so anything set here wins. Empty for now,
+//  so Jtracker uses octet's default indigo/teal/amber palette.
+//
+//  Two ways to re-brand:
+//    1. Swap a whole ramp — every semantic token pointing at it follows.
+//       --brand, --brand-hover, --brand-active, --link and --focus-ring all
+//       read from the primary ramp, so overriding it re-brands the whole UI.
+//    2. Point individual semantic tokens at bespoke values, for a light touch.
+//
+//  Keep ramps in a single notation (hex) so tones stay comparable.
+//  Full token list: node_modules/octet-scss/abstracts/_colors.scss.
+// =============================================================================
+
+:root {
+  // ---- 1 · Full re-skin — swap the primary ramp ------------------------------
+  // --primary-100: #ffece5;
+  // …
+  // --primary-900: #4f1708;
+
+  // ---- 2 · Light touch — retarget individual semantic roles ------------------
+  // --accent:    var(--secondary-400);
+  // --highlight: var(--tertiary-300);
+}

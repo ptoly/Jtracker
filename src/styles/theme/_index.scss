@@ -1,0 +1,10 @@
+// Forked from octet-scss 0.4.0 starter-theme on 2026-10-10.
+// =============================================================================
+//  Theme layer — Jtracker's colors, typography, and block spacing.
+//  Document essentials live in octet base/, utility classes in octet utilities/.
+//  Trimmed from the starter: nav, footer, the app-shell/rail layout, and the
+//  .has-arrow link icon (its data-URI SVG hangs `vite build` on Vite 8.3.4).
+// =============================================================================
+@use "theme-colors";
+@use "theme-spacing";
+@use "typography";

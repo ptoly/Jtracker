@@ -1,0 +1,191 @@
+@use "pkg:octet-scss/abstracts" as *;
+
+// =============================================================================
+//  Typography — base text styles + a decoupled heading level/size system.
+//  Two type treatments, on purpose:
+//    • Body / copy (p, li, ol …): sized in rem() (px-authored), capped at the
+//      readable measure, with a single step down at narrow widths. rem lets
+//      reading text honor the reader's browser font-size (WCAG 1.4.4) — the one
+//      place the framework departs from px.
+//    • Headline / display (h1–h6, .size-*, hero): fluid-font-size() — a px
+//      clamp() that scales with the viewport; line-height rounds to $grid-base
+//      (tight for display h1–h4 + hero, text-like for h5–h6), on-grid always.
+// =============================================================================
+
+// Framework token (moved from abstracts/_variables.scss): body line-height [30px @ 18px].
+$body-line-height: 1.66667; // [30px]
+
+// ---- Base text --------------------------------------------------------------
+// body font-family / line-height live in base/_document.scss.
+
+// Flow spacing — bottom margin on stacked text blocks.
+p:not(:last-child), blockquote, .rtf p, .bullet-list {
+  @include scaled-spacing(margin-bottom, 3, 32px);
+}
+
+// Body / copy type — p, li, ol, etc. Authored in px but emitted as rem via
+// rem(), so reading text honors the reader's browser font-size (WCAG 1.4.4)
+// while the rest of the framework stays in px. One step down at narrow widths;
+// fluid-font-size() is for headline/display type only (see the heading scale
+// below). Identical rendering at the default 16px root.
+p {
+  font-weight: 500;
+  max-width: $layout-readable-width;
+  line-height: rem(32px);
+  font-size: rem(18px);
+
+  @include until($layout-readable-width) {   // below the readable measure → single column
+    font-size: rem(16px);
+    line-height: rem(24px);
+  }
+
+  small {
+    line-height: rem(24px);
+  }
+}
+
+// Link color + hover live in base/_document.scss; this is the theme's treatment.
+a {
+  text-decoration: none;
+  font-weight: 500;
+}
+
+address {
+  font-style: normal;
+}
+
+// =============================================================
+//  HEADINGS
+//  Two decoupled scales, on purpose:
+//    • Level (h1–h6) = document structure / a11y outline.
+//      Keep ordered, never skip. This is what screen readers use.
+//    • Size  (.size-hN) = visual appearance, independent of level.
+//      Apply to make a heading look bigger/smaller than its level
+//      WITHOUT changing the level. This is how we get visual
+//      freedom while keeping a clean, accessible outline.
+//
+//  Rule of thumb:
+//    - Default: let hN render at its own size (95% of cases).
+//    - Hero / emphasis: add a LARGER .size-hN (the deliberate
+//      "one big moment").
+//    - A sub-label that must look small but sits high in the
+//      outline: add a SMALLER .size-hN. Level stays correct.
+//
+//  All sizes are px min/max fed to fluid-font-size(), with a line-height ratio:
+//  ~1.1 for display (h1–h4 + hero) → minimized but healthy leading; ~1.5 for
+//  h5–h6 (body-like, for readability). The mixin rounds line-height UP to
+//  $grid-base via CSS round(), so it stays on the grid as the font scales.
+// =============================================================
+
+// Line-height is set per level by fluid-font-size() below — round(up) to
+// $grid-base, so it stays on the grid at every width. Display (h1–h4, hero) uses
+// ratio ~1.1 (minimized but healthy leading — lands ~1.1–1.2 on the 4px grid);
+// h5–h6 use ~1.5 (body-like leading, for readability). Wrapping headings opt in:
+h1, h2, h3, h4, h5, h6,
+.size-h1, .size-h2, .size-h3, .size-h4, .size-h5, .size-h6, .size-hero {
+  &.wrappable { line-height: 1.1667; }
+}
+
+// Structural spacing — h1 get generous bottom margin,
+// h2–h6 tighter.
+h1 {
+  font-weight: 500;
+
+  @include scaled-spacing(margin-bottom, 4, 64px);
+}
+
+h2, h3, h4, h5, h6 {
+  font-weight: 600;
+
+  @include scaled-spacing(margin-bottom, 4, 40px);
+}
+
+// -------------------------------------------------------------
+//  SIZE SCALE
+//  Structural headers pulled DOWN from the old values so
+//  structure stays quiet; hero emphasis comes from applying a
+//  larger .size-hN by hand where wanted.
+//  Old h1 was 32→56, h2 24→48 — both too loud for body structure.
+//  Tune these pairs by eye; they only need to stay ordered.
+// -------------------------------------------------------------
+
+h1, .size-h1 {
+  font-weight: 600;
+
+  @include fluid-font-size(28px, 44px, 360px, 1440px, 1.1);   // display: minimized leading, on-grid
+}
+
+h2, .size-h2 {
+  @include fluid-font-size(24px, 32px, 360px, 1440px, 1.1);
+}
+
+h3, .size-h3 {
+  @include fluid-font-size(20px, 24px, 360px, 1440px, 1.1);
+}
+
+h4, .size-h4 {
+  @include fluid-font-size(18px, 22px, 360px, 1440px, 1.1);
+}
+
+h5, .size-h5 {
+  @include fluid-font-size(16px, 20px, 360px, 1440px, 1.5);   // body-like leading (readability)
+}
+
+h6, .size-h6, .smallest-heading {
+  @include fluid-font-size(14px, 18px, 360px, 1440px, 1.5);   // body-like leading (readability)
+}
+
+// -------------------------------------------------------------
+//  HERO — the one deliberate "large" moment.
+//  Apply .size-hero to the intro h1 to make it read bigger than
+//  a standard h1 without inflating structural headings.
+// -------------------------------------------------------------
+.size-hero {
+  font-weight: 600;
+
+  @include fluid-font-size(36px, 64px, 360px, 1440px, 1.1);   // display: minimized leading, on-grid
+}
+
+// ---- Quotes, captions & misc ------------------------------------------------
+// Pull-quote is reading text → rem (honors reader font-size), like body copy.
+// A single step down at narrow widths, not the px fluid clamp used for display.
+blockquote {
+  font-family: $font-family-serif;
+  font-size: rem(24px);
+  line-height: 1.5;
+
+  @include until($layout-readable-width) {
+    font-size: rem(20px);
+  }
+
+  font-style: italic;
+  position: relative;
+
+  footer {
+    text-align: right;
+    color: var(--text-primary);
+    background-color: transparent;
+  }
+}
+
+figcaption {
+    font-family: $font-family-serif;
+    font-size: rem(16px);
+    margin-top: 8px;
+    color: var(--text-muted);
+    max-width: $layout-readable-width;
+    line-height: 1.5;
+}
+
+.quotation-mark {
+  font-size: 56px;
+  position: absolute;
+  left: 10px;
+  top: -24px;
+}
+
+
+// More often than not, ULs are not used as lists
+ul {
+  list-style: none;
+}
