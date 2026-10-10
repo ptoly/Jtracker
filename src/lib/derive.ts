@@ -1,14 +1,11 @@
-import type { Application, Status } from '../types/application';
+import type { Application } from '../types/application';
 
 export const DEFAULT_FOLLOW_UP_DAYS = 10;
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
-/** Statuses still waiting on the employer, where a nudge makes sense. */
-const AWAITING_RESPONSE: readonly Status[] = ['Applied', 'Followed Up'];
-
 /** Parse YYYY-MM-DD as a local calendar date (avoids the UTC off-by-one of `new Date(iso)`). */
-function parseIsoDate(iso: string): Date {
+export function parseIsoDate(iso: string): Date {
   const [y, m, d] = iso.split('-').map(Number);
   return new Date(y ?? NaN, (m ?? NaN) - 1, d ?? NaN);
 }
@@ -27,19 +24,18 @@ export function ageInDays(app: Application, today: Date = new Date()): number {
   return daysBetween(app.dateApplied, today);
 }
 
-/** Whole days since the last outbound contact (follow-up if any, else the application). */
-export function daysSinceLastContact(app: Application, today: Date = new Date()): number {
-  return daysBetween(app.followedUpDate ?? app.dateApplied, today);
-}
-
 /**
- * True when the application is still awaiting a response and at least
- * `followUpDays` have passed since the last contact.
+ * The only follow-up rule: status is Applied, it has never been followed up,
+ * and at least `followUpDays` have passed since applying. Nothing else is ever due.
  */
 export function isFollowUpDue(
   app: Application,
   followUpDays: number = DEFAULT_FOLLOW_UP_DAYS,
   today: Date = new Date(),
 ): boolean {
-  return AWAITING_RESPONSE.includes(app.status) && daysSinceLastContact(app, today) >= followUpDays;
+  return (
+    app.status === 'Applied' &&
+    app.followedUpDate === undefined &&
+    ageInDays(app, today) >= followUpDays
+  );
 }
