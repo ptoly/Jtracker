@@ -91,4 +91,14 @@
   --border-strong: var(--neutral-500);
 
   --danger: #d92d20; // Untitled error-600
+
+  // ---- Status roles -----------------------------------------------------------
+  // Warning: the calculated "Follow Up Due" state and the duplicate notice.
+  --warning-surface: #fffaeb; // Untitled warning-50
+  --warning-border: var(--tertiary-300);
+  --warning-text: var(--tertiary-700); // 5.2:1 on --warning-surface
+  --warning-indicator: var(--tertiary-500);
+
+  // Scrim behind modal dialogs.
+  --backdrop: rgb(16 24 40 / 0.7); // Untitled gray-900 at 70%
 }

@@ -24,9 +24,12 @@ export function createSampleAdapter(
     async update(id, patch) {
       const existing = items.find((app) => app.id === id);
       if (!existing) throw new Error(`Application not found: ${id}`);
-      const updated: Application = { ...existing, ...patch, id };
-      items = items.map((app) => (app.id === id ? updated : app));
-      return { ...updated };
+      // An explicit undefined clears an optional field (see ApplicationPatch).
+      const app = Object.fromEntries(
+        Object.entries({ ...existing, ...patch, id }).filter(([, value]) => value !== undefined),
+      ) as unknown as Application;
+      items = items.map((item) => (item.id === id ? app : item));
+      return { ...app };
     },
 
     async remove(id) {

@@ -1,0 +1,81 @@
+@use 'pkg:octet-scss/abstracts' as *;
+
+// <div class="position-combobox [host classes]">
+//   <label>…</label>
+//   <input class="position-combobox__input [host classes]">
+//   <button class="position-combobox__toggle">…</button>
+//   <ul class="position-combobox__menu position-combobox__menu--overlay|inline [--open]">
+//     <li class="position-combobox__option [--highlighted]">…</li>
+//   </ul>
+// </div>
+// The host (form or edit row) styles the label and input; this block owns the
+// toggle and suggestion list.
+.position-combobox {
+  position: relative;
+
+  // Beats the host's single-class input padding: room for the toggle.
+  > .position-combobox__input {
+    padding-right: gridx(6);
+  }
+
+  &__toggle {
+    position: absolute;
+    top: 0;
+    right: 0;
+    display: grid;
+    place-items: center;
+    width: gridx(6);
+    height: 100%;
+    max-height: gridx(6);
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--text-muted);
+    cursor: pointer;
+
+    &[hidden] {
+      display: none;
+    }
+  }
+
+  &__menu {
+    display: none;
+    max-height: gridx(30);
+    padding: gridx(0.5) 0;
+    overflow-y: auto;
+    border: 1px solid var(--border-default);
+    border-radius: $radius-lg;
+    background-color: var(--surface-elevated);
+    list-style: none;
+    @include elevation(4);
+
+    &--open {
+      display: block;
+    }
+
+    // Floats over the content below.
+    &--overlay {
+      position: absolute;
+      top: 100%;
+      right: 0;
+      left: 0;
+      z-index: $z-overlay;
+      margin-top: gridx(1);
+    }
+
+    // Pushes the content below down; for containers that clip overflow.
+    &--inline {
+      margin-top: gridx(0.5);
+    }
+  }
+
+  &__option {
+    padding: gridx(1) gridx(2);
+    color: var(--text-primary);
+    cursor: pointer;
+
+    &--highlighted {
+      background-color: var(--brand-subtle);
+    }
+  }
+}

@@ -19,6 +19,9 @@
 //
 //  Everything steps on the 8pt grid via scaled-spacing() across $breakpoints,
 //  so rhythm stays on the baseline as the viewport grows.
+//
+//  Spacing INSIDE components (card and table insets) lives in
+//  _spacing-tokens.scss.
 // =============================================================================
 
 // Space between stacked sections.

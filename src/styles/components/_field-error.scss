@@ -1,0 +1,7 @@
+@use 'pkg:octet-scss/abstracts' as *;
+
+// <span class="field-error" id="…">Enter a company.</span>
+// Shared by the add form and the table's edit row.
+.field-error {
+  color: var(--danger);
+}

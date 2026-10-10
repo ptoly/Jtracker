@@ -1,0 +1,49 @@
+@use "pkg:octet-scss/abstracts" as *;
+
+// =============================================================================
+//  Spacing tokens — component insets, in one place. Emits no CSS.
+//  ---------------------------------------------------------------------------
+//  _theme-spacing.scss owns the rhythm BETWEEN blocks; this file owns the
+//  spacing INSIDE them, so containers and table cells line up and respond to
+//  width together. Components @use this file and include the mixins rather
+//  than writing their own values.
+//
+//  Responsive steps use octet's scaled-spacing(): the value grows by 8px at
+//  each of the top $breaks breakpoints, so every step stays on the 8pt grid.
+// =============================================================================
+
+// ---- Gutter -------------------------------------------------------------------
+// The horizontal inset shared by card headers/bodies/footers, the table
+// toolbar and footer, and every table cell, so their left edges align.
+// 16px, stepping to 24px on the widest screens.
+@mixin gutter($properties: padding-left padding-right) {
+  @include scaled-spacing($properties, 2, 24px);
+}
+
+// ---- Bars ---------------------------------------------------------------------
+// Vertical inset for header/toolbar/footer bars (card header, table toolbar,
+// pagination, card footer).
+$bar-padding-block: gridx(2); // 16px
+
+// ---- Card body ----------------------------------------------------------------
+@mixin card-body-padding {
+  @include scaled-spacing(padding-top padding-bottom, 2, 24px);
+  @include gutter;
+}
+
+// ---- Table cells --------------------------------------------------------------
+$table-row-height: gridx(6); // 48px minimum; rows grow in 24px lines when text wraps
+$table-line-height: rem(gridx(3)); // 24px at default size; scales with the text
+$table-edit-cell-padding-block: gridx(1); // top/bottom inset for cells in an editing row
+
+@mixin table-cell-padding {
+  padding-top: 0;
+  padding-bottom: 0;
+  @include gutter;
+}
+
+// ---- Empty states -------------------------------------------------------------
+@mixin empty-state-padding {
+  @include scaled-spacing(padding-top padding-bottom, 3, 48px);
+  @include gutter;
+}

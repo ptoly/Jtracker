@@ -1,0 +1,36 @@
+@use 'pkg:octet-scss/abstracts' as *;
+
+// <button class="icon-button [icon-button--danger]" aria-label="Delete Acme application">
+//   <svg aria-hidden="true">…</svg>
+// </button>
+// Square, borderless icon control. The aria-label names it; the icon is
+// decorative. 40px target (WCAG 2.5.8 asks for at least 24px).
+.icon-button {
+  display: inline-grid;
+  place-items: center;
+  width: gridx(5);
+  height: gridx(5);
+  padding: 0;
+  border: 0;
+  border-radius: $radius-lg;
+  background: none;
+  color: var(--text-muted); // 5:1 on white, above the 3:1 icons need
+  cursor: pointer;
+  @include transition(color background-color, $duration-fast);
+
+  @include hover-only {
+    &:hover:not(:disabled) {
+      background-color: var(--surface-raised);
+      color: var(--text-primary);
+    }
+
+    &--danger:hover:not(:disabled) {
+      color: var(--danger);
+    }
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}

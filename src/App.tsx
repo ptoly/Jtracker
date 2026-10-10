@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { ApplicationForm } from './components/ApplicationForm/ApplicationForm';
 import { ApplicationsTable } from './components/ApplicationsTable/ApplicationsTable';
 import { sampleAdapter, type StorageAdapter } from './storage';
-import type { Application, NewApplication } from './types/application';
+import type { Application, ApplicationPatch, NewApplication } from './types/application';
 
 const storageAdapter: StorageAdapter = sampleAdapter;
 
@@ -24,6 +24,17 @@ export function App() {
   async function handleAdd(input: NewApplication) {
     const added = await storageAdapter.add(input);
     setApplications((prev) => [...(prev ?? []), added]);
+  }
+
+  async function handleUpdate(id: string, patch: ApplicationPatch) {
+    const updated = await storageAdapter.update(id, patch);
+    setApplications((prev) => (prev ?? []).map((app) => (app.id === id ? updated : app)));
+    return updated;
+  }
+
+  async function handleDelete(id: string) {
+    await storageAdapter.remove(id);
+    setApplications((prev) => (prev ?? []).filter((app) => app.id !== id));
   }
 
   return (
@@ -56,7 +67,12 @@ export function App() {
                 Applications
               </h2>
             </div>
-            <ApplicationsTable applications={applications} today={today} />
+            <ApplicationsTable
+              applications={applications}
+              today={today}
+              onUpdate={handleUpdate}
+              onDelete={handleDelete}
+            />
           </section>
         </>
       ) : (

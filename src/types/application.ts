@@ -15,3 +15,9 @@ export interface Application {
 
 /** Shape accepted by StorageAdapter.add — the adapter assigns the id. */
 export type NewApplication = Omit<Application, 'id'>;
+
+/**
+ * Shape accepted by StorageAdapter.update. Omitted keys are left alone;
+ * an optional field set to `undefined` is cleared.
+ */
+export type ApplicationPatch = { [K in keyof NewApplication]?: NewApplication[K] | undefined };

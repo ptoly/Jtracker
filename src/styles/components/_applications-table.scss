@@ -1,4 +1,5 @@
 @use 'pkg:octet-scss/abstracts' as *;
+@use '../theme/spacing-tokens' as *;
 
 // Sits inside a .card (see App). The toolbar, table and footer run edge to
 // edge; the card supplies the border and rounded corners.
@@ -21,7 +22,8 @@
     align-items: center;
     justify-content: space-between;
     gap: gridx(2) gridx(3);
-    padding: gridx(2) gridx(3);
+    padding-block: $bar-padding-block;
+    @include gutter;
     border-bottom: 1px solid var(--border-default);
   }
 
@@ -102,14 +104,14 @@
     width: 100%;
     border-collapse: collapse;
     font-size: rem(16px); // reader-scalable like octet body copy; nothing in the table goes smaller
-    line-height: rem(gridx(3)); // 24px at default size; scales with the text
+    line-height: $table-line-height;
 
-    // Rows sit on the 8px grid at 48px. Height on a cell acts as a minimum,
-    // so a wrapped position grows to the next 24px line instead of clipping.
+    // Height on a cell acts as a minimum, so a wrapped position grows to the
+    // next line instead of clipping. Spacing: theme/_spacing-tokens.scss.
     th,
     td {
-      height: gridx(6);
-      padding: 0 gridx(3);
+      height: $table-row-height;
+      @include table-cell-padding;
       border-bottom: 1px solid var(--border-subtle);
       text-align: left;
       vertical-align: middle;
@@ -145,9 +147,91 @@
     white-space: nowrap;
   }
 
+  // Company / Position: two lines in one cell.
   &__company {
+    display: block;
     color: var(--text-primary);
     font-weight: 600;
+  }
+
+  &__position {
+    display: block;
+    color: var(--text-muted);
+  }
+
+  // Live status: native select, plus the calculated Follow Up Due badge.
+  &__status {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: gridx(1);
+  }
+
+  &__select {
+    height: gridx(5);
+    padding: 0 gridx(1);
+    border: 1px solid var(--border-strong);
+    border-radius: $radius-lg;
+    background-color: var(--surface-card);
+    color: var(--text-primary);
+    font: inherit;
+    cursor: pointer;
+  }
+
+  // Row actions: trash then pencil (see _icon-button.scss).
+  &__row-icons {
+    display: flex;
+    justify-content: flex-end;
+    gap: gridx(0.5);
+  }
+
+  // Edit mode -------------------------------------------------------------------
+  &__row--editing {
+    background-color: var(--brand-subtle);
+
+    td {
+      padding-block: $table-edit-cell-padding-block;
+      vertical-align: top;
+    }
+  }
+
+  &__stack {
+    display: grid;
+    gap: gridx(1);
+    min-width: gridx(30);
+  }
+
+  &__field {
+    width: 100%;
+    height: gridx(6);
+    padding: 0 gridx(1.5);
+    border: 1px solid var(--border-strong);
+    border-radius: $radius-lg;
+    background-color: var(--surface-card);
+    color: var(--text-primary);
+    font: inherit;
+
+    &[aria-invalid='true'] {
+      border-color: var(--danger);
+    }
+
+    &--notes {
+      min-width: gridx(24);
+      height: auto;
+      min-height: gridx(6);
+      padding-block: gridx(1);
+      resize: vertical;
+    }
+  }
+
+  &__row-actions {
+    display: flex;
+    gap: gridx(1);
+  }
+
+  // octet's .btn is 48px tall; fits the edit row's 48px fields.
+  &__row-button {
+    padding-inline: gridx(2);
   }
 
   &__notes {
@@ -198,56 +282,34 @@
     }
   }
 
-  // Status badges: Untitled's outlined badge with a color dot ------------------
-  // The text names the status; the dot is a secondary, decorative cue.
+  // Follow Up Due badge: Untitled's outlined badge with a dot -----------------
+  // Calculated, not a stored status, so it sits beside the status select.
   &__badge {
     display: inline-flex;
     align-items: center;
     gap: gridx(1);
     padding: 0 gridx(1);
-    border: 1px solid var(--neutral-300);
+    border: 1px solid var(--warning-border);
     border-radius: $radius-md;
-    background-color: var(--surface-card);
-    color: var(--neutral-700);
+    background-color: var(--warning-surface);
+    color: var(--warning-text);
     font-size: rem(16px);
     font-weight: 600;
-    line-height: rem(gridx(3));
+    line-height: $table-line-height;
     white-space: nowrap;
-
-    &--follow-up-due {
-      border-color: var(--tertiary-300);
-      background-color: #fffaeb; // Untitled warning-50
-      color: var(--tertiary-700);
-    }
   }
 
   &__badge-dot {
     width: gridx(1);
     height: gridx(1);
     border-radius: 50%;
-    background-color: var(--neutral-500);
-
-    .applications-table__badge--follow-up-due & {
-      background-color: var(--tertiary-500);
-    }
-
-    .applications-table__badge--followed-up & {
-      background-color: var(--primary-500);
-    }
-
-    .applications-table__badge--interviewed & {
-      background-color: var(--secondary-500);
-    }
-
-    .applications-table__badge--rejected & {
-      background-color: var(--danger);
-    }
+    background-color: var(--warning-indicator);
   }
 
   // Empty state & pagination ----------------------------------------------------
   &__empty {
     max-width: none; // the theme caps paragraphs at a reading measure
-    padding: gridx(6) gridx(3);
+    @include empty-state-padding;
     color: var(--text-secondary);
     font-size: inherit;
     text-align: center;
@@ -259,7 +321,8 @@
     align-items: center;
     justify-content: space-between;
     gap: gridx(2);
-    padding: gridx(2) gridx(3);
+    padding-block: $bar-padding-block;
+    @include gutter;
     border-top: 1px solid var(--border-default);
     background-color: var(--surface-raised);
   }

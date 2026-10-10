@@ -1,7 +1,17 @@
 import { useEffect, useId, useRef, useState, type KeyboardEvent } from 'react';
-import type { Application } from '../../types/application';
+import { distinctPositions } from '../../lib/applicationRules';
+import { toIsoDate } from '../../lib/dates';
 import { ageInDays, DEFAULT_FOLLOW_UP_DAYS, isFollowUpDue } from '../../lib/derive';
+import {
+  STATUSES,
+  type Application,
+  type ApplicationPatch,
+  type Status,
+} from '../../types/application';
+import { ConfirmDialog } from '../ConfirmDialog/ConfirmDialog';
 import { DateText } from '../DateText/DateText';
+import { PencilIcon, SearchIcon, TrashIcon } from '../Icons/Icons';
+import { EditRow } from './EditRow';
 
 const PAGE_SIZE = 100;
 
@@ -53,14 +63,14 @@ export interface ApplicationsTableProps {
   followUpDays?: number;
   /** Reference date for age, follow-up-due and year display. Calculate once and pass down. */
   today: Date;
+  /** Persists a change (status dropdown or edit row) and resolves to the saved application. */
+  onUpdate: (id: string, patch: ApplicationPatch) => Promise<Application>;
+  /** Permanently removes an application (after the user confirms). */
+  onDelete: (id: string) => Promise<void>;
 }
 
 function pluralize(count: number, noun: string): string {
   return `${count} ${noun}${count === 1 ? '' : 's'}`;
-}
-
-function toModifier(label: string): string {
-  return label.toLowerCase().replace(/\s+/g, '-');
 }
 
 function toRow(app: Application, followUpDays: number, today: Date): Row {
@@ -143,11 +153,16 @@ export function ApplicationsTable({
   applications,
   followUpDays = DEFAULT_FOLLOW_UP_DAYS,
   today,
+  onUpdate,
+  onDelete,
 }: ApplicationsTableProps) {
   const baseId = useId();
   const tabId = (key: TabKey) => `${baseId}-tab-${key}`;
   const panelId = `${baseId}-panel`;
+  const regionId = `${baseId}-region`;
   const searchId = `${baseId}-search`;
+  const editButtonId = (id: string) => `${baseId}-edit-${id}`;
+  const deleteButtonId = (id: string) => `${baseId}-delete-${id}`;
   const tabRefs = useRef(new Map<TabKey, HTMLButtonElement>());
 
   const [tab, setTab] = useState<TabKey>('all');
@@ -157,32 +172,79 @@ export function ApplicationsTable({
     direction: 'descending',
   });
   const [page, setPage] = useState(1);
-  // Live region text. Empty until the user filters, so nothing is announced on load.
-  const [announcement, setAnnouncement] = useState('');
+  const [editingId, setEditingId] = useState<string | null>(null);
+  // Rows shown, in order, while the user works on them (edit or status change),
+  // so a row doesn't jump or vanish under the cursor. Cleared by the next
+  // sort/filter/page interaction, a save or cancel, or a new application.
+  const [pinned, setPinned] = useState<{ ids: string[]; total: number } | null>(null);
+  // Live region text. Empty until something happens, so nothing is announced on load.
+  // The counter keys the text so a repeated message is still a DOM change and re-announces.
+  const [announcement, setAnnouncement] = useState({ text: '', count: 0 });
   const announceTimer = useRef<number | undefined>(undefined);
+  const [deleting, setDeleting] = useState<Application | null>(null);
+  // Element ids to try, in order, for focus once the next render lands
+  // (after an edit closes, a delete, or a cancelled delete).
+  const pendingFocus = useRef<string[] | null>(null);
 
   useEffect(() => () => window.clearTimeout(announceTimer.current), []);
 
+  // Move focus to the first candidate that exists after this render, falling
+  // back to the table region (or the panel, if the view is now empty).
+  useEffect(() => {
+    const candidates = pendingFocus.current;
+    if (candidates === null) return;
+    pendingFocus.current = null;
+    for (const id of [...candidates, regionId, panelId]) {
+      const element = document.getElementById(id);
+      if (element) {
+        element.focus();
+        return;
+      }
+    }
+  });
+
+  const editing = editingId !== null;
+  const positions = distinctPositions(applications);
   const rows = filterRows(applications, followUpDays, today, tab, query).sort((a, b) =>
     compareRows(a, b, sort.key, sort.direction),
   );
 
   const pageCount = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
   const currentPage = Math.min(page, pageCount);
-  const pageRows = rows.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
+  const activePin = pinned && pinned.total === applications.length ? pinned : null;
+  const byId = new Map(applications.map((app) => [app.id, app]));
+  const pageRows = activePin
+    ? activePin.ids.flatMap((id) => {
+        const app = byId.get(id);
+        return app ? [toRow(app, followUpDays, today)] : [];
+      })
+    : rows.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
+  function announce(text: string) {
+    window.clearTimeout(announceTimer.current);
+    setAnnouncement((prev) => ({ text, count: prev.count + 1 }));
+  }
 
   /** Announces the result count for a filter, immediately or once `delay` passes without another call. */
   function announceCount(nextTab: TabKey, nextQuery: string, delay = 0) {
     window.clearTimeout(announceTimer.current);
     const count = filterRows(applications, followUpDays, today, nextTab, nextQuery).length;
     const message = pluralize(count, 'application');
-    if (delay === 0) setAnnouncement(message);
-    else announceTimer.current = window.setTimeout(() => setAnnouncement(message), delay);
+    if (delay === 0) announce(message);
+    else announceTimer.current = window.setTimeout(() => announce(message), delay);
+  }
+
+  function pinCurrentRows() {
+    setPinned(
+      (prev) => prev ?? { ids: pageRows.map((row) => row.app.id), total: applications.length },
+    );
   }
 
   function selectTab(key: TabKey) {
     setTab(key);
     setPage(1);
+    setPinned(null);
     announceCount(key, query);
   }
 
@@ -209,13 +271,95 @@ export function ApplicationsTable({
         : { key, direction: INITIAL_DIRECTION[key] },
     );
     setPage(1);
+    setPinned(null);
   }
 
-  function sortHeader(key: SortKey, label: string, className?: string) {
+  function goToPage(next: number) {
+    setPage(next);
+    setPinned(null);
+  }
+
+  async function changeStatus(app: Application, status: Status) {
+    pinCurrentRows();
+    const patch: ApplicationPatch = { status };
+    if (status === 'Followed Up' && !app.followedUpDate) {
+      patch.followedUpDate = toIsoDate(today);
+    }
+    try {
+      await onUpdate(app.id, patch);
+      announce('Status updated');
+    } catch {
+      announce('Couldn’t update the status. Try again.');
+    }
+  }
+
+  function startEdit(id: string) {
+    pinCurrentRows();
+    setEditingId(id);
+  }
+
+  function closeEdit(id: string) {
+    setEditingId(null);
+    setPinned(null);
+    pendingFocus.current = [editButtonId(id)];
+  }
+
+  async function confirmDelete(app: Application) {
+    // Focus lands on the next row's trash button, else the previous row's.
+    const index = pageRows.findIndex((row) => row.app.id === app.id);
+    const neighbours = [pageRows[index + 1], pageRows[index - 1]].flatMap((row) =>
+      row ? [deleteButtonId(row.app.id)] : [],
+    );
+    await onDelete(app.id);
+    pendingFocus.current = neighbours;
+    setDeleting(null);
+    announce(`Deleted ${app.company}`);
+  }
+
+  function cancelDelete(app: Application) {
+    pendingFocus.current = [deleteButtonId(app.id)];
+    setDeleting(null);
+  }
+
+  async function saveEdit(id: string, patch: ApplicationPatch) {
+    const updated = await onUpdate(id, patch);
+    // Where the row lands once sorting and filters apply again.
+    const nextRows = filterRows(
+      applications.map((app) => (app.id === id ? updated : app)),
+      followUpDays,
+      today,
+      tab,
+      query,
+    ).sort((a, b) => compareRows(a, b, sort.key, sort.direction));
+    const index = nextRows.findIndex((row) => row.app.id === id);
+    const landingPage = Math.floor(index / PAGE_SIZE) + 1;
+    if (index === -1) announce('Saved, no longer in this view');
+    else if (landingPage !== currentPage) announce(`Saved, moved to page ${landingPage}`);
+    else announce('Saved');
+    closeEdit(id);
+  }
+
+  function sortHeader(
+    key: SortKey,
+    label: string,
+    { className, buttonLabel }: { className?: string; buttonLabel?: string } = {},
+  ) {
     const active = sort.key === key;
     return (
-      <th scope="col" className={className} {...(active && { 'aria-sort': sort.direction })}>
-        <button type="button" className="applications-table__sort" onClick={() => handleSort(key)}>
+      <th
+        scope="col"
+        className={className}
+        // The header keeps its visible text as its name, even when the button is renamed.
+        {...(buttonLabel && { 'aria-label': label })}
+        {...(active && { 'aria-sort': sort.direction })}
+      >
+        <button
+          type="button"
+          className="applications-table__sort"
+          disabled={editing}
+          {...(buttonLabel && { 'aria-label': buttonLabel })}
+          onClick={() => handleSort(key)}
+        >
           {label}
           <span
             className={`applications-table__sort-icon${active ? ` applications-table__sort-icon--${sort.direction}` : ''}`}
@@ -223,6 +367,15 @@ export function ApplicationsTable({
           />
         </button>
       </th>
+    );
+  }
+
+  function notApplicable(text: string) {
+    return (
+      <>
+        <span aria-hidden="true">—</span>
+        <span className="sr-only">{text}</span>
+      </>
     );
   }
 
@@ -253,6 +406,7 @@ export function ApplicationsTable({
                 aria-controls={panelId}
                 tabIndex={selected ? 0 : -1}
                 className="applications-table__tab"
+                disabled={editing}
                 onClick={() => selectTab(key)}
                 onKeyDown={(event) => handleTabKeyDown(event, index)}
               >
@@ -263,35 +417,21 @@ export function ApplicationsTable({
         </div>
 
         <div className="applications-table__search">
+          <SearchIcon className="applications-table__search-icon" />
           <label htmlFor={searchId} className="sr-only">
             Search company, position and notes
           </label>
-          <svg
-            className="applications-table__search-icon"
-            viewBox="0 0 20 20"
-            width="20"
-            height="20"
-            aria-hidden="true"
-            focusable="false"
-          >
-            <path
-              d="M17.5 17.5l-3.625-3.625M15.833 9.167a6.667 6.667 0 11-13.333 0 6.667 6.667 0 0113.333 0z"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.67"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
           <input
             id={searchId}
             type="search"
             className="applications-table__search-input"
             placeholder="Search"
             value={query}
+            disabled={editing}
             onChange={(event) => {
               setQuery(event.target.value);
               setPage(1);
+              setPinned(null);
               announceCount(tab, event.target.value, SEARCH_ANNOUNCE_DELAY_MS);
             }}
           />
@@ -299,7 +439,7 @@ export function ApplicationsTable({
       </div>
 
       <p role="status" className="sr-only">
-        {announcement}
+        {announcement.text && <span key={announcement.count}>{announcement.text}</span>}
       </p>
 
       <div
@@ -307,14 +447,15 @@ export function ApplicationsTable({
         id={panelId}
         aria-labelledby={tabId(tab)}
         className="applications-table__panel"
-        {...(rows.length === 0 && { tabIndex: 0 })}
+        {...(pageRows.length === 0 && { tabIndex: 0 })}
       >
-        {rows.length === 0 ? (
+        {pageRows.length === 0 ? (
           <p className="applications-table__empty">{emptyMessage}</p>
         ) : (
           <>
             {/* Focusable so keyboard users can scroll the table sideways on narrow screens. */}
             <div
+              id={regionId}
               className="applications-table__scroll"
               role="region"
               aria-label="Applications"
@@ -325,60 +466,110 @@ export function ApplicationsTable({
                 <thead>
                   <tr>
                     {sortHeader('date', 'Date')}
-                    {sortHeader('company', 'Company')}
-                    <th scope="col">Position</th>
+                    {sortHeader('company', 'Company / Position', {
+                      buttonLabel: 'Sort by company',
+                    })}
                     {sortHeader('status', 'Status')}
-                    {sortHeader('age', 'Age', 'applications-table__cell--numeric')}
+                    {sortHeader('age', 'Age', { className: 'applications-table__cell--numeric' })}
                     <th scope="col">Followed Up</th>
                     <th scope="col">Notes</th>
+                    <th scope="col">
+                      <span className="sr-only">Actions</span>
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
-                  {pageRows.map(({ app, statusLabel, age }) => (
-                    <tr key={app.id}>
-                      <td className="applications-table__cell--nowrap">
-                        <DateText iso={app.dateApplied} />
-                      </td>
-                      <td className="applications-table__company">{app.company}</td>
-                      <td>{app.position}</td>
-                      <td>
-                        {/* Applied is the default state, so it gets no badge; screen readers still hear it. */}
-                        {statusLabel === 'Applied' ? (
-                          <span className="sr-only">Applied</span>
-                        ) : (
-                          <span
-                            className={`applications-table__badge applications-table__badge--${toModifier(statusLabel)}`}
-                          >
-                            <span className="applications-table__badge-dot" aria-hidden="true" />
-                            {statusLabel}
-                          </span>
-                        )}
-                      </td>
-                      <td className="applications-table__cell--numeric">
-                        {age === null ? (
-                          <>
-                            <span aria-hidden="true">—</span>
-                            <span className="sr-only">Not applicable</span>
-                          </>
-                        ) : (
-                          pluralize(age, 'day')
-                        )}
-                      </td>
-                      <td className="applications-table__cell--nowrap">
-                        {app.followedUpDate ? (
-                          <DateText iso={app.followedUpDate} />
-                        ) : (
-                          <>
-                            <span aria-hidden="true">—</span>
-                            <span className="sr-only">Not followed up</span>
-                          </>
-                        )}
-                      </td>
-                      <td className="applications-table__notes" title={app.notes}>
-                        {app.notes}
-                      </td>
-                    </tr>
-                  ))}
+                  {pageRows.map(({ app, due, age }) => {
+                    const ageCell =
+                      age === null ? notApplicable('Not applicable') : pluralize(age, 'day');
+                    if (app.id === editingId) {
+                      return (
+                        <EditRow
+                          key={app.id}
+                          app={app}
+                          positions={positions}
+                          today={today}
+                          age={ageCell}
+                          onSave={(patch) => saveEdit(app.id, patch)}
+                          onCancel={() => {
+                            closeEdit(app.id);
+                            announce('Edit cancelled');
+                          }}
+                        />
+                      );
+                    }
+                    return (
+                      <tr key={app.id}>
+                        <td className="applications-table__cell--nowrap">
+                          <DateText iso={app.dateApplied} />
+                        </td>
+                        <td>
+                          <span className="applications-table__company">{app.company}</span>
+                          <span className="applications-table__position">{app.position}</span>
+                        </td>
+                        <td>
+                          <div className="applications-table__status">
+                            <select
+                              className="applications-table__select"
+                              aria-label={`Status, ${app.company}, ${app.position}`}
+                              value={app.status}
+                              onChange={(event) =>
+                                void changeStatus(app, event.target.value as Status)
+                              }
+                            >
+                              {STATUSES.map((status) => (
+                                <option key={status}>{status}</option>
+                              ))}
+                            </select>
+                            {due && (
+                              <span className="applications-table__badge applications-table__badge--follow-up-due">
+                                <span
+                                  className="applications-table__badge-dot"
+                                  aria-hidden="true"
+                                />
+                                Follow Up Due
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="applications-table__cell--numeric">{ageCell}</td>
+                        <td className="applications-table__cell--nowrap">
+                          {app.followedUpDate ? (
+                            <DateText iso={app.followedUpDate} />
+                          ) : (
+                            notApplicable('Not followed up')
+                          )}
+                        </td>
+                        <td className="applications-table__notes" title={app.notes}>
+                          {app.notes}
+                        </td>
+                        <td>
+                          <div className="applications-table__row-icons">
+                            <button
+                              type="button"
+                              id={deleteButtonId(app.id)}
+                              className="icon-button icon-button--danger"
+                              aria-label={`Delete ${app.company} application`}
+                              disabled={editing}
+                              onClick={() => setDeleting(app)}
+                            >
+                              <TrashIcon />
+                            </button>
+                            <button
+                              type="button"
+                              id={editButtonId(app.id)}
+                              className="icon-button"
+                              aria-label={`Edit ${app.company} application`}
+                              disabled={editing}
+                              onClick={() => startEdit(app.id)}
+                            >
+                              <PencilIcon />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -391,16 +582,16 @@ export function ApplicationsTable({
                 <button
                   type="button"
                   className="btn"
-                  disabled={currentPage === 1}
-                  onClick={() => setPage(currentPage - 1)}
+                  disabled={editing || currentPage === 1}
+                  onClick={() => goToPage(currentPage - 1)}
                 >
                   Previous
                 </button>
                 <button
                   type="button"
                   className="btn"
-                  disabled={currentPage === pageCount}
-                  onClick={() => setPage(currentPage + 1)}
+                  disabled={editing || currentPage === pageCount}
+                  onClick={() => goToPage(currentPage + 1)}
                 >
                   Next
                 </button>
@@ -409,6 +600,21 @@ export function ApplicationsTable({
           </>
         )}
       </div>
+
+      <ConfirmDialog
+        open={deleting !== null}
+        title="Delete application?"
+        confirmLabel="Delete"
+        onConfirm={() => (deleting ? confirmDelete(deleting) : Promise.resolve())}
+        onCancel={() => deleting && cancelDelete(deleting)}
+      >
+        {deleting && (
+          <p>
+            {deleting.company}, {deleting.position}, will be permanently deleted. This can’t be
+            undone.
+          </p>
+        )}
+      </ConfirmDialog>
     </div>
   );
 }

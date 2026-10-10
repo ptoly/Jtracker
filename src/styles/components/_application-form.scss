@@ -1,14 +1,15 @@
 @use 'pkg:octet-scss/abstracts' as *;
+@use '../theme/spacing-tokens' as *;
 
 // <form class="application-form">
 //   <div class="card">
 //     <div class="card__body application-form__fields">
 //       <div class="application-form__field">
-//         <label class="application-form__label">Company<span class="application-form__required">*</span></label>
-//         <input class="application-form__input" aria-invalid="true" aria-describedby="…">
-//         <span class="application-form__error">…</span>
+//         <div class="application-form__inline"><label class="application-form__inline-label">Company*</label>
+//           <input class="application-form__inline-input" aria-invalid="true" aria-describedby="…"></div>
+//         <span class="field-error">…</span>
 //       </div>
-//       … <div class="application-form__combobox"> input, toggle, <ul class="application-form__menu"> </div>
+//       … <PositionCombobox> (position-combobox block) with the same inline classes
 //     </div>
 //     <div class="card__footer application-form__actions">…</div>
 //   </div>
@@ -63,76 +64,60 @@
     &[aria-invalid='true'] {
       border-color: var(--danger);
     }
-
-    &--combobox {
-      padding-right: gridx(6); // room for the toggle
-    }
   }
 
   &__textarea {
     height: auto;
-    min-height: gridx(12);
+    min-height: gridx(6);
     padding: gridx(1) gridx(2);
     resize: vertical;
   }
 
-  &__error {
-    color: var(--danger);
-  }
-
-  // Position combobox -----------------------------------------------------------
-  &__combobox {
-    position: relative;
-  }
-
-  &__toggle {
-    position: absolute;
-    top: 0;
-    right: 0;
-    display: grid;
-    place-items: center;
-    width: gridx(6);
+  // Inline label: [Company* | input] as one bordered control --------------------
+  // The group carries the border and the focus ring, so the label and input
+  // read as a single field. The label is a real <label>, so clicking it focuses
+  // the input and screen readers announce it as the field's name.
+  &__inline {
+    display: flex;
+    align-items: stretch;
     height: gridx(6);
-    padding: 0;
-    border: 0;
-    background: none;
-    color: var(--text-muted);
-    cursor: pointer;
-
-    &[hidden] {
-      display: none;
-    }
-  }
-
-  &__menu {
-    display: none;
-    position: absolute;
-    top: 100%;
-    right: 0;
-    left: 0;
-    z-index: $z-overlay;
-    max-height: gridx(30);
-    margin-top: gridx(1);
-    padding: gridx(0.5) 0;
-    overflow-y: auto;
-    border: 1px solid var(--border-default);
+    border: 1px solid var(--border-strong);
     border-radius: $radius-lg;
-    background-color: var(--surface-elevated);
-    list-style: none;
-    @include elevation(4);
+    background-color: var(--surface-card);
 
-    &--open {
-      display: block;
+    &:focus-within {
+      outline: 2px solid var(--focus-ring);
+      outline-offset: 2px;
+    }
+
+    &--invalid {
+      border-color: var(--danger);
     }
   }
 
-  &__option {
-    padding: gridx(1) gridx(2);
-    color: var(--text-primary);
-    cursor: pointer;
+  &__inline-label {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    padding: 0 gridx(1.5) 0 gridx(2);
+    border-right: 1px solid var(--border-strong);
+    color: var(--neutral-700);
+    font-weight: 600;
+  }
 
-    &--highlighted {
-      background-color: var(--brand-subtle);
+  &__inline-input {
+    flex: 1;
+    min-width: 0;
+    padding: 0 gridx(1.5);
+    border: 0;
+    border-radius: 0 $radius-lg $radius-lg 0;
+    background: none;
+    color: var(--text-primary);
+    font: inherit;
+
+    // The group draws the ring (see :focus-within above).
+    &:focus-visible {
+      outline: none;
     }
   }
 
@@ -147,10 +132,11 @@
   }
 
   &__warning {
-    padding: gridx(2) gridx(3);
-    border: 1px solid var(--tertiary-300);
+    padding-block: $bar-padding-block;
+    @include gutter;
+    border: 1px solid var(--warning-border);
     border-radius: $radius-lg;
-    background-color: #fffaeb; // Untitled warning-50
-    color: var(--tertiary-700);
+    background-color: var(--warning-surface);
+    color: var(--warning-text);
   }
 }
