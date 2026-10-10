@@ -38,8 +38,7 @@
   }
 
   &__tab {
-    padding: 0 gridx(2);
-    height: gridx(5);
+    padding-inline: gridx(2);
     border: 1px solid transparent;
     border-radius: $radius-md;
     background: none;
@@ -70,7 +69,7 @@
   &__search-icon {
     position: absolute;
     top: 50%;
-    left: gridx(1.5);
+    left: gridx(1);
     color: var(--text-muted);
     transform: translateY(-50%);
     pointer-events: none;
@@ -79,8 +78,7 @@
   &__search-input {
     width: gridx(40);
     max-width: 100%;
-    height: gridx(5);
-    padding: 0 gridx(2) 0 gridx(5);
+    padding-inline: gridx(5) gridx(2);
     border: 1px solid var(--border-strong);
     border-radius: $radius-lg;
     background-color: var(--surface-card);
@@ -128,14 +126,7 @@
   }
 
   &__cell--numeric {
-    text-align: right;
     white-space: nowrap;
-
-    // th needs the extra specificity to beat the table's text-align.
-    th#{&},
-    td#{&} {
-      text-align: right;
-    }
   }
 
   // Company / Position: two lines in one cell.
@@ -159,8 +150,7 @@
   }
 
   &__select {
-    height: gridx(5);
-    padding: 0 gridx(1);
+    padding-inline: gridx(1);
     border: 1px solid var(--border-strong);
     border-radius: $radius-lg;
     background-color: var(--surface-card);
@@ -194,8 +184,7 @@
 
   &__field {
     width: 100%;
-    height: gridx(6);
-    padding: 0 gridx(1.5);
+    padding-inline: gridx(1.5);
     border: 1px solid var(--border-strong);
     border-radius: $radius-lg;
     background-color: var(--surface-card);
@@ -208,9 +197,6 @@
 
     &--notes {
       min-width: gridx(24);
-      height: auto;
-      min-height: gridx(6);
-      padding-block: gridx(1);
       resize: vertical;
     }
   }
@@ -327,4 +313,12 @@
     display: flex;
     gap: gridx(1.5);
   }
+}
+
+// Numeric cells right-align. Qualified with th/td so it outranks the table's
+// general text-align: left (a nested th#{&} compiled to a selector that never
+// matched).
+th.applications-table__cell--numeric,
+td.applications-table__cell--numeric {
+  text-align: right;
 }

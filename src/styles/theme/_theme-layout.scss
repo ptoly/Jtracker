@@ -1,25 +1,37 @@
 @use "pkg:octet-scss/abstracts" as *;
 
 // =============================================================================
-//  Theme layout — the size and arrangement of things.
+//  Theme layout — the only layout file (octet-scss CONVENTIONS.md §4).
 //  ---------------------------------------------------------------------------
-//  width/height (and min/max), display, flex and grid, alignment (including
-//  text-align and vertical-align), position, offsets, z-index and transforms
-//  that place things. The distance between and around things (margin,
-//  padding, gap) is in _theme-spacing.scss. Component partials keep only how
-//  things look: color, type, borders, radius, shadow, motion.
-//
-//  Sections follow the component load order, so equal-specificity rules
-//  cascade the same way they did inside the partials.
+//  Layout means width/height, grid/flex, alignment and position. What has to
+//  stay consistent lives here, applied by selector:
+//    • page layout: the app shell, columns, reflow points
+//    • sizing and alignment SHARED by like components
+//  Layout that belongs to one component alone stays in its partial.
+//  No height rules: content line-height plus padding make heights.
 // =============================================================================
 
-// ---- Typography (theme/_typography.scss) -----------------------------------
-// Reading measure and the decorative quote mark's placement.
+// ---- App shell ------------------------------------------------------------------
+// Form left, stats right from 900px; stacked below.
+.app__top {
+  display: grid;
+
+  @include from(900px) {
+    grid-template-columns: minmax(0, 640px) minmax(0, 340px);
+    justify-content: space-between;
+  }
+}
+
+// ---- Reading measure --------------------------------------------------------------
+// Body copy and captions stop at a comfortable line length.
 p,
 figcaption {
   max-width: $layout-readable-width;
 }
 
+// ---- Quotes -----------------------------------------------------------------------
+// The decorative quote mark hangs off the blockquote's corner; the citation
+// sits right.
 blockquote {
   position: relative;
 
@@ -32,292 +44,4 @@ blockquote {
   position: absolute;
   left: 10px;
   top: gridx(-3);
-}
-
-// ---- Card (components/_card.scss) -----------------------------------------
-.card__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.card__footer {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-}
-
-// ---- Icon button (components/_icon-button.scss) ---------------------------
-.icon-button {
-  display: inline-grid;
-  place-items: center;
-  width: gridx(5);
-  height: gridx(5);
-}
-
-// ---- Tooltip (components/_tooltip.scss) -----------------------------------
-.tooltip {
-  position: relative;
-  display: inline-flex;
-}
-
-.tooltip__bubble {
-  position: absolute;
-  right: 0;
-  bottom: calc(100% + #{gridx(0.5)});
-  z-index: $z-overlay;
-}
-
-// ---- Confirm dialog (components/_confirm-dialog.scss) ---------------------
-.confirm-dialog {
-  width: min(100% - #{gridx(4)}, #{gridx(50)});
-}
-
-.confirm-dialog__actions {
-  display: flex;
-  justify-content: flex-end;
-}
-
-// ---- Position combobox (components/_position-combobox.scss) ---------------
-.position-combobox {
-  position: relative;
-}
-
-.position-combobox__toggle {
-  position: absolute;
-  top: 0;
-  right: 0;
-  display: grid;
-  place-items: center;
-  width: gridx(6);
-  height: 100%;
-  max-height: gridx(6);
-}
-
-.position-combobox__toggle[hidden] {
-  display: none;
-}
-
-.position-combobox__menu {
-  display: none;
-  max-height: gridx(30);
-}
-
-.position-combobox__menu[data-open] {
-  display: block;
-}
-
-.position-combobox__menu--overlay {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  left: 0;
-  z-index: $z-overlay;
-}
-
-// ---- App shell (components/_app.scss) -------------------------------------
-.app__top {
-  display: grid;
-}
-
-@include from(900px) {
-  .app__top {
-    grid-template-columns: minmax(0, 640px) minmax(0, 340px);
-    justify-content: space-between;
-  }
-}
-
-.app__stats-placeholder {
-  min-height: gridx(30);
-}
-
-// ---- Application form (components/_application-form.scss) -----------------
-.application-form {
-  display: grid;
-}
-
-.application-form__fields {
-  display: grid;
-}
-
-.application-form__field {
-  display: grid;
-}
-
-.application-form__field--date {
-  max-width: gridx(30);
-}
-
-.application-form__input {
-  width: 100%;
-  height: gridx(6);
-}
-
-.application-form__textarea {
-  height: auto;
-  min-height: gridx(6);
-}
-
-.application-form__inline {
-  display: flex;
-  align-items: stretch;
-  height: gridx(6);
-}
-
-.application-form__inline-label {
-  display: flex;
-  flex-shrink: 0;
-  align-items: center;
-}
-
-.application-form__inline-input {
-  flex: 1;
-  min-width: 0;
-}
-
-.application-form__warning-region:empty {
-  display: none;
-}
-
-// ---- Applications table (components/_applications-table.scss) -------------
-.applications-table__controls {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.applications-table__tabs {
-  display: inline-flex;
-  flex-wrap: wrap;
-}
-
-.applications-table__tab {
-  height: gridx(5);
-}
-
-.applications-table__search {
-  position: relative;
-}
-
-.applications-table__search-icon {
-  position: absolute;
-  top: 50%;
-  left: gridx(1.5);
-  transform: translateY(-50%);
-}
-
-.applications-table__search-input {
-  width: gridx(40);
-  max-width: 100%;
-  height: gridx(5);
-}
-
-.applications-table__table {
-  width: 100%;
-}
-
-.applications-table__table th,
-.applications-table__table td {
-  text-align: left;
-  vertical-align: middle;
-}
-
-// Qualified with th/td so it outranks the table's general text-align: left.
-th.applications-table__cell--numeric,
-td.applications-table__cell--numeric {
-  text-align: right;
-}
-
-.applications-table__company {
-  display: block;
-}
-
-.applications-table__position {
-  display: block;
-}
-
-.applications-table__status {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-}
-
-.applications-table__select {
-  height: gridx(5);
-}
-
-.applications-table__row-icons {
-  display: flex;
-  justify-content: flex-end;
-}
-
-.applications-table__row[data-editing] td {
-  vertical-align: top;
-}
-
-.applications-table__stack {
-  display: grid;
-  min-width: gridx(30);
-}
-
-.applications-table__field {
-  width: 100%;
-  height: gridx(6);
-}
-
-.applications-table__field--notes {
-  min-width: gridx(24);
-  height: auto;
-  min-height: gridx(6);
-}
-
-.applications-table__row-actions {
-  display: flex;
-}
-
-.applications-table__notes {
-  max-width: gridx(32);
-}
-
-.applications-table__sort {
-  display: inline-flex;
-  align-items: center;
-}
-
-.applications-table__sort-icon {
-  display: inline-flex;
-  flex-direction: column;
-}
-
-[aria-sort='ascending'] .applications-table__sort-icon::after,
-[aria-sort='descending'] .applications-table__sort-icon::before {
-  display: none;
-}
-
-.applications-table__badge {
-  display: inline-flex;
-  align-items: center;
-}
-
-.applications-table__badge-dot {
-  width: gridx(1);
-  height: gridx(1);
-}
-
-.applications-table__empty {
-  max-width: none; // the theme caps paragraphs at a reading measure
-  text-align: center;
-}
-
-.applications-table__pagination {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.applications-table__page-buttons {
-  display: flex;
 }

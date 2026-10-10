@@ -18,7 +18,7 @@
   display: grid;
   gap: gridx(2);
   font-size: rem(16px);
-  line-height: rem(gridx(3));
+  line-height: rem(gridx(3)); // hint, warning and errors on the same 24px line
 
   &__fields {
     display: grid;
@@ -52,8 +52,7 @@
 
   &__input {
     width: 100%;
-    height: gridx(6);
-    padding: 0 gridx(2);
+    padding-inline: gridx(2);
     border: 1px solid var(--border-strong);
     border-radius: $radius-lg;
     background-color: var(--surface-card);
@@ -66,9 +65,6 @@
   }
 
   &__textarea {
-    height: auto;
-    min-height: gridx(6);
-    padding: gridx(1) gridx(2);
     resize: vertical;
   }
 
@@ -79,7 +75,6 @@
   &__inline {
     display: flex;
     align-items: stretch;
-    height: gridx(6);
     border: 1px solid var(--border-strong);
     border-radius: $radius-lg;
     background-color: var(--surface-card);
@@ -98,7 +93,7 @@
     display: flex;
     flex-shrink: 0;
     align-items: center;
-    padding: 0 gridx(1.5) 0 gridx(2);
+    padding-inline: gridx(2) gridx(1.5);
     border-right: 1px solid var(--border-strong);
     color: var(--text-primary);
     font-weight: 600;
@@ -107,7 +102,7 @@
   &__inline-input {
     flex: 1;
     min-width: 0;
-    padding: 0 gridx(1.5);
+    padding-inline: gridx(1.5);
     border: 0;
     border-radius: 0 $radius-lg $radius-lg 0;
     background: none;

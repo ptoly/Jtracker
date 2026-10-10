@@ -18,16 +18,14 @@
     padding-right: gridx(6);
   }
 
+  // Same control padding as the input it sits in; 1px in from its border.
   &__toggle {
     position: absolute;
-    top: 0;
-    right: 0;
+    top: 1px;
+    right: 1px;
     display: grid;
     place-items: center;
-    width: gridx(6);
-    height: 100%;
-    max-height: gridx(6);
-    padding: 0;
+    padding-inline: gridx(1.5);
     border: 0;
     background: none;
     color: var(--text-muted);

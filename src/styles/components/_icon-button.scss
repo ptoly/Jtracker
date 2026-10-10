@@ -4,13 +4,11 @@
 //   <svg aria-hidden="true">…</svg>
 // </button>
 // Square, borderless icon control. The aria-label names it; the icon is
-// decorative. 40px target (WCAG 2.5.8 asks for at least 24px).
+// decorative. Size comes from the shared control padding around a 24px icon
+// box (48px target; WCAG 2.5.8 asks for at least 24px).
 .icon-button {
   display: inline-grid;
   place-items: center;
-  width: gridx(5);
-  height: gridx(5);
-  padding: 0;
   border: 0;
   border-radius: $radius-lg;
   background: none;

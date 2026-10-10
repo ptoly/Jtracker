@@ -1,13 +1,14 @@
 import type { SVGProps } from 'react';
 
-// Untitled UI-style line icons (20px, 1.67 stroke, currentColor). Decorative:
-// the control that holds one supplies the accessible name.
+// Untitled UI-style line icons (20px drawing, 1.67 stroke, currentColor) in a
+// 24px box, so an icon is one 24px line tall like control text and sits on
+// the 8pt grid. Decorative: the control that holds one supplies the name.
 function Icon({ children, ...props }: SVGProps<SVGSVGElement>) {
   return (
     <svg
-      viewBox="0 0 20 20"
-      width="20"
-      height="20"
+      viewBox="-2 -2 24 24"
+      width="24"
+      height="24"
       fill="none"
       stroke="currentColor"
       strokeWidth="1.67"

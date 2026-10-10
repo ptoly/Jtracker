@@ -1,18 +1,18 @@
 @use "pkg:octet-scss/abstracts" as *;
 
 // =============================================================================
-//  Theme spacing — the only spacing file.
+//  Theme spacing — the only spacing file (octet-scss CONVENTIONS.md §3).
 //  ---------------------------------------------------------------------------
-//  Everything that has to stay consistent lives here, applied by selector:
-//    • rhythm BETWEEN blocks (sections, list items)
-//    • gutters and insets SHARED by several components, so their edges line up
-//  Padding that belongs to one component alone stays in that component's
-//  partial. Don't start a second spacing file or a layer of spacing mixins or
-//  variables; extend this one. (octet-scss CONVENTIONS.md §3)
+//  Spacing means margin, padding and gap. What has to stay consistent lives
+//  here, applied by selector:
+//    • rhythm BETWEEN blocks (sections, headings, list items, page rhythm)
+//    • gutters, insets and control padding SHARED by several components
+//  Spacing that belongs to one component alone stays in its partial.
 //
 //  Vertical values step on the 8pt grid (gridx / scaled-spacing); horizontal
 //  values are fluid (fluid-gutter). Blocks are spaced with margin-bottom,
-//  mostly: each block pushes the next one down.
+//  mostly: each block pushes the next one down. Heights are never set:
+//  content line-height plus padding make them.
 // =============================================================================
 
 // ---- Block rhythm -------------------------------------------------------------
@@ -47,6 +47,27 @@ ol {
   li:not(:last-child) {
     @include scaled-spacing(margin-bottom, 2, 16px);
   }
+}
+
+// ---- App shell ------------------------------------------------------------------
+// Page padding; the top row's gap and its inset once the two columns sit side
+// by side (the columns themselves are in _theme-layout.scss).
+.app {
+  margin-inline: auto;
+  @include scaled-spacing(padding-top padding-bottom, 4, 32px);
+  @include fluid-gutter(padding-inline, 8px, 32px, 360px, 1441px);
+}
+
+.app__top {
+  gap: gridx(4);
+
+  @include from(900px) {
+    @include fluid-gutter(padding-inline, 0px, 80px, 900px, 1441px);
+  }
+}
+
+.app__stats-header {
+  padding-bottom: gridx(2);
 }
 
 // ---- Page rhythm ----------------------------------------------------------------
@@ -103,9 +124,32 @@ ol {
   padding-block: gridx(2);
 }
 
+// ---- Controls -------------------------------------------------------------------
+// One control size for the whole app: 12px above and below a 24px line
+// (_typography.scss). Inputs, selects, textareas, buttons, tabs, the search
+// box and icon buttons all share it, so their text sits on the same baseline.
+// Horizontal padding stays with each control's partial.
+.application-form__input,
+.application-form__inline-label,
+.application-form__inline-input,
+.applications-table__tab,
+.applications-table__search-input,
+.applications-table__select,
+.applications-table__field,
+.btn,
+.icon-button,
+.position-combobox__toggle {
+  padding-block: gridx(1.5);
+}
+
 // ---- Card insets --------------------------------------------------------------
 // Vertical inset for card bodies and the card-styled confirm dialog.
 .card__body,
 .confirm-dialog {
   @include scaled-spacing(padding-top padding-bottom, 2, 24px);
+}
+
+// Icon buttons are square: the same 12px on every side of the 24px icon box.
+.icon-button {
+  padding-inline: gridx(1.5);
 }

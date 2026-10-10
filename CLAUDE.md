@@ -6,12 +6,14 @@ Sass, Storybook. Public repo: sample data only, never real applications.
 ## Styles
 Follow node_modules/octet-scss/CONVENTIONS.md for all styles.
 - Theme lives in src/styles/theme/ (forked from octet's starter-theme).
-- src/styles/theme/_theme-spacing.scss holds the distance between and around
-  things: margin, padding, gap.
-- src/styles/theme/_theme-layout.scss holds the size and arrangement of things:
-  width/height, grid/flex, alignment, position, the app shell.
-- Component partials keep only how things look: color, type, borders, radius,
-  shadow, motion.
+- Spacing vs layout: the property decides (CONVENTIONS §1). margin/padding/gap
+  that's shared or page-level → theme/_theme-spacing.scss; width/height,
+  grid/flex, alignment, position that's shared or page-level →
+  theme/_theme-layout.scss. One component's own spacing/layout stays in its
+  partial.
+- No height rules. Height = content line-height + padding, on the 8pt grid.
+  Controls share one pattern: 24px line-height (_typography.scss) + 12px
+  padding top/bottom (_theme-spacing.scss), so baselines line up across a page.
 - Component partials: src/styles/components/, one BEM block each.
 
 ## App rules

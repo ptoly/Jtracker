@@ -11,28 +11,10 @@
 //   </div>
 //   <section class="card">…table…</section>
 // </main>
-// Between-block spacing (title, section headers) is in theme/_theme-spacing.scss.
+// The app shell's spacing and layout (page padding, the two-column top row,
+// section rhythm) are page-level, so they live in theme/_theme-spacing.scss and
+// theme/_theme-layout.scss. This partial keeps how the shell's parts look.
 .app {
-  margin-inline: auto;
-  @include scaled-spacing(padding-top padding-bottom, 4, 32px);
-  @include fluid-gutter(padding-inline, 8px, 32px, 360px, 1441px);
-
-  // Form left, stats right; both inset from the table's edges on wide screens.
-  &__top {
-    display: grid;
-    gap: gridx(4);
-
-    @include from(900px) {
-      grid-template-columns: minmax(0, 640px) minmax(0, 340px);
-      justify-content: space-between;
-    }
-
-    // Inset grows with the viewport once the two columns sit side by side.
-    @include from(900px) {
-      @include fluid-gutter(padding-inline, 0px, 80px, 900px, 1441px);
-    }
-  }
-
   &__subtitle {
     color: var(--text-secondary);
     font-size: rem(16px);
@@ -40,11 +22,6 @@
   }
 
   &__stats-header {
-    padding-bottom: gridx(2);
     border-bottom: 1px solid var(--border-default);
-  }
-
-  &__stats-placeholder {
-    min-height: gridx(30);
   }
 }

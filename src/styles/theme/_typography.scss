@@ -19,7 +19,25 @@ body {
   font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
 
-// Flow spacing for text blocks and headings lives in _theme-spacing.scss.
+// Spacing (margin, padding, gap) lives in _theme-spacing.scss; size and
+// arrangement (max-width, position, alignment) in _theme-layout.scss.
+
+// ---- Controls and labels ------------------------------------------------------
+// One line-height for every form control, button and label, so text baselines
+// line up across a row and down the page. Control height is this line plus the
+// shared control padding in _theme-spacing.scss; there are no height rules.
+// (Overrides octet's .btn line-height: 1, which loads earlier.)
+.application-form__label,
+.application-form__input,
+.application-form__inline-label,
+.application-form__inline-input,
+.applications-table__tab,
+.applications-table__search-input,
+.applications-table__select,
+.applications-table__field,
+.btn {
+  line-height: rem(gridx(3)); // 24px at default size; scales with the text
+}
 
 // Body / copy type — p, li, ol, etc. Authored in px but emitted as rem via
 // rem(), so reading text honors the reader's browser font-size (WCAG 1.4.4)
@@ -28,7 +46,6 @@ body {
 // below). Identical rendering at the default 16px root.
 p {
   font-weight: 400;
-  max-width: $layout-readable-width;
   line-height: rem(32px);
   font-size: rem(18px);
 
@@ -151,10 +168,8 @@ blockquote {
   }
 
   font-style: italic;
-  position: relative;
 
   footer {
-    text-align: right;
     color: var(--text-primary);
     background-color: transparent;
   }
@@ -164,15 +179,11 @@ figcaption {
     font-family: $font-family-serif;
     font-size: rem(16px);
     color: var(--text-muted);
-    max-width: $layout-readable-width;
     line-height: 1.5;
 }
 
 .quotation-mark {
   font-size: 56px;
-  position: absolute;
-  left: 10px;
-  top: gridx(-3);
 }
 
 
