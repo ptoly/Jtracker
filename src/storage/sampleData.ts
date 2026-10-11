@@ -46,7 +46,7 @@ const ROWS: Row[] = [
   ['Zephyrine Travel', 'Frontend Engineer II', 'Interviewed', 35, 24, 'Take-home submitted.'],
   ['Ashgrove Learning', 'Accessibility Specialist', 'Interviewed', 22],
   ['Bellhollow Retail', 'E-commerce Developer', 'Rejected', 28],
-  ['Cinderpath Security', 'Frontend Engineer', 'Rejected', 45, 30],
+  ['Cinderpath Security', 'Frontend Engineer', 'Interviewed - Rejected', 45, 30],
   ['Driftmark Maps', 'Mapping UI Engineer', 'Rejected', 14, undefined, 'Wanted 5+ years of WebGL.'],
   ['Emberleigh Foods', 'Web Developer', 'Rejected', 52],
   ['Foxglove Civic', 'Product Engineer', 'Rejected', 38, 26],

@@ -62,7 +62,8 @@ export function App() {
           dismissLabel="Dismiss sheet problems"
         >
           <div className="notice__title">
-            {pluralizeRows(data.issues.length)} in {tab} need a look. They’re shown as they are:
+            {pluralizeRows(data.issues.length)} in {tab}{' '}
+            {data.issues.length === 1 ? 'needs' : 'need'} a look. They’re shown as they are:
           </div>
           <ul className="notice__list">
             {data.issues.map((issue) => (

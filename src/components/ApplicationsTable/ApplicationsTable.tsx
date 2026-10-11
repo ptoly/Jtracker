@@ -34,6 +34,7 @@ const STATUS_ORDER = [
   'Followed Up',
   'Interviewed',
   'Filled',
+  'Interviewed - Rejected',
   'Rejected',
 ] as const;
 
@@ -90,7 +91,8 @@ function matchesTab(row: Row, tab: TabKey): boolean {
     case 'all':
       return true;
     case 'rejected':
-      return row.app.status === 'Rejected';
+      // Both rejections, whether or not it got to an interview.
+      return row.app.status === 'Rejected' || row.app.status === 'Interviewed - Rejected';
     case 'interviewed':
       return row.app.status === 'Interviewed';
     case 'follow-up':

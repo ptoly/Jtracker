@@ -1,4 +1,11 @@
-export const STATUSES = ['Applied', 'Followed Up', 'Interviewed', 'Rejected', 'Filled'] as const;
+export const STATUSES = [
+  'Applied',
+  'Followed Up',
+  'Interviewed',
+  'Interviewed - Rejected',
+  'Rejected',
+  'Filled',
+] as const;
 
 export type Status = (typeof STATUSES)[number];
 

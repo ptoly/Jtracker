@@ -9,6 +9,7 @@ import {
   newRowCells,
   parseSheet,
   parseSheetDate,
+  parseStatus,
   quoteTab,
   rowFromRange,
   rowsWithId,
@@ -60,6 +61,19 @@ describe('dates', () => {
     expect(parseSheetDate('2/30/2026')).toBeNull();
     expect(parseSheetDate('10/9.26')).toBeNull();
     expect(parseSheetDate(0)).toBeNull();
+  });
+});
+
+describe('parseStatus', () => {
+  it('reads an empty status as Applied and Passed as Filled', () => {
+    expect(parseStatus(undefined)).toBe('Applied');
+    expect(parseStatus('  ')).toBe('Applied');
+    expect(parseStatus('Passed')).toBe('Filled');
+    expect(parseStatus('followed up')).toBe('Followed Up');
+    expect(parseStatus('Interviewed - Rejected')).toBe('Interviewed - Rejected');
+    expect(parseStatus('interviewed – rejected')).toBe('Interviewed - Rejected');
+    expect(parseStatus('Interviewed-Rejected')).toBe('Interviewed - Rejected');
+    expect(parseStatus('Ghosted')).toBeNull();
   });
 });
 
@@ -142,7 +156,7 @@ describe('parseSheet', () => {
           'followed-up date “yes” not recognized',
         ],
       },
-      { row: 3, problems: ['no status', 'no company'] },
+      { row: 3, problems: ['no company'] },
     ]);
   });
 

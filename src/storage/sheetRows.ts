@@ -110,9 +110,28 @@ export function parseSheetDate(cell: Cell): string | null {
   return null;
 }
 
+/** Other words the sheet uses for a status. */
+const STATUS_ALIASES: Readonly<Record<string, Status>> = {
+  passed: 'Filled',
+};
+
+/** Lowercase, with any dash (-, –, —) and the spaces around it read as " - ". */
+function statusKey(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/\s*[-–—]\s*/g, ' - ')
+    .replace(/\s+/g, ' ');
+}
+
+/**
+ * The sheet's status as one of STATUSES (case- and dash-insensitive), or null if unknown.
+ * An empty cell means Applied: that's how the sheet records a fresh application.
+ * Read-only mapping: the cell itself isn't rewritten unless the user changes the status.
+ */
 export function parseStatus(cell: Cell): Status | null {
-  const text = cellText(cell).toLowerCase();
-  return STATUSES.find((status) => status.toLowerCase() === text) ?? null;
+  const text = statusKey(cellText(cell));
+  if (!text) return 'Applied';
+  return STATUSES.find((status) => statusKey(status) === text) ?? STATUS_ALIASES[text] ?? null;
 }
 
 /** Cells that make a row an application. Age (often a filled-down formula) doesn't count. */
@@ -164,12 +183,8 @@ function parseRow(row: Cell[], rowNumber: number, columns: Columns): SheetRow {
   const status = parseStatus(statusCell);
   if (!status) {
     const text = cellText(statusCell);
-    if (text) {
-      problems.push(`status “${text}” not recognized`);
-      unparsed.status = text;
-    } else {
-      problems.push('no status');
-    }
+    problems.push(`status “${text}” not recognized`);
+    unparsed.status = text;
   }
 
   const followedCell = get('followedUpDate');
