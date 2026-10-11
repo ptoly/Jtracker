@@ -5,9 +5,11 @@
 // </button>
 // Square, borderless icon control. The aria-label names it; the icon is
 // decorative. Size comes from the shared control padding around a 24px icon
-// box (48px target; WCAG 2.5.8 asks for at least 24px).
+// box (48px target; WCAG 2.5.8 asks for at least 24px). Never smaller: a
+// squeezed table column or flex row makes room or scrolls instead.
 .icon-button {
   display: inline-grid;
+  flex: none;
   place-items: center;
   border: 0;
   border-radius: $radius-lg;
@@ -25,6 +27,12 @@
     &--danger:hover:not(:disabled) {
       color: var(--danger);
     }
+  }
+
+  // octet's reset gives svg max-width: 100%, which let the 24px icon (and so
+  // the button) shrink to fit a narrow cell.
+  > svg {
+    max-width: none;
   }
 
   &:disabled {
