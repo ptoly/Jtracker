@@ -89,7 +89,7 @@ export function ApplicationForm({ applications, today, onAdd }: ApplicationFormP
             <input
               id={ids.dateApplied}
               type="date"
-              className="application-form__input"
+              className="control application-form__input"
               required
               value={draft.dateApplied}
               onChange={(event) => setField('dateApplied', event.target.value)}
@@ -138,7 +138,7 @@ export function ApplicationForm({ applications, today, onAdd }: ApplicationFormP
             </label>
             <textarea
               id={ids.notes}
-              className="application-form__input application-form__textarea"
+              className="control application-form__input"
               rows={3}
               value={draft.notes}
               onChange={(event) => setField('notes', event.target.value)}

@@ -10,6 +10,7 @@ import {
   type DraftApplication,
 } from '../ApplicationFields/useApplicationDraft';
 import { SaveError } from '../Notice/Notice';
+import { Select } from '../Select/Select';
 
 /**
  * Only the fields the user changed, so a save never overwrites cells they
@@ -99,7 +100,7 @@ export function EditRow({ app, positions, today, age, onSave, onCancel }: EditRo
         <input
           id={ids.dateApplied}
           type="date"
-          className="applications-table__field"
+          className="control applications-table__field"
           required
           value={draft.dateApplied}
           onChange={(event) => setField('dateApplied', event.target.value)}
@@ -115,7 +116,7 @@ export function EditRow({ app, positions, today, age, onSave, onCancel }: EditRo
           <input
             id={ids.company}
             type="text"
-            className="applications-table__field"
+            className="control applications-table__field"
             autoComplete="off"
             required
             value={draft.company}
@@ -130,7 +131,7 @@ export function EditRow({ app, positions, today, age, onSave, onCancel }: EditRo
             positions={positions}
             label="Position"
             labelClassName="sr-only"
-            inputClassName="applications-table__field"
+            inputClassName="control applications-table__field"
             errorProps={errorProps('position')}
             menu="inline"
           />
@@ -141,16 +142,15 @@ export function EditRow({ app, positions, today, age, onSave, onCancel }: EditRo
         <label htmlFor={ids.status} className="sr-only">
           Status
         </label>
-        <select
+        <Select
           id={ids.status}
-          className="applications-table__select"
           value={draft.status}
           onChange={(event) => changeStatus(event.target.value as Status)}
         >
           <StatusOptions
             app={{ status: draft.status, ...(app.unparsed && { unparsed: app.unparsed }) }}
           />
-        </select>
+        </Select>
       </td>
       <td className="applications-table__cell applications-table__cell--numeric">{age}</td>
       <td>
@@ -160,7 +160,7 @@ export function EditRow({ app, positions, today, age, onSave, onCancel }: EditRo
         <input
           id={ids.followedUpDate}
           type="date"
-          className="applications-table__field"
+          className="control applications-table__field"
           value={draft.followedUpDate}
           onChange={(event) => setField('followedUpDate', event.target.value)}
         />
@@ -171,7 +171,7 @@ export function EditRow({ app, positions, today, age, onSave, onCancel }: EditRo
         </label>
         <textarea
           id={ids.notes}
-          className="applications-table__field applications-table__field--notes"
+          className="control applications-table__field applications-table__field--notes"
           rows={2}
           value={draft.notes}
           onChange={(event) => setField('notes', event.target.value)}

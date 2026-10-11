@@ -21,6 +21,25 @@
   justify-content: space-between;
 }
 
+// ---- Icons inside controls ---------------------------------------------------------
+// A 24px icon sits 12px in from the field's edge, the same inset as the
+// text, and centered on the line. (The combobox toggle gets there with its
+// own padding: it's a button, so it keeps a full-size target.)
+.select__icon,
+.applications-table__search-icon {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.select__icon {
+  right: gridx(1.5);
+}
+
+.applications-table__search-icon {
+  left: gridx(1.5);
+}
+
 // ---- Reading measure --------------------------------------------------------------
 // Body copy and captions stop at a comfortable line length.
 p,

@@ -1,0 +1,47 @@
+@use 'pkg:octet-scss/abstracts' as *;
+
+// <input class="control"> <textarea class="control"> <select class="control select__input">
+// The one look for text inputs, textareas and selects across the app. Size
+// comes from the shared control line-height (_typography.scss) and padding
+// (_theme-spacing.scss); host components add only their own width.
+// Font comes from octet's reset (font: inherit on form elements). Don't
+// repeat the shorthand here: it would also reset the shared line-height.
+// The hairline is an inset shadow, so it takes no space: 24px line + 12px
+// padding = 48px. Forced-colors mode drops shadows, so a real border comes
+// back there.
+.control {
+  border: 0;
+  box-shadow: inset 0 0 0 1px var(--border-strong);
+  border-radius: $radius-lg;
+  background-color: var(--surface-card);
+  color: var(--text-primary);
+
+  &::placeholder {
+    color: var(--text-muted);
+  }
+
+  &[aria-invalid='true'] {
+    box-shadow: inset 0 0 0 1px var(--danger);
+  }
+
+  // Muted text on the raised surface is 4.6:1, still readable.
+  &:disabled {
+    background-color: var(--surface-raised);
+    color: var(--text-muted);
+    cursor: not-allowed;
+  }
+
+  // Chrome pads the date text 1px top and bottom; without it a date field is
+  // 48px like the rest.
+  &::-webkit-datetime-edit-fields-wrapper {
+    padding-block: 0;
+  }
+
+  &:is(textarea) {
+    resize: vertical;
+  }
+
+  @media (forced-colors: active) {
+    border: 1px solid;
+  }
+}

@@ -6,10 +6,15 @@
 //   </div>
 // </header>
 // Full-width bar above the page; its content lines up with the page's.
-// Height: the 40px logo plus the inner's padding (_theme-spacing.scss).
+// Height: the 40px logo plus the inner's padding (_theme-spacing.scss) = 64px.
+// The divider is an inset shadow, so it doesn't add a 65th pixel.
 .site-header {
-  border-bottom: 1px solid var(--border-default);
   background-color: var(--surface-card);
+  box-shadow: inset 0 -1px 0 var(--border-default);
+
+  @media (forced-colors: active) {
+    border-bottom: 1px solid;
+  }
 
   &__inner {
     display: flex;

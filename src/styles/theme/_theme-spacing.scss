@@ -142,19 +142,43 @@ ol {
 // One control size for the whole app: 12px above and below a 24px line
 // (_typography.scss). Inputs, selects, textareas, buttons, tabs, the search
 // box and icon buttons all share it, so their text sits on the same baseline.
-// Horizontal padding stays with each control's partial.
-.application-form__input,
+.control,
 .application-form__inline-label,
 .application-form__inline-input,
 .applications-table__tab,
-.applications-table__search-input,
-.applications-table__select,
-.applications-table__field,
-.sheet-actions__input,
 .btn,
 .icon-button,
 .position-combobox__toggle {
   padding-block: gridx(1.5);
+}
+
+// Fields put the same 12px between their border and their text, on every
+// side. (Buttons and tabs set their own, wider, horizontal padding.)
+.control,
+.application-form__inline-label,
+.application-form__inline-input {
+  padding-inline: gridx(1.5);
+}
+
+// A 24px icon inside a field sits 12px in from the border, like the text
+// (positioned in _theme-layout.scss), and the text stops 8px short of it:
+// 12 + 24 + 8 = 44px on the icon's side.
+.select__input,
+.position-combobox > .position-combobox__input {
+  padding-right: gridx(5.5);
+}
+
+.applications-table__search-input {
+  padding-left: gridx(5.5);
+}
+
+// ---- Message boxes ----------------------------------------------------------------
+// Notices and the form's duplicate warning: the same padding on every side,
+// 12px stepping to 16px on the widest screens. Multiples of 4, so a box of 24px
+// lines stays on the 8pt grid (one line: 48px, then 56px).
+.notice,
+.application-form__warning {
+  @include scaled-spacing(padding-top padding-right padding-bottom padding-left, 2, 16px, 4);
 }
 
 // ---- Card insets --------------------------------------------------------------

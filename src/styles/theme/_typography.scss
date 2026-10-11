@@ -27,16 +27,12 @@ body {
 // line up across a row and down the page. Control height is this line plus the
 // shared control padding in _theme-spacing.scss; there are no height rules.
 // (Overrides octet's .btn line-height: 1, which loads earlier.)
+.control,
 .application-form__label,
-.application-form__input,
 .application-form__inline-label,
 .application-form__inline-input,
 .applications-table__tab,
-.applications-table__search-input,
-.applications-table__select,
-.applications-table__field,
 .sheet-actions__label,
-.sheet-actions__input,
 .sheet-actions__item,
 .notice,
 .btn {

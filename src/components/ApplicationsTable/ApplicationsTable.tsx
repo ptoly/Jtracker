@@ -9,6 +9,7 @@ import { DateText } from '../DateText/DateText';
 import { IconButton } from '../IconButton/IconButton';
 import { ArrowLeftIcon, ArrowRightIcon, PencilIcon, SearchIcon, TrashIcon } from '../Icons/Icons';
 import { SaveError } from '../Notice/Notice';
+import { Select } from '../Select/Select';
 import { EditRow } from './EditRow';
 
 const PAGE_SIZE = 100;
@@ -452,7 +453,7 @@ export function ApplicationsTable({
           <input
             id={searchId}
             type="search"
-            className="applications-table__search-input"
+            className="control applications-table__search-input"
             placeholder="Search"
             value={query}
             disabled={editing}
@@ -554,8 +555,7 @@ export function ApplicationsTable({
                         </td>
                         <td>
                           <div className="applications-table__status">
-                            <select
-                              className="applications-table__select"
+                            <Select
                               aria-label={`Status, ${app.company}, ${app.position}`}
                               value={app.status}
                               disabled={readOnly}
@@ -564,7 +564,7 @@ export function ApplicationsTable({
                               }
                             >
                               <StatusOptions app={app} />
-                            </select>
+                            </Select>
                             {due && (
                               <span className="applications-table__badge applications-table__badge--follow-up-due">
                                 <span

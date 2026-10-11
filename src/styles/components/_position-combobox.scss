@@ -13,16 +13,13 @@
 .position-combobox {
   position: relative;
 
-  // Beats the host's single-class input padding: room for the toggle.
-  > .position-combobox__input {
-    padding-right: gridx(6);
-  }
-
-  // Same control padding as the input it sits in; 1px in from its border.
+  // Same control padding as the input it sits in, so the icon sits 12px in
+  // from the edge like text and other control icons.
+  // The input's room for it is in _theme-spacing.scss.
   &__toggle {
     position: absolute;
-    top: 1px;
-    right: 1px;
+    top: 0;
+    right: 0;
     display: grid;
     place-items: center;
     padding-inline: gridx(1.5);

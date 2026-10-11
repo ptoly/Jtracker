@@ -66,34 +66,22 @@
     font-weight: 400;
   }
 
+  // Mixed with .control, which supplies the look.
   &__input {
     width: 100%;
-    padding-inline: gridx(2);
-    border: 1px solid var(--border-strong);
-    border-radius: $radius-lg;
-    background-color: var(--surface-card);
-    color: var(--text-primary);
-    font: inherit;
-
-    &[aria-invalid='true'] {
-      border-color: var(--danger);
-    }
-  }
-
-  &__textarea {
-    resize: vertical;
   }
 
   // Inline label: [Company* | input] as one bordered control --------------------
-  // The group carries the border and the focus ring, so the label and input
-  // read as a single field. The label is a real <label>, so clicking it focuses
+  // The group carries the hairline and the focus ring, so the label and input
+  // read as a single field. The hairline is an inset shadow, like .control's,
+  // so the group is 48px tall. The label is a real <label>, so clicking it focuses
   // the input and screen readers announce it as the field's name.
   &__inline {
     display: flex;
     align-items: stretch;
-    border: 1px solid var(--border-strong);
     border-radius: $radius-lg;
     background-color: var(--surface-card);
+    box-shadow: inset 0 0 0 1px var(--border-strong);
 
     &:focus-within {
       outline: 2px solid var(--focus-ring);
@@ -101,7 +89,11 @@
     }
 
     &:has(> [aria-invalid='true']) {
-      border-color: var(--danger);
+      box-shadow: inset 0 0 0 1px var(--danger);
+    }
+
+    @media (forced-colors: active) {
+      border: 1px solid;
     }
   }
 
@@ -109,8 +101,7 @@
     display: flex;
     flex-shrink: 0;
     align-items: center;
-    padding-inline: gridx(2) gridx(1.5);
-    border-right: 1px solid var(--border-strong);
+    border-right: 1px solid var(--border-strong); // sideways: adds width, not height
     color: var(--text-primary);
     font-weight: 600;
   }
@@ -118,12 +109,10 @@
   &__inline-input {
     flex: 1;
     min-width: 0;
-    padding-inline: gridx(1.5);
     border: 0;
     border-radius: 0 $radius-lg $radius-lg 0;
     background: none;
     color: var(--text-primary);
-    font: inherit;
 
     // The group draws the ring (see :focus-within above).
     &:focus-visible {
@@ -146,12 +135,15 @@
     display: none;
   }
 
+  // Padding is shared with .notice (_theme-spacing.scss).
   &__warning {
-    padding-block: gridx(2);
-    @include fluid-gutter(padding-inline, 16px, 24px, 360px, 1441px);
-    border: 1px solid var(--warning-border);
     border-radius: $radius-lg;
     background-color: var(--warning-surface);
     color: var(--warning-text);
+    box-shadow: inset 0 0 0 1px var(--warning-border);
+
+    @media (forced-colors: active) {
+      border: 1px solid;
+    }
   }
 }

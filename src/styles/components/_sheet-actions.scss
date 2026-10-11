@@ -8,7 +8,7 @@
 //       <button class="sheet-actions__item">Change sheet tab</button>
 //       or
 //       <form class="sheet-actions__form">
-//         <label class="sheet-actions__label">…</label><input class="sheet-actions__input">
+//         <label class="sheet-actions__label">…</label><input class="control">
 //         <div class="sheet-actions__form-buttons">…</div>
 //       </form>
 //     </div>
@@ -47,7 +47,6 @@
     border: 0;
     background: none;
     color: var(--text-primary);
-    font: inherit;
     font-weight: 600;
     text-align: left;
     cursor: pointer;
@@ -68,15 +67,6 @@
   &__label {
     color: var(--text-primary);
     font-weight: 600;
-  }
-
-  &__input {
-    padding-inline: gridx(2);
-    border: 1px solid var(--border-strong);
-    border-radius: $radius-lg;
-    background-color: var(--surface-card);
-    color: var(--text-primary);
-    font: inherit;
   }
 
   &__form-buttons {

@@ -1,0 +1,24 @@
+@use 'pkg:octet-scss/abstracts' as *;
+
+// <span class="select">
+//   <select class="control select__input">…</select>
+//   <svg class="select__icon" aria-hidden="true">…</svg>
+// </span>
+// A native select with the browser's caret replaced by the app's chevron, so
+// it gets the same inset as text and other control icons. The icon's position
+// and the select's room for it are shared with other controls (theme files).
+.select {
+  position: relative;
+  display: inline-grid;
+
+  &__input {
+    appearance: none;
+    cursor: pointer;
+  }
+
+  // Clicks pass through to the select underneath.
+  &__icon {
+    color: var(--text-muted);
+    pointer-events: none;
+  }
+}

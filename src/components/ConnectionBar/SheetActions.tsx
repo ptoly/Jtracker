@@ -92,7 +92,7 @@ export function SheetActions({ tab, onReload, onDisconnect, onTabChange }: Sheet
               <input
                 id={inputId}
                 type="text"
-                className="sheet-actions__input"
+                className="control"
                 autoComplete="off"
                 spellCheck={false}
                 value={tabDraft}

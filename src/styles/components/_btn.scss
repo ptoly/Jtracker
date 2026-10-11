@@ -3,15 +3,43 @@
 // Extensions to octet's .btn block (octet-scss/components/_buttons.scss).
 // <button class="btn btn--danger">Delete</button>
 
-// Destructive fill, alongside octet's .btn--primary. White on --danger is 4.8:1.
-.btn--danger {
-  border-color: transparent;
-  background-color: var(--danger);
-  color: var(--text-on-brand);
+// The hairline is an inset shadow instead of octet's border, so it takes no
+// space: 24px line + 12px padding = 48px, on the grid. Forced-colors mode
+// drops shadows, so a real border comes back there.
+.btn {
+  border: 0;
+  box-shadow: inset 0 0 0 1px var(--border-strong);
+  @include transition(background-color box-shadow color);
 
   @include hover-only {
     &:hover {
-      border-color: transparent;
+      box-shadow: inset 0 0 0 1px var(--brand);
+    }
+  }
+
+  @media (forced-colors: active) {
+    border: 1px solid;
+  }
+}
+
+// Filled buttons have no hairline.
+.btn--primary,
+.btn--ghost {
+  &,
+  &:hover {
+    box-shadow: none;
+  }
+}
+
+// Destructive fill, alongside octet's .btn--primary. White on --danger is 4.8:1.
+.btn--danger {
+  background-color: var(--danger);
+  color: var(--text-on-brand);
+  box-shadow: none;
+
+  @include hover-only {
+    &:hover {
+      box-shadow: none;
       filter: brightness(0.92);
     }
   }

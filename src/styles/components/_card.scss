@@ -9,18 +9,35 @@
 // footer are optional; a footer sits on the raised surface below a divider.
 // No overflow clipping by default, so popovers (e.g. a combobox menu) can
 // escape the card; add .card--clip when edge-to-edge content needs it.
+// Hairlines take no space, so the card is exactly its content's height:
+//   • the outline is a real border on an overlay (::after), because the
+//     elevation already uses box-shadow; it also survives forced-colors mode
+//   • the header and footer dividers are inset shadows
 .card {
-  border: 1px solid var(--border-default);
+  position: relative;
   border-radius: $radius-lg;
   background-color: var(--surface-card);
   @include elevation(1);
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border: 1px solid var(--border-default);
+    border-radius: inherit;
+    pointer-events: none;
+  }
 
   &__header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: gridx(2);
-    border-bottom: 1px solid var(--border-default);
+    box-shadow: inset 0 -1px 0 var(--border-default);
+
+    @media (forced-colors: active) {
+      border-bottom: 1px solid;
+    }
   }
 
   &__footer {
@@ -29,9 +46,13 @@
     align-items: center;
     justify-content: space-between;
     gap: gridx(2);
-    border-top: 1px solid var(--border-default);
     border-radius: 0 0 $radius-lg $radius-lg;
     background-color: var(--surface-raised);
+    box-shadow: inset 0 1px 0 var(--border-default);
+
+    @media (forced-colors: active) {
+      border-top: 1px solid;
+    }
   }
 
   &--clip {

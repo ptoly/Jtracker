@@ -15,26 +15,38 @@
 // Untitled UI alert: white card, the tone carried by a ringed icon.
 // Tones: --warning (sample data, sheet problems), --error (failed saves,
 // which also get a tinted surface so they stand out).
-// One line of text makes a 48px notice: 24px line + 11px padding + 1px border,
-// top and bottom.
+// Padding is the same on every side and steps with the viewport
+// (_theme-spacing.scss): one line of text makes a 48px notice, 56px on the
+// widest screens. The hairline is a real border on an overlay (::after), so it
+// adds no height; the elevation already uses box-shadow.
 .notice {
+  position: relative;
   display: flex;
   flex-wrap: wrap;
   align-items: flex-start;
   gap: gridx(1) gridx(2);
-  padding-block: calc(#{gridx(1.5)} - 1px);
-  @include fluid-gutter(padding-inline, 16px, 24px, 360px, 1441px);
-  border: 1px solid var(--border-default);
   border-radius: $radius-lg;
   background-color: var(--surface-card);
   color: var(--text-primary);
   font-size: rem(16px);
   @include elevation(1);
 
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border: 1px solid var(--border-default);
+    border-radius: inherit;
+    pointer-events: none;
+  }
+
   &--error {
-    border-color: var(--danger-border);
     background-color: var(--danger-surface);
     color: var(--danger-text);
+
+    &::after {
+      border-color: var(--danger-border);
+    }
   }
 
   // Featured icon: the 24px icon with two fading rings, drawn as shadows so
@@ -64,8 +76,9 @@
     cursor: pointer;
   }
 
+  // Whole 8px steps, so an expanded notice stays on the grid.
   &__intro {
-    margin-block: gridx(0.5) gridx(1);
+    margin-bottom: gridx(1);
     color: var(--text-secondary);
   }
 
@@ -81,7 +94,8 @@
     gap: gridx(1);
   }
 
-  // The 48px close button overlaps the padding, so a one-line notice stays 48px.
+  // The 48px close button reaches 12px into the padding on three sides, so it
+  // takes one 24px line and its icon lines up with the text inset.
   &__dismiss {
     margin-block: gridx(-1.5);
     margin-inline-end: gridx(-1.5);
