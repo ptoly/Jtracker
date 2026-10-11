@@ -6,6 +6,7 @@ import { FieldError } from '../ApplicationFields/FieldError';
 import { PositionCombobox } from '../ApplicationFields/PositionCombobox';
 import { emptyDraft, useApplicationDraft } from '../ApplicationFields/useApplicationDraft';
 import { DateText } from '../DateText/DateText';
+import { SaveError } from '../Notice/Notice';
 
 export interface ApplicationFormProps {
   /** Existing applications: the source of the position list and the duplicate check. */
@@ -30,30 +31,35 @@ export function ApplicationForm({ applications, today, onAdd }: ApplicationFormP
   const { draft, setField, errors, errorId, errorProps, validate, toApplication, reset } =
     useApplicationDraft(emptyDraft(todayIso), { ids, errorIdPrefix: baseId, positions });
 
-  const [submitError, setSubmitError] = useState('');
+  const [submitError, setSubmitError] = useState<{ error: unknown } | null>(null);
   const [submitting, setSubmitting] = useState(false);
   // The counter keys the message so a repeat ("Added Acme" twice) is still a DOM change and re-announces.
   const [announcement, setAnnouncement] = useState({ text: '', count: 0 });
 
   const duplicate = findDuplicate(applications, draft.company, draft.position);
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    void add();
+  }
+
+  /** Submit and Retry both land here. On failure the draft stays as typed. */
+  async function add() {
     if (submitting || !validate()) return;
 
     // New applications always start as Applied.
     const input: NewApplication = { ...toApplication(), status: 'Applied' };
     setSubmitting(true);
-    setSubmitError('');
     try {
       await onAdd(input);
-    } catch {
-      setSubmitError('Couldn’t add the application. Try again.');
+    } catch (error) {
+      setSubmitError({ error });
       return;
     } finally {
       setSubmitting(false);
     }
 
+    setSubmitError(null);
     reset(emptyDraft(todayIso));
     setAnnouncement((prev) => ({ text: `Added ${input.company}`, count: prev.count + 1 }));
     document.getElementById(ids.company)?.focus();
@@ -73,7 +79,7 @@ export function ApplicationForm({ applications, today, onAdd }: ApplicationFormP
   );
 
   return (
-    <form className="application-form" noValidate onSubmit={(event) => void handleSubmit(event)}>
+    <form className="application-form" noValidate onSubmit={handleSubmit}>
       <div className="card">
         <div className="card__body application-form__fields">
           <div className="application-form__field application-form__field--date">
@@ -150,16 +156,26 @@ export function ApplicationForm({ applications, today, onAdd }: ApplicationFormP
       </div>
 
       {submitError && (
-        <div role="alert" className="field-error">
-          {submitError}
-        </div>
+        <SaveError
+          className="application-form__error"
+          error={submitError.error}
+          fallback="Couldn’t add the application."
+          retrying={submitting}
+          onRetry={() => void add()}
+        />
       )}
 
       <div aria-live="polite" className="application-form__warning-region">
         {duplicate && (
           <div className="application-form__warning">
-            You applied to {duplicate.company} for {duplicate.position} on{' '}
-            <DateText iso={duplicate.dateApplied} />.
+            You applied to {duplicate.company} for {duplicate.position}
+            {duplicate.dateApplied && (
+              <>
+                {' '}
+                on <DateText iso={duplicate.dateApplied} />
+              </>
+            )}
+            .
           </div>
         )}
       </div>

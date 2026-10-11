@@ -8,12 +8,16 @@ import {
 } from '../../lib/applicationRules';
 import type { Application, NewApplication, Status } from '../../types/application';
 
+/** A draft's trimmed values. The status stays '' until one is picked. */
+export type DraftApplication = Omit<NewApplication, 'status'> & { status: Status | '' };
+
 /** Editable values for one application. Optional fields are '' when empty. */
 export interface ApplicationDraft {
   dateApplied: string;
   company: string;
   position: string;
-  status: Status;
+  /** '' while a loaded row's status is unrecognized and hasn't been changed. */
+  status: Status | '';
   followedUpDate: string;
   notes: string;
 }
@@ -88,7 +92,7 @@ export function useApplicationDraft(
   }
 
   /** Trimmed values ready to save; empty optional fields are left out. */
-  function toApplication(): NewApplication {
+  function toApplication(): DraftApplication {
     const notes = draft.notes.trim();
     return {
       dateApplied: draft.dateApplied,

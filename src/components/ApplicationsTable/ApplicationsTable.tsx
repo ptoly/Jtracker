@@ -2,16 +2,13 @@ import { useEffect, useId, useRef, useState, type KeyboardEvent } from 'react';
 import { distinctPositions } from '../../lib/applicationRules';
 import { toIsoDate } from '../../lib/dates';
 import { ageInDays, DEFAULT_FOLLOW_UP_DAYS, isFollowUpDue } from '../../lib/derive';
-import {
-  STATUSES,
-  type Application,
-  type ApplicationPatch,
-  type Status,
-} from '../../types/application';
+import type { Application, ApplicationPatch, Status } from '../../types/application';
+import { StatusOptions } from '../ApplicationFields/StatusOptions';
 import { ConfirmDialog } from '../ConfirmDialog/ConfirmDialog';
 import { DateText } from '../DateText/DateText';
 import { IconButton } from '../IconButton/IconButton';
 import { PencilIcon, SearchIcon, TrashIcon } from '../Icons/Icons';
+import { SaveError } from '../Notice/Notice';
 import { EditRow } from './EditRow';
 
 const PAGE_SIZE = 100;
@@ -53,9 +50,9 @@ const INITIAL_DIRECTION: Record<SortKey, SortDirection> = {
 interface Row {
   app: Application;
   due: boolean;
-  /** Badge text: the stored status, or "Follow Up Due" when calculated as due. */
-  statusLabel: StatusLabel;
-  /** Days since applied while status is Applied; otherwise null. */
+  /** Badge text: the stored status, or "Follow Up Due" when calculated as due; null when unrecognized. */
+  statusLabel: StatusLabel | null;
+  /** Days since applied while status is Applied (and the date is readable); otherwise null. */
   age: number | null;
 }
 
@@ -68,6 +65,10 @@ export interface ApplicationsTableProps {
   onUpdate: (id: string, patch: ApplicationPatch) => Promise<Application>;
   /** Permanently removes an application (after the user confirms). */
   onDelete: (id: string) => Promise<void>;
+  /** Shows the data without status, edit or delete controls (e.g. a sheet that can't be written yet). */
+  readOnly?: boolean;
+  /** True while a row is open for editing or a delete is being confirmed, so the owner can hold off reloading. */
+  onEditingChange?: (editing: boolean) => void;
 }
 
 function pluralize(count: number, noun: string): string {
@@ -79,7 +80,7 @@ function toRow(app: Application, followUpDays: number, today: Date): Row {
   return {
     app,
     due,
-    statusLabel: due ? 'Follow Up Due' : app.status,
+    statusLabel: due ? 'Follow Up Due' : app.status || null,
     age: app.status === 'Applied' ? ageInDays(app, today) : null,
   };
 }
@@ -123,7 +124,7 @@ function sortValue(row: Row, key: SortKey): string | number | null {
     case 'company':
       return row.app.company;
     case 'status':
-      return STATUS_ORDER.indexOf(row.statusLabel);
+      return row.statusLabel && STATUS_ORDER.indexOf(row.statusLabel);
     case 'age':
       return row.age;
   }
@@ -156,6 +157,8 @@ export function ApplicationsTable({
   today,
   onUpdate,
   onDelete,
+  readOnly = false,
+  onEditingChange,
 }: ApplicationsTableProps) {
   const baseId = useId();
   const tabId = (key: TabKey) => `${baseId}-tab-${key}`;
@@ -183,11 +186,25 @@ export function ApplicationsTable({
   const [announcement, setAnnouncement] = useState({ text: '', count: 0 });
   const announceTimer = useRef<number | undefined>(undefined);
   const [deleting, setDeleting] = useState<Application | null>(null);
+  // A failed status change, kept so Retry can send it again.
+  const [statusError, setStatusError] = useState<{
+    app: Application;
+    status: Status;
+    error: unknown;
+  } | null>(null);
+  const [retryingStatus, setRetryingStatus] = useState(false);
   // Element ids to try, in order, for focus once the next render lands
   // (after an edit closes, a delete, or a cancelled delete).
   const pendingFocus = useRef<string[] | null>(null);
 
   useEffect(() => () => window.clearTimeout(announceTimer.current), []);
+
+  // A row deleted elsewhere (e.g. in the sheet, then reloaded) is no longer being edited.
+  const editing = editingId !== null && applications.some((app) => app.id === editingId);
+  const busy = editing || deleting !== null;
+  useEffect(() => {
+    onEditingChange?.(busy);
+  }, [busy, onEditingChange]);
 
   // Move focus to the first candidate that exists after this render, falling
   // back to the table region (or the panel, if the view is now empty).
@@ -204,7 +221,6 @@ export function ApplicationsTable({
     }
   });
 
-  const editing = editingId !== null;
   const positions = distinctPositions(applications);
   const rows = filterRows(applications, followUpDays, today, tab, query).sort((a, b) =>
     compareRows(a, b, sort.key, sort.direction),
@@ -288,10 +304,19 @@ export function ApplicationsTable({
     }
     try {
       await onUpdate(app.id, patch);
+      setStatusError(null);
       announce('Status updated');
-    } catch {
-      announce('Couldn’t update the status. Try again.');
+    } catch (error) {
+      // The select stays on the saved status: the table only changes once a save succeeds.
+      setStatusError({ app, status, error });
     }
+  }
+
+  async function retryStatus() {
+    if (!statusError || retryingStatus) return;
+    setRetryingStatus(true);
+    await changeStatus(statusError.app, statusError.status);
+    setRetryingStatus(false);
   }
 
   function startEdit(id: string) {
@@ -436,6 +461,17 @@ export function ApplicationsTable({
         </div>
       </div>
 
+      {statusError && (
+        <div className="applications-table__notice">
+          <SaveError
+            error={statusError.error}
+            fallback={`Couldn’t change ${statusError.app.company} to ${statusError.status}.`}
+            retrying={retryingStatus}
+            onRetry={() => void retryStatus()}
+          />
+        </div>
+      )}
+
       <p role="status" className="sr-only">
         {announcement.text && <span key={announcement.count}>{announcement.text}</span>}
       </p>
@@ -501,7 +537,11 @@ export function ApplicationsTable({
                     return (
                       <tr key={app.id} className="applications-table__row">
                         <td className="no-wrap">
-                          <DateText iso={app.dateApplied} />
+                          {app.dateApplied ? (
+                            <DateText iso={app.dateApplied} />
+                          ) : (
+                            (app.unparsed?.dateApplied ?? notApplicable('No date'))
+                          )}
                         </td>
                         <td>
                           <span className="applications-table__company">{app.company}</span>
@@ -513,13 +553,12 @@ export function ApplicationsTable({
                               className="applications-table__select"
                               aria-label={`Status, ${app.company}, ${app.position}`}
                               value={app.status}
+                              disabled={readOnly}
                               onChange={(event) =>
                                 void changeStatus(app, event.target.value as Status)
                               }
                             >
-                              {STATUSES.map((status) => (
-                                <option key={status}>{status}</option>
-                              ))}
+                              <StatusOptions app={app} />
                             </select>
                             {due && (
                               <span className="applications-table__badge applications-table__badge--follow-up-due">
@@ -539,7 +578,7 @@ export function ApplicationsTable({
                           {app.followedUpDate ? (
                             <DateText iso={app.followedUpDate} />
                           ) : (
-                            notApplicable('Not followed up')
+                            (app.unparsed?.followedUpDate ?? notApplicable('Not followed up'))
                           )}
                         </td>
                         <td className="applications-table__notes" title={app.notes}>
@@ -553,7 +592,7 @@ export function ApplicationsTable({
                               tooltip="Delete"
                               icon={<TrashIcon />}
                               variant="danger"
-                              disabled={editing}
+                              disabled={editing || readOnly}
                               onClick={() => setDeleting(app)}
                             />
                             <IconButton
@@ -561,7 +600,7 @@ export function ApplicationsTable({
                               label={`Edit ${app.company} application`}
                               tooltip="Edit"
                               icon={<PencilIcon />}
-                              disabled={editing}
+                              disabled={editing || readOnly}
                               onClick={() => startEdit(app.id)}
                             />
                           </div>

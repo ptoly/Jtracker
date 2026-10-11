@@ -1,17 +1,31 @@
 import { useEffect, useId, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { toIsoDate } from '../../lib/dates';
-import {
-  STATUSES,
-  type Application,
-  type ApplicationPatch,
-  type Status,
-} from '../../types/application';
+import type { Application, ApplicationPatch, Status } from '../../types/application';
 import { FieldError } from '../ApplicationFields/FieldError';
 import { PositionCombobox } from '../ApplicationFields/PositionCombobox';
+import { StatusOptions } from '../ApplicationFields/StatusOptions';
 import {
   draftFromApplication,
   useApplicationDraft,
+  type DraftApplication,
 } from '../ApplicationFields/useApplicationDraft';
+import { SaveError } from '../Notice/Notice';
+
+/**
+ * Only the fields the user changed, so a save never overwrites cells they
+ * didn't touch (the sheet may have changed since it loaded). An emptied
+ * optional field is sent as undefined, which clears it.
+ */
+function changedFields(app: Application, next: DraftApplication): ApplicationPatch {
+  const patch: ApplicationPatch = {};
+  if (next.dateApplied !== app.dateApplied) patch.dateApplied = next.dateApplied;
+  if (next.company !== app.company) patch.company = next.company;
+  if (next.position !== app.position) patch.position = next.position;
+  if (next.status !== '' && next.status !== app.status) patch.status = next.status;
+  if (next.followedUpDate !== app.followedUpDate) patch.followedUpDate = next.followedUpDate;
+  if (next.notes !== app.notes) patch.notes = next.notes;
+  return patch;
+}
 
 export interface EditRowProps {
   app: Application;
@@ -38,7 +52,7 @@ export function EditRow({ app, positions, today, age, onSave, onCancel }: EditRo
   const { draft, setField, errors, errorId, errorProps, validate, toApplication } =
     useApplicationDraft(draftFromApplication(app), { ids, errorIdPrefix: baseId, positions });
   const [saving, setSaving] = useState(false);
-  const [saveError, setSaveError] = useState('');
+  const [saveError, setSaveError] = useState<{ error: unknown } | null>(null);
 
   // Focus the first field when the row opens.
   const firstFieldId = ids.dateApplied;
@@ -48,14 +62,11 @@ export function EditRow({ app, positions, today, age, onSave, onCancel }: EditRo
 
   async function save() {
     if (saving || !validate()) return;
-    const next = toApplication();
     setSaving(true);
-    setSaveError('');
     try {
-      // Explicit undefined clears optional fields the user emptied.
-      await onSave({ ...next, followedUpDate: next.followedUpDate, notes: next.notes });
-    } catch {
-      setSaveError('Couldn’t save. Try again.');
+      await onSave(changedFields(app, toApplication()));
+    } catch (error) {
+      setSaveError({ error });
       setSaving(false);
     }
   }
@@ -136,9 +147,9 @@ export function EditRow({ app, positions, today, age, onSave, onCancel }: EditRo
           value={draft.status}
           onChange={(event) => changeStatus(event.target.value as Status)}
         >
-          {STATUSES.map((status) => (
-            <option key={status}>{status}</option>
-          ))}
+          <StatusOptions
+            app={{ status: draft.status, ...(app.unparsed && { unparsed: app.unparsed }) }}
+          />
         </select>
       </td>
       <td className="applications-table__cell applications-table__cell--numeric">{age}</td>
@@ -181,9 +192,13 @@ export function EditRow({ app, positions, today, age, onSave, onCancel }: EditRo
           </button>
         </div>
         {saveError && (
-          <div role="alert" className="field-error">
-            {saveError}
-          </div>
+          <SaveError
+            className="applications-table__row-error"
+            error={saveError.error}
+            fallback="Couldn’t save."
+            retrying={saving}
+            onRetry={() => void save()}
+          />
         )}
       </td>
     </tr>

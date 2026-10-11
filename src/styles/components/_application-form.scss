@@ -121,6 +121,11 @@
     font-size: rem(16px);
   }
 
+  // A failed add, under the card; the fields keep what was typed.
+  &__error {
+    margin-top: gridx(2);
+  }
+
   &__warning-region:empty {
     display: none;
   }

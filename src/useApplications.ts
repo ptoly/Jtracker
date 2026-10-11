@@ -1,0 +1,282 @@
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { getToken, hasValidToken, preloadAuth, signIn, signOut } from './google/auth';
+import { pickSpreadsheet, preloadPicker } from './google/picker';
+import {
+  createGoogleSheetsAdapter,
+  PartialAddError,
+  sampleAdapter,
+  StorageError,
+  type IdSetup,
+  type RowIssue,
+  type StorageAdapter,
+} from './storage';
+import {
+  clearConnection,
+  DEFAULT_TAB,
+  loadConnection,
+  saveConnection,
+  type SheetConnection,
+} from './storage/sheetConnection';
+import type { Application, ApplicationPatch, NewApplication } from './types/application';
+import type { ConnectionMode } from './components/ConnectionBar/ConnectionBar';
+
+/** Focus can fire several times in a row; one reload is enough. */
+const MIN_RELOAD_INTERVAL_MS = 5000;
+
+function isAuthError(error: unknown): boolean {
+  return error instanceof StorageError && error.kind === 'auth';
+}
+
+/** Loads Google's scripts early; failures surface later, on click. */
+function preloadGoogle() {
+  void preloadAuth().catch(() => undefined);
+  void preloadPicker().catch(() => undefined);
+}
+
+/**
+ * Where the applications come from (sample data or the connected Google Sheet),
+ * and everything that keeps the two in step: loading, saving, sign-in and
+ * reloading when the window regains focus.
+ */
+export function useApplications() {
+  const [connection, setConnection] = useState(loadConnection);
+  const [signedIn, setSignedIn] = useState(false);
+  const [sessionExpired, setSessionExpired] = useState(false);
+  const [connecting, setConnecting] = useState(false);
+  const [connectError, setConnectError] = useState<{ error: unknown } | null>(null);
+
+  const [applications, setApplications] = useState<Application[] | null>(null);
+  const [issues, setIssues] = useState<RowIssue[]>([]);
+  const [dismissedIssues, setDismissedIssues] = useState('');
+  const [idSetup, setIdSetup] = useState<IdSetup | null>(null);
+  const [setupDeclined, setSetupDeclined] = useState(false);
+  const [loadError, setLoadError] = useState<{ error: unknown } | null>(null);
+  const [ageError, setAgeError] = useState<{ failure: PartialAddError; error: unknown } | null>(
+    null,
+  );
+
+  // Read by the focus listener, never during render.
+  const loadSeq = useRef(0);
+  const lastLoad = useRef(0);
+  const pendingWrites = useRef(0);
+  const tableBusy = useRef(false);
+
+  const mode: ConnectionMode = !connection ? 'sample' : signedIn ? 'sheet' : 'reconnect';
+  const spreadsheetId = connection?.spreadsheetId;
+  const tab = connection?.tab ?? DEFAULT_TAB;
+
+  const sheetAdapter = useMemo(
+    () =>
+      mode === 'sheet' && spreadsheetId
+        ? createGoogleSheetsAdapter({ spreadsheetId, tab, getToken })
+        : null,
+    [mode, spreadsheetId, tab],
+  );
+  const adapter: StorageAdapter | null = mode === 'sample' ? sampleAdapter : sheetAdapter;
+
+  const reload = useCallback(async () => {
+    if (!adapter) return;
+    const seq = ++loadSeq.current;
+    lastLoad.current = Date.now();
+    try {
+      const result = await adapter.list();
+      if (seq !== loadSeq.current) return;
+      setApplications(result.applications);
+      setIssues(result.issues);
+      setIdSetup(result.idSetup ?? null);
+      setLoadError(null);
+    } catch (error) {
+      if (seq !== loadSeq.current) return;
+      if (isAuthError(error)) setSessionExpired(true);
+      setLoadError({ error });
+    }
+  }, [adapter]);
+
+  useEffect(() => {
+    void reload();
+  }, [reload]);
+
+  // A sheet is remembered from last time: get Google's scripts ready for Reconnect.
+  useEffect(() => {
+    if (mode === 'reconnect') preloadGoogle();
+  }, [mode]);
+
+  // Pick up changes made in the sheet when the user comes back to the window.
+  useEffect(() => {
+    if (mode !== 'sheet') return;
+    function sync() {
+      if (document.visibilityState !== 'visible') return;
+      if (tableBusy.current || pendingWrites.current > 0) return;
+      if (Date.now() - lastLoad.current < MIN_RELOAD_INTERVAL_MS) return;
+      // Renewing could open a popup; without a click it would be blocked. Ask instead.
+      if (!hasValidToken()) {
+        setSessionExpired(true);
+        return;
+      }
+      void reload();
+    }
+    window.addEventListener('focus', sync);
+    document.addEventListener('visibilitychange', sync);
+    return () => {
+      window.removeEventListener('focus', sync);
+      document.removeEventListener('visibilitychange', sync);
+    };
+  }, [mode, reload]);
+
+  /** Runs a write; marks the session expired on an auth failure. Rethrows so callers keep their input. */
+  async function write<T>(run: (target: StorageAdapter) => Promise<T>): Promise<T> {
+    if (!adapter) throw new StorageError('auth', 'Reconnect your Google Sheet, then try again.');
+    pendingWrites.current += 1;
+    try {
+      return await run(adapter);
+    } catch (error) {
+      if (isAuthError(error) && mode === 'sheet') setSessionExpired(true);
+      throw error;
+    } finally {
+      pendingWrites.current -= 1;
+    }
+  }
+
+  async function add(input: NewApplication) {
+    try {
+      const added = await write((target) => target.add(input));
+      setApplications((prev) => [...(prev ?? []), added]);
+    } catch (error) {
+      // The row is in the sheet; only its Age formula is missing.
+      if (error instanceof PartialAddError) {
+        setApplications((prev) => [...(prev ?? []), error.application]);
+        setAgeError({ failure: error, error });
+        return;
+      }
+      throw error;
+    }
+  }
+
+  async function retryAge() {
+    if (!ageError) return;
+    try {
+      await write(() => ageError.failure.retry());
+      setAgeError(null);
+    } catch (error) {
+      setAgeError({ failure: ageError.failure, error });
+    }
+  }
+
+  async function update(id: string, patch: ApplicationPatch) {
+    const updated = await write((target) => target.update(id, patch));
+    setApplications((prev) => (prev ?? []).map((app) => (app.id === id ? updated : app)));
+    return updated;
+  }
+
+  async function remove(id: string) {
+    await write((target) => target.remove(id));
+    setApplications((prev) => (prev ?? []).filter((app) => app.id !== id));
+  }
+
+  async function setUpIds() {
+    if (!sheetAdapter) return;
+    await write(() => sheetAdapter.setUpIds());
+    await reload();
+  }
+
+  /** Clears what belonged to the previous data source. */
+  function resetData() {
+    loadSeq.current += 1;
+    setApplications(null);
+    setIssues([]);
+    setIdSetup(null);
+    setSetupDeclined(false);
+    setLoadError(null);
+    setAgeError(null);
+  }
+
+  async function connect() {
+    setConnecting(true);
+    setConnectError(null);
+    try {
+      const token = await signIn();
+      setSignedIn(true);
+      setSessionExpired(false);
+      const picked = await pickSpreadsheet(token);
+      if (!picked) return;
+      const next: SheetConnection = { spreadsheetId: picked.id, name: picked.name, tab };
+      saveConnection(next);
+      resetData();
+      setConnection(next);
+    } catch (error) {
+      setConnectError({ error });
+    } finally {
+      setConnecting(false);
+    }
+  }
+
+  async function reconnect() {
+    setConnecting(true);
+    setConnectError(null);
+    try {
+      await signIn();
+      setSignedIn(true);
+      setSessionExpired(false);
+    } catch (error) {
+      setConnectError({ error });
+    } finally {
+      setConnecting(false);
+    }
+  }
+
+  function disconnect() {
+    signOut();
+    clearConnection();
+    resetData();
+    setSignedIn(false);
+    setSessionExpired(false);
+    setConnectError(null);
+    setConnection(null);
+  }
+
+  function changeTab(nextTab: string) {
+    if (!connection) return;
+    const next = { ...connection, tab: nextTab };
+    saveConnection(next);
+    resetData();
+    setConnection(next);
+  }
+
+  const issuesKey = JSON.stringify(issues);
+
+  return {
+    mode,
+    connection,
+    tab,
+    applications,
+    /** Problems in the loaded rows, unless the user dismissed this same list. */
+    issues: issuesKey === dismissedIssues ? [] : issues,
+    dismissIssues: () => setDismissedIssues(issuesKey),
+    loadError,
+    ageError,
+    retryAge,
+    /** The sheet needs IDs before Jtracker can write; until then it's read-only. */
+    idSetup,
+    setupDialogOpen: mode === 'sheet' && idSetup !== null && !setupDeclined,
+    readOnly: mode === 'sheet' && idSetup !== null,
+    declineSetup: () => setSetupDeclined(true),
+    reopenSetup: () => setSetupDeclined(false),
+    setUpIds,
+    sessionExpired,
+    connecting,
+    connectError,
+    connect,
+    reconnect,
+    disconnect,
+    changeTab,
+    reload,
+    preloadGoogle,
+    add,
+    update,
+    remove,
+    /** From the table: a row is being edited or a delete confirmed; don't reload under it. */
+    setTableBusy: useCallback((busy: boolean) => {
+      tableBusy.current = busy;
+    }, []),
+  };
+}

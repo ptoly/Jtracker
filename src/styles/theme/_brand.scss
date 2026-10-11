@@ -93,7 +93,15 @@
   --danger: #d92d20; // Untitled error-600
 
   // ---- Status roles -----------------------------------------------------------
-  // Warning: the calculated "Follow Up Due" state and the duplicate notice.
+  // Placeholder values (Untitled UI ramps) until the palette is settled.
+  // Danger: failed saves and other errors. Text is error-700 because --danger
+  // (error-600) is only 4.45:1 on --danger-surface.
+  --danger-surface: #fef3f2; // Untitled error-50
+  --danger-border: #fda29b; // Untitled error-300
+  --danger-text: #b42318; // Untitled error-700, 6.0:1 on --danger-surface
+
+  // Warning: the calculated "Follow Up Due" state, the duplicate notice, the
+  // sample-data banner and sheet notices.
   --warning-surface: #fffaeb; // Untitled warning-50
   --warning-border: var(--tertiary-300);
   --warning-text: var(--tertiary-700); // 5.2:1 on --warning-surface

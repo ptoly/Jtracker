@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
+import { canRetry, errorMessage } from '../../storage/errors';
 
 export interface ConfirmDialogProps {
   open: boolean;
@@ -6,7 +7,9 @@ export interface ConfirmDialogProps {
   /** What will happen, in plain words. */
   children: ReactNode;
   confirmLabel: string;
-  /** Performs the action. Rejecting keeps the dialog open with an error. */
+  /** danger for destructive actions (the default); primary for safe ones. */
+  confirmTone?: 'danger' | 'primary';
+  /** Performs the action. Rejecting keeps the dialog open with the error and a Retry. */
   onConfirm: () => Promise<void>;
   onCancel: () => void;
 }
@@ -20,6 +23,7 @@ export function ConfirmDialog({
   title,
   children,
   confirmLabel,
+  confirmTone = 'danger',
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) {
@@ -29,7 +33,7 @@ export function ConfirmDialog({
   const cancelId = `${baseId}-cancel`;
   const dialogRef = useRef<HTMLDialogElement>(null);
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState('');
+  const [failure, setFailure] = useState<{ error: unknown } | null>(null);
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -45,20 +49,23 @@ export function ConfirmDialog({
   async function confirm() {
     if (busy) return;
     setBusy(true);
-    setError('');
     try {
       await onConfirm();
-    } catch {
-      setError('That didn’t work. Try again.');
+      setFailure(null);
+    } catch (error) {
+      setFailure({ error });
     } finally {
       setBusy(false);
     }
   }
 
   function cancel() {
-    setError('');
+    setFailure(null);
     onCancel();
   }
+
+  // After a failure that retrying can't fix, only closing is left.
+  const retryable = !failure || canRetry(failure.error);
 
   return (
     <dialog
@@ -78,23 +85,25 @@ export function ConfirmDialog({
       <div id={descriptionId} className="confirm-dialog__description">
         {children}
       </div>
-      {error && (
+      {failure && (
         <div role="alert" className="confirm-dialog__error field-error">
-          {error}
+          {errorMessage(failure.error, 'That didn’t work.')}
         </div>
       )}
       <div className="confirm-dialog__actions">
         <button id={cancelId} type="button" className="btn" onClick={cancel}>
-          Cancel
+          {retryable ? 'Cancel' : 'Close'}
         </button>
-        <button
-          type="button"
-          className="btn btn--danger"
-          aria-disabled={busy}
-          onClick={() => void confirm()}
-        >
-          {confirmLabel}
-        </button>
+        {retryable && (
+          <button
+            type="button"
+            className={`btn btn--${confirmTone}`}
+            aria-disabled={busy}
+            onClick={() => void confirm()}
+          >
+            {failure ? 'Retry' : confirmLabel}
+          </button>
+        )}
       </div>
     </dialog>
   );

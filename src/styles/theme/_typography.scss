@@ -35,6 +35,10 @@ body {
 .applications-table__search-input,
 .applications-table__select,
 .applications-table__field,
+.connection-bar__label,
+.connection-bar__input,
+.connection-bar__summary,
+.notice,
 .btn {
   line-height: rem(gridx(3)); // 24px at default size; scales with the text
 }

@@ -80,6 +80,12 @@ ol {
   margin-bottom: gridx(3);
 }
 
+// The connection bar and page notices sit between the title and the content.
+.connection-bar,
+.app__notice {
+  margin-bottom: gridx(3);
+}
+
 // Headings that label a group or a bar drop their flow margin.
 .app__section-header > h2,
 .card__header > :is(h2, h3) {
@@ -95,6 +101,7 @@ ol {
 .card__footer,
 .confirm-dialog,
 .applications-table__controls,
+.applications-table__notice,
 .applications-table__pagination {
   @include fluid-gutter(padding-inline, 16px, 24px, 360px, 1441px);
 }
@@ -136,6 +143,7 @@ ol {
 .applications-table__search-input,
 .applications-table__select,
 .applications-table__field,
+.connection-bar__input,
 .btn,
 .icon-button,
 .position-combobox__toggle {

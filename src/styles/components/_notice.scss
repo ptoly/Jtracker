@@ -1,0 +1,50 @@
+@use 'pkg:octet-scss/abstracts' as *;
+
+// <div class="notice notice--warning" role="status">
+//   <div class="notice__body">
+//     <div class="notice__title">…</div>       (optional)
+//     <ul class="notice__list">…</ul>          (optional)
+//   </div>
+//   <div class="notice__actions"><button class="btn">Retry</button></div>
+// </div>
+// Tones: --warning (sample data, sheet problems), --error (failed saves).
+// One line of text makes a 48px notice: 24px line + 11px padding + 1px border,
+// top and bottom.
+.notice {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: gridx(1) gridx(2);
+  padding-block: calc(#{gridx(1.5)} - 1px);
+  @include fluid-gutter(padding-inline, 16px, 24px, 360px, 1441px);
+  border: 1px solid;
+  border-radius: $radius-lg;
+  font-size: rem(16px);
+
+  &--warning {
+    border-color: var(--warning-border);
+    background-color: var(--warning-surface);
+    color: var(--warning-text);
+  }
+
+  &--error {
+    border-color: var(--danger-border);
+    background-color: var(--danger-surface);
+    color: var(--danger-text);
+  }
+
+  &__body {
+    flex: 1 1 gridx(30);
+  }
+
+  &__list {
+    padding-left: gridx(3);
+    list-style: disc;
+  }
+
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: gridx(1);
+  }
+}

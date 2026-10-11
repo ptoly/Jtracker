@@ -12,7 +12,7 @@ export function createSampleAdapter(
 
   return {
     async list() {
-      return items.map((app) => ({ ...app }));
+      return { applications: items.map((app) => ({ ...app })), issues: [] };
     },
 
     async add(input) {

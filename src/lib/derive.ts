@@ -14,9 +14,11 @@ function daysBetween(fromIso: string, today: Date): number {
   return Math.round(diff / MS_PER_DAY);
 }
 
-/** Whole days since the application was submitted. */
-export function ageInDays(app: Application, today: Date = new Date()): number {
-  return daysBetween(app.dateApplied, today);
+/** Whole days since the application was submitted; null when the date is missing or unreadable. */
+export function ageInDays(app: Application, today: Date = new Date()): number | null {
+  if (!app.dateApplied) return null;
+  const days = daysBetween(app.dateApplied, today);
+  return Number.isNaN(days) ? null : days;
 }
 
 /**
@@ -28,9 +30,7 @@ export function isFollowUpDue(
   followUpDays: number = DEFAULT_FOLLOW_UP_DAYS,
   today: Date = new Date(),
 ): boolean {
-  return (
-    app.status === 'Applied' &&
-    app.followedUpDate === undefined &&
-    ageInDays(app, today) >= followUpDays
-  );
+  if (app.status !== 'Applied' || app.followedUpDate !== undefined) return false;
+  const age = ageInDays(app, today);
+  return age !== null && age >= followUpDays;
 }

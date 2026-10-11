@@ -24,6 +24,11 @@
     border-bottom: 1px solid var(--border-default);
   }
 
+  // A failed status change, between the toolbar and the table.
+  &__notice {
+    padding-top: gridx(2);
+  }
+
   // Tabs: a segmented track -----------------------------------------------------
   // The selected tab is white with a strong border (3:1) and bold text; the
   // white-on-gray fill alone would be too faint to carry the state.
@@ -199,6 +204,11 @@
       min-width: gridx(24);
       resize: vertical;
     }
+  }
+
+  // A failed save under the edit row's buttons.
+  &__row-error {
+    margin-top: gridx(1);
   }
 
   &__row-actions {
