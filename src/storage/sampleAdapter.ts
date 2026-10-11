@@ -1,5 +1,7 @@
+import { normalize } from '../lib/applicationRules';
+import { EMPTY_POSITION_LIST, renameInList } from '../lib/positions';
 import type { Application, NewApplication } from '../types/application';
-import type { StorageAdapter } from './StorageAdapter';
+import type { PositionList, StorageAdapter } from './StorageAdapter';
 import { createSampleApplications } from './sampleData';
 
 /** In-memory adapter seeded with fictional data. State resets on reload. */
@@ -9,10 +11,11 @@ export function createSampleAdapter(
   let nextId = 1;
   const makeId = () => `sample-${nextId++}`;
   let items: Application[] = seed.map((app) => ({ ...app, id: makeId() }));
+  let positions: PositionList = EMPTY_POSITION_LIST;
 
   return {
     async list() {
-      return { applications: items.map((app) => ({ ...app })), issues: [] };
+      return { applications: items.map((app) => ({ ...app })), issues: [], positions };
     },
 
     async add(input) {
@@ -35,6 +38,23 @@ export function createSampleAdapter(
     async remove(id) {
       if (!items.some((app) => app.id === id)) throw new Error(`Application not found: ${id}`);
       items = items.filter((app) => app.id !== id);
+    },
+
+    async updatePositions(change) {
+      positions = change(positions);
+      return positions;
+    },
+
+    async renamePosition(from, to) {
+      const target = to.trim();
+      let changed = 0;
+      items = items.map((app) => {
+        if (normalize(app.position) !== normalize(from)) return app;
+        changed += 1;
+        return { ...app, position: target };
+      });
+      positions = renameInList(positions, from, target);
+      return { changed, positions };
     },
   };
 }

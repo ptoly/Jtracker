@@ -70,7 +70,7 @@ export function ConfirmDialog({
   return (
     <dialog
       ref={dialogRef}
-      className="confirm-dialog"
+      className="dialog dialog--small"
       aria-labelledby={titleId}
       aria-describedby={descriptionId}
       onCancel={(event) => {
@@ -79,18 +79,18 @@ export function ConfirmDialog({
         cancel();
       }}
     >
-      <h2 id={titleId} className="confirm-dialog__title size-h5">
+      <h2 id={titleId} className="dialog__title dialog__title--alone size-h5">
         {title}
       </h2>
-      <div id={descriptionId} className="confirm-dialog__description">
+      <div id={descriptionId} className="dialog__description">
         {children}
       </div>
       {failure && (
-        <div role="alert" className="confirm-dialog__error field-error">
+        <div role="alert" className="dialog__error field-error">
           {errorMessage(failure.error, 'That didn’t work.')}
         </div>
       )}
-      <div className="confirm-dialog__actions">
+      <div className="dialog__actions">
         <button id={cancelId} type="button" className="btn" onClick={cancel}>
           {retryable ? 'Cancel' : 'Close'}
         </button>

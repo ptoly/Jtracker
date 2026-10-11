@@ -14,9 +14,16 @@ interface Call {
   auth: string | null;
 }
 
-/** An in-memory tab plus a log of every request the adapter sent. */
-function fakeSheets(initial: Cell[][], { columnCount = 26 } = {}) {
-  const sheet = { values: initial.map((row) => [...row]), columnCount };
+/** An in-memory tab (plus an optional Positions tab) and a log of every request the adapter sent. */
+function fakeSheets(
+  initial: Cell[][],
+  { columnCount = 26, positions }: { columnCount?: number; positions?: Cell[][] } = {},
+) {
+  const sheet = {
+    values: initial.map((row) => [...row]),
+    columnCount,
+    positions: positions?.map((row) => [...row]) ?? null,
+  };
   const calls: Call[] = [];
   const formats: { row: number; column: number; formula: string; pattern: string }[] = [];
   let failNext: { match: RegExp; status: number } | null = null;
@@ -69,10 +76,26 @@ function fakeSheets(initial: Cell[][], { columnCount = 26 } = {}) {
               gridProperties: { columnCount: sheet.columnCount },
             },
           },
+          ...(sheet.positions
+            ? [
+                {
+                  properties: {
+                    sheetId: 99,
+                    title: 'Positions',
+                    gridProperties: { columnCount: 2 },
+                  },
+                },
+              ]
+            : []),
         ],
       });
     }
     if (method === 'GET' && path.startsWith('/values/')) {
+      if (decodeURIComponent(path).startsWith("/values/'Positions'")) {
+        return sheet.positions
+          ? json({ values: sheet.positions })
+          : json({ error: { message: 'Unable to parse range' } }, 400);
+      }
       return json({ values: sheet.values });
     }
     if (method === 'POST' && path.includes(':append')) {
@@ -87,6 +110,13 @@ function fakeSheets(initial: Cell[][], { columnCount = 26 } = {}) {
         data: { range: string; values: string[][] }[];
       };
       for (const entry of data) {
+        if (entry.range.startsWith("'Positions'!")) {
+          // The whole list is written from A1; blank cells clear old rows.
+          sheet.positions = entry.values.map((cells) =>
+            cells.map((value) => (value.startsWith("'") ? value.slice(1) : value)),
+          );
+          continue;
+        }
         const { row, column } = cellRef(entry.range);
         const value = entry.values[0]?.[0] ?? '';
         setCell(row, column, valueInputOption === 'RAW' ? value : userEntered(value));
@@ -99,6 +129,7 @@ function fakeSheets(initial: Cell[][], { columnCount = 26 } = {}) {
           { range: { sheetId: number; startIndex: number; endIndex: number } } | undefined;
         if (del)
           sheet.values.splice(del.range.startIndex, del.range.endIndex - del.range.startIndex);
+        if (request.addSheet) sheet.positions = [];
         const append = request.appendDimension as { length: number } | undefined;
         if (append) sheet.columnCount += append.length;
         const update = request.updateCells as
@@ -141,7 +172,7 @@ function fakeSheets(initial: Cell[][], { columnCount = 26 } = {}) {
 
 const HEADER = ['Date', 'Company', 'Position', 'Status', 'Followed Up', 'Notes', 'Age', 'ID'];
 
-function setup(values: Cell[][], options?: { columnCount?: number }) {
+function setup(values: Cell[][], options?: { columnCount?: number; positions?: Cell[][] }) {
   const fake = fakeSheets(values, options);
   vi.stubGlobal('fetch', fake.fetchMock);
   const getToken = vi.fn(async () => 'token-abc');
@@ -350,5 +381,85 @@ describe('googleSheetsAdapter', () => {
       getToken: async () => 'token-abc',
     });
     await expect(missingTab.list()).rejects.toMatchObject({ kind: 'sheet' });
+  });
+
+  describe('positions', () => {
+    const ROWS: Cell[][] = [
+      HEADER,
+      [46300, 'Sample Labs', 'Sr. Designer', 'Applied', '', '', 9, 'id-2'],
+      [46304, 'Example Co', 'sr. designer ', 'Applied', '', '', 2, 'id-1'],
+      [46305, 'Demo Inc', 'Engineer', 'Applied', '', '', 1, 'id-3'],
+    ];
+
+    it('lists an empty position list when there’s no Positions tab, without asking for it', async () => {
+      const { fake, adapter } = setup(ROWS);
+      expect((await adapter.list()).positions).toEqual({ added: [], hidden: [] });
+      expect(fake.calls.some((call) => call.url.includes('Positions'))).toBe(false);
+    });
+
+    it('reads added and hidden positions from the Positions tab', async () => {
+      const { adapter } = setup(ROWS, {
+        positions: [
+          ['Position', 'Hidden'],
+          ['Staff Designer', ''],
+          ['Engineer', 'Yes'],
+          ['Old Title', true],
+        ],
+      });
+      expect((await adapter.list()).positions).toEqual({
+        added: ['Staff Designer'],
+        hidden: ['Engineer', 'Old Title'],
+      });
+    });
+
+    it('creates the Positions tab on the first change, then applies changes to what’s there now', async () => {
+      const { fake, adapter } = setup(ROWS);
+      await adapter.updatePositions((list) => ({
+        ...list,
+        added: [...list.added, 'Staff Designer'],
+      }));
+      expect(fake.sheet.positions).toEqual([
+        ['Position', 'Hidden'],
+        ['Staff Designer', ''],
+      ]);
+      // Someone hides a position in Sheets; the next change keeps it.
+      fake.sheet.positions?.push(['Engineer', 'Yes']);
+      const next = await adapter.updatePositions((list) => ({ ...list, added: [] }));
+      expect(next).toEqual({ added: [], hidden: ['Engineer'] });
+      expect(fake.sheet.positions).toEqual([
+        ['Position', 'Hidden'],
+        ['Engineer', 'Yes'],
+        ['', ''],
+      ]);
+    });
+
+    it('won’t write over a Positions tab that isn’t Jtracker’s', async () => {
+      const { fake, adapter } = setup(ROWS, { positions: [['Team', 'Role']] });
+      expect((await adapter.list()).positions).toEqual({ added: [], hidden: [] });
+      await expect(
+        adapter.updatePositions((list) => ({ ...list, added: ['X'] })),
+      ).rejects.toMatchObject({ kind: 'sheet' });
+      expect(fake.writes()).toHaveLength(0);
+    });
+
+    it('renames a position on every matching row and in the list, in one write', async () => {
+      const { fake, adapter } = setup(ROWS, {
+        positions: [
+          ['Position', 'Hidden'],
+          ['Senior Designer', 'Yes'],
+        ],
+      });
+      const result = await adapter.renamePosition('Sr. Designer', 'Senior Designer');
+      expect(result).toEqual({ changed: 2, positions: { added: [], hidden: [] } });
+      expect(fake.sheet.values.map((row) => row[2])).toEqual([
+        'Position',
+        'Senior Designer',
+        'Senior Designer',
+        'Engineer',
+      ]);
+      const writes = fake.writes();
+      expect(writes).toHaveLength(1);
+      expect(writes[0]?.url).toMatch(/\/values:batchUpdate$/);
+    });
   });
 });

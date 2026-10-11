@@ -7,7 +7,7 @@ import {
   type Status,
   type UnparsedCells,
 } from '../types/application';
-import type { RowIssue } from './StorageAdapter';
+import type { PositionList, RowIssue } from './StorageAdapter';
 
 /** A cell as the Sheets API returns it with UNFORMATTED_VALUE (missing trailing cells are absent). */
 export type Cell = string | number | boolean | null | undefined;
@@ -302,4 +302,53 @@ export function rowFromRange(range: string): number | null {
 /** A tab name quoted for A1 notation: Sheet1 → 'Sheet1', it's → 'it''s'. */
 export function quoteTab(tab: string): string {
   return `'${tab.replace(/'/g, "''")}'`;
+}
+
+// ---- Positions tab -------------------------------------------------------------
+// Jtracker's position list lives in its own tab, one name per row:
+//   Position            | Hidden
+//   Staff UX Designer   |            ← added suggestion
+//   Sr. Designer        | Yes        ← removed from suggestions
+// People can edit it in Sheets too; any of yes / true / x in Hidden hides.
+
+export const POSITIONS_TAB = 'Positions';
+export const POSITION_HEADERS = ['Position', 'Hidden'] as const;
+
+const HIDDEN_WORDS = new Set(['yes', 'true', 'x', 'y']);
+
+/** True when row 1 is Jtracker's header (or the tab is empty), so the tab is safe to write. */
+export function isPositionsTab(values: Cell[][]): boolean {
+  const header = values[0] ?? [];
+  if (header.every((cell) => !cellText(cell))) return true;
+  return cellText(header[0]).toLowerCase() === POSITION_HEADERS[0].toLowerCase();
+}
+
+export function parsePositionList(values: Cell[][]): PositionList {
+  const list: PositionList = { added: [], hidden: [] };
+  const seen = new Set<string>();
+  for (const row of values.slice(1)) {
+    const name = cellText(row[0]);
+    const key = name.toLowerCase();
+    if (!name || seen.has(key)) continue;
+    seen.add(key);
+    const hiddenCell = row[1];
+    const hidden = hiddenCell === true || HIDDEN_WORDS.has(cellText(hiddenCell).toLowerCase());
+    (hidden ? list.hidden : list.added).push(name);
+  }
+  return list;
+}
+
+/**
+ * The whole tab's cells for a list, padded with blank rows to `clearRows`, so
+ * rows left over from a longer list are emptied in the same write.
+ * Names go as text (leading apostrophe) under USER_ENTERED, like other text cells.
+ */
+export function positionListCells(list: PositionList, clearRows = 0): string[][] {
+  const rows = [
+    [...POSITION_HEADERS],
+    ...list.added.map((name) => [`'${name}`, '']),
+    ...list.hidden.map((name) => [`'${name}`, 'Yes']),
+  ];
+  while (rows.length < clearRows) rows.push(['', '']);
+  return rows;
 }

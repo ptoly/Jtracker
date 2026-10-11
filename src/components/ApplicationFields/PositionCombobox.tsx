@@ -54,13 +54,27 @@ export function PositionCombobox({
     labelId: `${id}-label`,
     menuId: `${id}-menu`,
     toggleButtonId: `${id}-toggle`,
-    onInputValueChange: ({ inputValue }) => onValueChange(inputValue),
+    // Typing is reported by the input's own onChange (below). Downshift calls
+    // this from an effect, after rendering, so for typing it could arrive after
+    // a newer keystroke and overwrite it. It still reports picked suggestions.
+    onInputValueChange: ({ inputValue, type }) => {
+      if (type !== useCombobox.stateChangeTypes.InputChange) onValueChange(inputValue);
+    },
   });
 
   // While the list is open, Escape and Enter belong to it: keep them from
-  // also cancelling or saving a surrounding edit row or form.
+  // also cancelling or saving a surrounding edit row, form or dialog. While
+  // it's closed, Escape isn't the combobox's (Downshift would clear the
+  // text): it goes on to the edit row or dialog.
   function handleKeyDown(event: KeyboardEvent<HTMLInputElement>) {
-    if (!isOpen) return;
+    if (!isOpen) {
+      if (event.key === 'Escape') {
+        (
+          event.nativeEvent as KeyboardEvent['nativeEvent'] & { preventDownshiftDefault?: boolean }
+        ).preventDownshiftDefault = true;
+      }
+      return;
+    }
     if (event.key === 'Escape' || (event.key === 'Enter' && highlightedIndex >= 0)) {
       event.stopPropagation();
     }
@@ -77,7 +91,11 @@ export function PositionCombobox({
       <input
         className={`position-combobox__input ${inputClassName}`}
         required
-        {...getInputProps({ ...errorProps, onKeyDown: handleKeyDown })}
+        {...getInputProps({
+          ...errorProps,
+          onKeyDown: handleKeyDown,
+          onChange: (event) => onValueChange(event.currentTarget.value),
+        })}
       />
       {/* Mouse affordance for browsing; keyboard users open the list with the arrow keys. */}
       <button

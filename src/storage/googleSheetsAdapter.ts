@@ -1,13 +1,19 @@
+import { normalize } from '../lib/applicationRules';
+import { EMPTY_POSITION_LIST, renameInList } from '../lib/positions';
 import type { Application, ApplicationPatch, NewApplication } from '../types/application';
 import { PartialAddError, StorageError } from './errors';
 import {
   cellInput,
   columnLetter,
   HEADERS,
+  isPositionsTab,
   isWritableId,
   issuesOf,
   newRowCells,
+  parsePositionList,
   parseSheet,
+  POSITIONS_TAB,
+  positionListCells,
   quoteTab,
   rowFromRange,
   rowsWithId,
@@ -16,7 +22,7 @@ import {
   type ParsedSheet,
   type SheetRow,
 } from './sheetRows';
-import type { ListResult, StorageAdapter } from './StorageAdapter';
+import type { ListResult, PositionList, StorageAdapter } from './StorageAdapter';
 
 const API = 'https://sheets.googleapis.com/v4/spreadsheets';
 
@@ -40,12 +46,20 @@ export interface GoogleSheetsAdapter extends StorageAdapter {
 
 interface TabInfo {
   sheetId: number;
+  title: string;
   columnCount: number;
 }
 
 interface Snapshot extends ParsedSheet {
   tab: TabInfo;
+  /** Every tab in the spreadsheet, for finding the Positions tab. */
+  tabs: TabInfo[];
 }
+
+/** The Positions tab as it is now: absent, or present with its list and row count. */
+type PositionsTab = { exists: false } | { exists: true; list: PositionList; rowCount: number };
+
+const POSITIONS_TAB_TAKEN = `This spreadsheet already has a “${POSITIONS_TAB}” tab that isn’t Jtracker’s (its first column isn’t “Position”). Rename that tab, then try again.`;
 
 /** Turns a failed response into a user-facing error. Google's text never includes cell values. */
 async function toStorageError(response: Response, step: string): Promise<StorageError> {
@@ -123,40 +137,69 @@ export function createGoogleSheetsAdapter({
     return (await response.json()) as T;
   }
 
-  async function readTab(): Promise<TabInfo> {
+  async function readTabs(): Promise<TabInfo[]> {
     const fields = 'sheets(properties(sheetId,title,gridProperties(columnCount)))';
     const meta = await request<{
       sheets?: {
         properties: { sheetId: number; title: string; gridProperties?: { columnCount?: number } };
       }[];
     }>('reading the spreadsheet’s tabs', `?fields=${encodeURIComponent(fields)}`);
-    const found = meta.sheets?.find((sheet) => sheet.properties.title === tab);
-    if (!found) {
-      throw new StorageError(
-        'sheet',
-        `There’s no tab named “${tab}” in this spreadsheet. Change it in Sheet settings.`,
-      );
-    }
-    return {
-      sheetId: found.properties.sheetId,
-      columnCount: found.properties.gridProperties?.columnCount ?? 0,
-    };
+    return (meta.sheets ?? []).map(({ properties }) => ({
+      sheetId: properties.sheetId,
+      title: properties.title,
+      columnCount: properties.gridProperties?.columnCount ?? 0,
+    }));
   }
+
+  const params = 'valueRenderOption=UNFORMATTED_VALUE&dateTimeRenderOption=SERIAL_NUMBER';
 
   /** The whole tab, freshly read: every write looks rows up by ID at save time. */
   async function read(): Promise<Snapshot> {
-    const params = 'valueRenderOption=UNFORMATTED_VALUE&dateTimeRenderOption=SERIAL_NUMBER';
-    const [tabInfo, values] = await Promise.all([
-      readTab(),
+    const [tabs, values] = await Promise.all([
+      readTabs(),
       request<{ values?: Cell[][] }>(
         'reading rows',
         `/values/${encodeURIComponent(quotedTab)}?${params}`,
       ),
     ]);
+    const tabInfo = tabs.find((info) => info.title === tab);
+    if (!tabInfo) {
+      throw new StorageError(
+        'sheet',
+        `There’s no tab named “${tab}” in this spreadsheet. Change it in Sheet settings.`,
+      );
+    }
     const parsed = parseSheet(values.values ?? []);
     if ('error' in parsed) throw new StorageError('sheet', parsed.error);
-    return { ...parsed, tab: tabInfo };
+    return { ...parsed, tab: tabInfo, tabs };
   }
+
+  const positionsRange = (rows: number) => `${quoteTab(POSITIONS_TAB)}!A1:B${rows}`;
+
+  /** Reads the Positions tab, if there is one. Throws if it's someone else's tab. */
+  async function readPositions(tabs: TabInfo[]): Promise<PositionsTab> {
+    if (!tabs.some((info) => info.title === POSITIONS_TAB)) return { exists: false };
+    const response = await request<{ values?: Cell[][] }>(
+      'reading positions',
+      `/values/${encodeURIComponent(quoteTab(POSITIONS_TAB))}?${params}`,
+    );
+    const values = response.values ?? [];
+    if (!isPositionsTab(values)) throw new StorageError('sheet', POSITIONS_TAB_TAKEN);
+    return { exists: true, list: parsePositionList(values), rowCount: values.length };
+  }
+
+  /** Creates the Positions tab when it's missing; returns the write for its new contents. */
+  async function positionsWrite(current: PositionsTab, next: PositionList) {
+    if (!current.exists) {
+      await batchUpdate('adding the Positions tab', [
+        { addSheet: { properties: { title: POSITIONS_TAB } } },
+      ]);
+    }
+    const cells = positionListCells(next, current.exists ? current.rowCount : 0);
+    return { range: positionsRange(cells.length), values: cells };
+  }
+
+  const sameList = (a: PositionList, b: PositionList) => JSON.stringify(a) === JSON.stringify(b);
 
   function writeValues(
     step: string,
@@ -239,9 +282,16 @@ export function createGoogleSheetsAdapter({
       const sheet = await read();
       const rowsWithoutId = sheet.rows.filter((row) => !row.sheetId).length;
       const addsColumn = sheet.columns.id === undefined;
+      // A Positions tab that isn't Jtracker's just means no saved list yet;
+      // saving one explains the clash.
+      const positions = await readPositions(sheet.tabs).catch((error: unknown): PositionsTab => {
+        if (error instanceof StorageError && error.kind === 'sheet') return { exists: false };
+        throw error;
+      });
       return {
         applications: sheet.rows.map((row) => row.application),
         issues: issuesOf(sheet),
+        positions: positions.exists ? positions.list : EMPTY_POSITION_LIST,
         ...((addsColumn || rowsWithoutId > 0) && { idSetup: { addsColumn, rowsWithoutId } }),
       };
     },
@@ -320,6 +370,37 @@ export function createGoogleSheetsAdapter({
           },
         },
       ]);
+    },
+
+    async updatePositions(change) {
+      const current = await readPositions(await readTabs());
+      const before = current.exists ? current.list : EMPTY_POSITION_LIST;
+      const next = change(before);
+      if (sameList(before, next)) return next;
+      const write = await positionsWrite(current, next);
+      await writeValues('saving positions', [write], 'USER_ENTERED');
+      return next;
+    },
+
+    async renamePosition(from, to) {
+      const target = to.trim();
+      const sheet = await read();
+      const column = requireColumn(sheet.columns, 'position');
+      const current = await readPositions(sheet.tabs);
+      const before = current.exists ? current.list : EMPTY_POSITION_LIST;
+      const next = renameInList(before, from, target);
+
+      const rows = sheet.rows.filter(
+        (row) => normalize(row.application.position) === normalize(from),
+      );
+      const data = rows.map((row) => ({
+        range: a1(column, row.rowNumber),
+        values: [[cellInput('position', target)]],
+      }));
+      if (!sameList(before, next)) data.push(await positionsWrite(current, next));
+      // One request: the rows and the list change together or not at all.
+      if (data.length > 0) await writeValues('renaming the position', data, 'USER_ENTERED');
+      return { changed: rows.length, positions: next };
     },
 
     async setUpIds(): Promise<void> {

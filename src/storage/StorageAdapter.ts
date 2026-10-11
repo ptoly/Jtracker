@@ -15,9 +15,20 @@ export interface IdSetup {
   rowsWithoutId: number;
 }
 
+/**
+ * The user's edits to the position suggestions (see lib/positions):
+ * suggestions = positions in use + added − hidden. Names never overlap
+ * between the two lists.
+ */
+export interface PositionList {
+  added: string[];
+  hidden: string[];
+}
+
 export interface ListResult {
   applications: Application[];
   issues: RowIssue[];
+  positions: PositionList;
   /** Present when IDs are missing; writes need them. */
   idSetup?: IdSetup;
 }
@@ -28,4 +39,14 @@ export interface StorageAdapter {
   add(input: NewApplication): Promise<Application>;
   update(id: string, patch: ApplicationPatch): Promise<Application>;
   remove(id: string): Promise<void>;
+  /**
+   * Applies `change` to the position list as it is in storage now (not as it
+   * was last loaded), saves it, and returns the result.
+   */
+  updatePositions(change: (current: PositionList) => PositionList): Promise<PositionList>;
+  /**
+   * Renames a position on every application that uses it (case-insensitive
+   * match), and in the position list. Returns how many applications changed.
+   */
+  renamePosition(from: string, to: string): Promise<{ changed: number; positions: PositionList }>;
 }

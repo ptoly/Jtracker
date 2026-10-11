@@ -1,0 +1,33 @@
+@use 'pkg:octet-scss/abstracts' as *;
+
+// <h2 class="accordion">
+//   <button class="accordion__trigger" aria-expanded="true" aria-controls="…">
+//     Add Job Application <svg class="accordion__icon" aria-hidden="true">…</svg>
+//   </button>
+// </h2>
+// <div id="…" hidden>…panel…</div>
+// A heading whose text is the button (WAI-ARIA accordion pattern). The
+// chevron points down when open and right when closed.
+.accordion {
+  &__trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: gridx(1);
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    line-height: inherit;
+    cursor: pointer;
+  }
+
+  &__icon {
+    color: var(--text-muted);
+    @include transition(transform, $duration-fast);
+
+    [aria-expanded='false'] > & {
+      transform: rotate(-90deg);
+    }
+  }
+}

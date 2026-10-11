@@ -3,10 +3,12 @@
 // <header class="site-header">
 //   <div class="site-header__inner max-width">
 //     <a class="site-header__home" href="/"><img class="site-header__logo" alt="Jtracker"></a>
+//     <button class="btn btn--primary site-header__add">+ Add application</button>
 //   </div>
 // </header>
-// Full-width bar above the page; its content lines up with the page's.
-// Height: the 40px logo plus the inner's padding (_theme-spacing.scss) = 64px.
+// Full-width bar above the page, sticky (_theme-layout.scss); its content
+// lines up with the page's. Height: the 48px button plus the inner's padding
+// (_theme-spacing.scss) = 64px.
 // The divider is an inset shadow, so it doesn't add a 65th pixel.
 .site-header {
   background-color: var(--surface-card);
@@ -29,5 +31,10 @@
 
   &__logo {
     display: block;
+  }
+
+  &__add {
+    gap: gridx(1);
+    padding-inline: gridx(2);
   }
 }

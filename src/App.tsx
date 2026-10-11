@@ -4,7 +4,12 @@ import { ApplicationsTable } from './components/ApplicationsTable/ApplicationsTa
 import { ConfirmDialog } from './components/ConfirmDialog/ConfirmDialog';
 import { ConnectionBar } from './components/ConnectionBar/ConnectionBar';
 import { SheetActions } from './components/ConnectionBar/SheetActions';
+import { Dialog } from './components/Dialog/Dialog';
+import { ChevronDownIcon, PlusIcon } from './components/Icons/Icons';
 import { Notice, SaveError } from './components/Notice/Notice';
+import { PositionsDialog } from './components/PositionsDialog/PositionsDialog';
+import { suggestedPositions } from './lib/positions';
+import { useStoredBoolean } from './lib/useStoredState';
 import { useApplications } from './useApplications';
 import logoUrl from './assets/jtracker-logo.svg';
 
@@ -17,6 +22,14 @@ export function App() {
   const [today] = useState(() => new Date());
   const data = useApplications();
   const { applications, connection, tab, idSetup } = data;
+  const [formOpen, setFormOpen] = useStoredBoolean('jtracker.addFormOpen', true);
+  const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [positionsOpen, setPositionsOpen] = useState(false);
+  // "Added …" from the dialog: its own form is hidden once it closes, so the page announces it.
+  const [announcement, setAnnouncement] = useState({ text: '', count: 0 });
+
+  const canAdd = applications !== null && !data.readOnly;
+  const positions = applications ? suggestedPositions(applications, data.positions) : [];
 
   return (
     <>
@@ -31,6 +44,16 @@ export function App() {
               className="site-header__logo"
             />
           </a>
+          {canAdd && (
+            <button
+              type="button"
+              className="btn btn--primary site-header__add"
+              onClick={() => setAddDialogOpen(true)}
+            >
+              <PlusIcon />
+              Add application
+            </button>
+          )}
         </div>
       </header>
 
@@ -84,14 +107,31 @@ export function App() {
         {applications ? (
           <>
             <section aria-labelledby="add-application-heading">
-              <h2 id="add-application-heading" className="app__section-title size-h5">
-                Add Job Application
+              <h2 id="add-application-heading" className="accordion app__section-title size-h5">
+                <button
+                  type="button"
+                  className="accordion__trigger"
+                  aria-expanded={formOpen}
+                  aria-controls="add-application-panel"
+                  onClick={() => setFormOpen((open) => !open)}
+                >
+                  Add Job Application
+                  <ChevronDownIcon className="accordion__icon" />
+                </button>
               </h2>
-              {data.readOnly ? (
-                <p>Adding is off until the sheet has IDs.</p>
-              ) : (
-                <ApplicationForm applications={applications} today={today} onAdd={data.add} />
-              )}
+              <div id="add-application-panel" hidden={!formOpen}>
+                {data.readOnly ? (
+                  <p>Adding is off until the sheet has IDs.</p>
+                ) : (
+                  <ApplicationForm
+                    applications={applications}
+                    positions={positions}
+                    today={today}
+                    onAdd={data.add}
+                    onManagePositions={() => setPositionsOpen(true)}
+                  />
+                )}
+              </div>
             </section>
 
             <section aria-labelledby="applications-heading">
@@ -172,12 +212,54 @@ export function App() {
                 onDelete={data.remove}
                 readOnly={data.readOnly}
                 onEditingChange={data.setTableBusy}
+                positions={positions}
               />
             </section>
           </>
         ) : (
           data.mode !== 'reconnect' && !data.loadError && <p>Loading…</p>
         )}
+
+        {applications && (
+          <>
+            <Dialog
+              open={addDialogOpen && canAdd}
+              title="Add Job Application"
+              onClose={() => setAddDialogOpen(false)}
+            >
+              <ApplicationForm
+                variant="dialog"
+                applications={applications}
+                positions={positions}
+                today={today}
+                onAdd={data.add}
+                onAdded={(input) => {
+                  setAddDialogOpen(false);
+                  setAnnouncement((prev) => ({
+                    text: `Added ${input.company}`,
+                    count: prev.count + 1,
+                  }));
+                }}
+                onCancel={() => setAddDialogOpen(false)}
+                onManagePositions={() => setPositionsOpen(true)}
+              />
+            </Dialog>
+
+            <PositionsDialog
+              open={positionsOpen}
+              onClose={() => setPositionsOpen(false)}
+              applications={applications}
+              positions={data.positions}
+              onUpdate={data.updatePositions}
+              onRename={data.renamePosition}
+              readOnly={data.readOnly}
+            />
+          </>
+        )}
+
+        <p role="status" className="sr-only">
+          {announcement.text && <span key={announcement.count}>{announcement.text}</span>}
+        </p>
 
         <ConfirmDialog
           open={data.setupDialogOpen}

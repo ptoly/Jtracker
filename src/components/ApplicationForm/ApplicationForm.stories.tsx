@@ -63,3 +63,22 @@ export const EmptyPositionList: Story = {
   name: 'Empty position list',
   args: { applications: [] },
 };
+
+export const InDialog: Story = {
+  name: 'Dialog variant',
+  args: { variant: 'dialog', onCancel: fn(), onManagePositions: fn(), onAdded: fn() },
+  decorators: [
+    (Story) => (
+      <div className="dialog dialog--medium" style={{ position: 'static' }}>
+        <Story />
+      </div>
+    ),
+  ],
+  play: async ({ canvas, userEvent, args }) => {
+    await userEvent.type(canvas.getByRole('textbox', { name: 'Company' }), 'Northwind Studio');
+    await userEvent.type(canvas.getByRole('combobox', { name: 'Position' }), 'Designer');
+    await userEvent.click(canvas.getByRole('button', { name: 'Add application' }));
+    await expect(args.onAdd).toHaveBeenCalled();
+    await expect(args.onAdded).toHaveBeenCalled();
+  },
+};

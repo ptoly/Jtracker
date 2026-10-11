@@ -21,6 +21,20 @@
   justify-content: space-between;
 }
 
+// ---- Sticky site header ------------------------------------------------------------
+// The header (logo + Add application) stays at the top while the page scrolls.
+// Scrolling to a focused element or an anchor leaves room for it, so nothing
+// lands underneath (WCAG 2.4.11).
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: $z-sticky;
+}
+
+html {
+  scroll-padding-top: gridx(10); // the 64px header + 16px air
+}
+
 // ---- Icons inside controls ---------------------------------------------------------
 // A 24px icon sits 12px in from the field's edge, the same inset as the
 // text, and centered on the line. (The combobox toggle gets there with its

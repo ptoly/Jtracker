@@ -94,3 +94,11 @@ export function ArrowRightIcon(props: SVGProps<SVGSVGElement>) {
     </Icon>
   );
 }
+
+export function PlusIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon {...props}>
+      <path d="M10 4.167v11.666M4.167 10h11.666" />
+    </Icon>
+  );
+}

@@ -19,7 +19,7 @@
 
 // Space between stacked sections.
 section {
-  @include scaled-spacing(margin-bottom, 3, 32px);   // tight, app-like rhythm (starter: 5, 88px)
+  @include scaled-spacing(margin-bottom, 5, 64px);   // tight, app-like rhythm (starter: 5, 88px)
 }
 
 // Flow spacing — bottom margin on stacked text blocks.
@@ -62,9 +62,10 @@ ol {
   @include scaled-spacing(padding-top padding-bottom, 4, 48px);
 }
 
-// 40px logo + 12px above and below: a 64px bar, on the grid.
+// The 48px Add button + 8px above and below: a 64px bar, on the grid. (The
+// 40px logo centers in it.)
 .site-header__inner {
-  padding-block: gridx(1.5);
+  padding-block: gridx(1);
 }
 
 // ---- Page rhythm ----------------------------------------------------------------
@@ -111,7 +112,7 @@ ol {
 .card__header,
 .card__body,
 .card__footer,
-.confirm-dialog {
+.dialog {
   @include fluid-gutter(padding-inline, 16px, 24px, 360px, 1441px);
 }
 
@@ -178,13 +179,13 @@ ol {
 // lines stays on the 8pt grid (one line: 48px, then 56px).
 .notice,
 .application-form__warning {
-  @include scaled-spacing(padding-top padding-right padding-bottom padding-left, 2, 16px, 4);
+  @include scaled-spacing(padding, 4, 24px, 4);
 }
 
 // ---- Card insets --------------------------------------------------------------
-// Vertical inset for card bodies and the card-styled confirm dialog.
+// Vertical inset for card bodies and dialogs.
 .card__body,
-.confirm-dialog {
+.dialog {
   @include scaled-spacing(padding-top padding-bottom, 2, 24px);
 }
 

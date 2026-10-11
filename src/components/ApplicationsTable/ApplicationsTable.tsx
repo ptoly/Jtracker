@@ -71,6 +71,8 @@ export interface ApplicationsTableProps {
   readOnly?: boolean;
   /** True while a row is open for editing or a delete is being confirmed, so the owner can hold off reloading. */
   onEditingChange?: (editing: boolean) => void;
+  /** Position suggestions for the edit row. Defaults to the positions in `applications`. */
+  positions?: string[];
 }
 
 function pluralize(count: number, noun: string): string {
@@ -162,6 +164,7 @@ export function ApplicationsTable({
   onDelete,
   readOnly = false,
   onEditingChange,
+  positions: suggestions,
 }: ApplicationsTableProps) {
   const baseId = useId();
   const tabId = (key: TabKey) => `${baseId}-tab-${key}`;
@@ -224,7 +227,7 @@ export function ApplicationsTable({
     }
   });
 
-  const positions = distinctPositions(applications);
+  const positions = suggestions ?? distinctPositions(applications);
   const rows = filterRows(applications, followUpDays, today, tab, query).sort((a, b) =>
     compareRows(a, b, sort.key, sort.direction),
   );

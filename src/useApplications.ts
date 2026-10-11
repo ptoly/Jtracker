@@ -7,6 +7,7 @@ import {
   sampleAdapter,
   StorageError,
   type IdSetup,
+  type PositionList,
   type RowIssue,
   type StorageAdapter,
 } from './storage';
@@ -19,6 +20,7 @@ import {
 } from './storage/sheetConnection';
 import type { Application, ApplicationPatch, NewApplication } from './types/application';
 import type { ConnectionMode } from './components/ConnectionBar/ConnectionBar';
+import { EMPTY_POSITION_LIST } from './lib/positions';
 
 /** Focus can fire several times in a row; one reload is enough. */
 const MIN_RELOAD_INTERVAL_MS = 5000;
@@ -51,6 +53,7 @@ export function useApplications() {
 
   const [applications, setApplications] = useState<Application[] | null>(null);
   const [issues, setIssues] = useState<RowIssue[]>([]);
+  const [positions, setPositions] = useState<PositionList>(EMPTY_POSITION_LIST);
   const [dismissedIssues, setDismissedIssues] = useState('');
   const [idSetup, setIdSetup] = useState<IdSetup | null>(null);
   const [setupDeclined, setSetupDeclined] = useState(false);
@@ -87,6 +90,7 @@ export function useApplications() {
       if (seq !== loadSeq.current) return;
       setApplications(result.applications);
       setIssues(result.issues);
+      setPositions(result.positions);
       setIdSetup(result.idSetup ?? null);
       setLoadError(null);
       setSyncPaused(false);
@@ -183,6 +187,19 @@ export function useApplications() {
     setApplications((prev) => (prev ?? []).filter((app) => app.id !== id));
   }
 
+  /** Applies a change to the position list as it is in storage now. */
+  async function updatePositions(change: (current: PositionList) => PositionList) {
+    setPositions(await write((target) => target.updatePositions(change)));
+  }
+
+  /** Renames a position on every application that uses it; returns how many changed. */
+  async function renamePosition(from: string, to: string) {
+    const result = await write((target) => target.renamePosition(from, to));
+    setPositions(result.positions);
+    await reload();
+    return result.changed;
+  }
+
   async function setUpIds() {
     if (!sheetAdapter) return;
     await write(() => sheetAdapter.setUpIds());
@@ -194,6 +211,7 @@ export function useApplications() {
     loadSeq.current += 1;
     setApplications(null);
     setIssues([]);
+    setPositions(EMPTY_POSITION_LIST);
     setIdSetup(null);
     setSetupDeclined(false);
     setLoadError(null);
@@ -285,6 +303,9 @@ export function useApplications() {
     add,
     update,
     remove,
+    positions,
+    updatePositions,
+    renamePosition,
     /** From the table: a row is being edited or a delete confirmed; don't reload under it. */
     setTableBusy: useCallback((busy: boolean) => {
       tableBusy.current = busy;

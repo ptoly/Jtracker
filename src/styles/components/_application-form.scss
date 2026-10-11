@@ -1,7 +1,7 @@
 @use 'pkg:octet-scss/abstracts' as *;
 
-// <form class="application-form">
-//   <div class="card">
+// <form class="application-form application-form--card|dialog">
+//   <div class="card">                                   (card variant)
 //     <div class="card__body application-form__fields">
 //       <div class="application-form__field">
 //         <div class="application-form__inline"><label class="application-form__inline-label">Company*</label>
@@ -14,12 +14,18 @@
 //     <div class="card__footer application-form__actions">…</div>
 //   </div>
 //   <div class="application-form__warning">…</div>
+//   <div class="application-form__actions">…</div>     (dialog variant, after the fields)
 // </form>
+// Card: two columns from 720px. Dialog: one column, buttons last.
 .application-form {
   display: grid;
   gap: gridx(2);
   font-size: rem(16px);
-  line-height: rem(gridx(3)); // hint, warning and errors on the same 24px line
+  line-height: rem(gridx(3)); // warning and errors on the same 24px line
+
+  &--dialog {
+    gap: gridx(3);
+  }
 
   // Stacked on narrow screens. From 720px: date, company and position on the
   // left; Notes on the right, as tall as the left column.
@@ -27,8 +33,10 @@
     display: grid;
     gap: gridx(3);
 
-    @include from(720px) {
-      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    .application-form--card & {
+      @include from(720px) {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      }
     }
   }
 
@@ -43,9 +51,11 @@
     &--notes {
       grid-template-rows: auto 1fr;
 
-      @include from(720px) {
-        grid-column: 2;
-        grid-row: 1 / span 3;
+      .application-form--card & {
+        @include from(720px) {
+          grid-column: 2;
+          grid-row: 1 / span 3;
+        }
       }
     }
   }
@@ -60,8 +70,7 @@
     color: var(--brand);
   }
 
-  &__optional,
-  &__hint {
+  &__optional {
     color: var(--text-muted);
     font-weight: 400;
   }
@@ -121,9 +130,18 @@
   }
 
   // Footer, warnings ------------------------------------------------------------
+  // Manage positions on the left, Add (and Cancel) on the right. In the card,
+  // card__footer lays out the row.
   &__actions {
-    // card__footer lays out the row; the hint takes the left, the button the right.
     font-size: rem(16px);
+
+    .application-form--dialog & {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: gridx(1.5);
+    }
   }
 
   // A failed add, under the card; the fields keep what was typed.
