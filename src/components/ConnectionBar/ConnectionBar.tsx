@@ -8,8 +8,10 @@ export interface ConnectionBarProps {
   mode: ConnectionMode;
   sheetName?: string;
   tab: string;
-  /** Signed in earlier, but the Google session ran out; saving needs Reconnect. */
+  /** Renewing the Google sign-in failed; saving needs Reconnect. */
   sessionExpired?: boolean;
+  /** The hour-long sign-in ran out while away, so changes in the sheet weren't loaded. */
+  syncPaused?: boolean;
   /** Sign-in or the Picker is open. */
   busy?: boolean;
   onConnect: () => void;
@@ -27,6 +29,7 @@ export function ConnectionBar({
   sheetName = 'Google Sheet',
   tab,
   sessionExpired = false,
+  syncPaused = false,
   busy = false,
   onConnect,
   onReconnect,
@@ -99,10 +102,25 @@ export function ConnectionBar({
 
   return (
     <div className="connection-bar">
-      {sessionExpired && (
+      {sessionExpired ? (
         <Notice tone="warning" role="status" actions={primary('Reconnect', onReconnect)}>
-          Google sign-in expired. Reconnect to keep saving to <strong>{sheetName}</strong>.
+          Google sign-in couldn’t renew. Reconnect, then try again.
         </Notice>
+      ) : (
+        syncPaused && (
+          <Notice
+            tone="warning"
+            role="status"
+            actions={
+              <button type="button" className="btn" onClick={onReload}>
+                Reload now
+              </button>
+            }
+          >
+            Google sign-in lasts an hour, so changes made in the sheet since then aren’t loaded.
+            Saving still works.
+          </Notice>
+        )
       )}
       <div className="connection-bar__row">
         <div className="connection-bar__status">

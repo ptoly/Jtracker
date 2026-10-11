@@ -39,8 +39,13 @@ export const Connected: Story = {
   args: { mode: 'sheet' },
 };
 
+export const SyncPaused: Story = {
+  name: 'Sign-in timed out while away',
+  args: { mode: 'sheet', syncPaused: true },
+};
+
 export const SessionExpired: Story = {
-  name: 'Session expired',
+  name: 'Sign-in couldn’t renew',
   args: { mode: 'sheet', sessionExpired: true },
 };
 

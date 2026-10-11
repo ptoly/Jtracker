@@ -41,7 +41,11 @@ function preloadGoogle() {
 export function useApplications() {
   const [connection, setConnection] = useState(loadConnection);
   const [signedIn, setSignedIn] = useState(false);
+  // Renewing failed (popup blocked or refused): saving needs Reconnect.
   const [sessionExpired, setSessionExpired] = useState(false);
+  // The hour-long token ran out while the window was away, so focus couldn't reload.
+  // Not an error: the next click that talks to Google (a save, Reload) renews it.
+  const [syncPaused, setSyncPaused] = useState(false);
   const [connecting, setConnecting] = useState(false);
   const [connectError, setConnectError] = useState<{ error: unknown } | null>(null);
 
@@ -85,6 +89,8 @@ export function useApplications() {
       setIssues(result.issues);
       setIdSetup(result.idSetup ?? null);
       setLoadError(null);
+      setSyncPaused(false);
+      setSessionExpired(false);
     } catch (error) {
       if (seq !== loadSeq.current) return;
       if (isAuthError(error)) setSessionExpired(true);
@@ -108,9 +114,9 @@ export function useApplications() {
       if (document.visibilityState !== 'visible') return;
       if (tableBusy.current || pendingWrites.current > 0) return;
       if (Date.now() - lastLoad.current < MIN_RELOAD_INTERVAL_MS) return;
-      // Renewing could open a popup; without a click it would be blocked. Ask instead.
+      // Renewing opens a popup, which browsers block outside a click. Wait for one.
       if (!hasValidToken()) {
-        setSessionExpired(true);
+        setSyncPaused(true);
         return;
       }
       void reload();
@@ -128,7 +134,11 @@ export function useApplications() {
     if (!adapter) throw new StorageError('auth', 'Reconnect your Google Sheet, then try again.');
     pendingWrites.current += 1;
     try {
-      return await run(adapter);
+      const result = await run(adapter);
+      // The save renewed the token if it had to: catch up on what focus skipped.
+      setSessionExpired(false);
+      if (syncPaused) void reload();
+      return result;
     } catch (error) {
       if (isAuthError(error) && mode === 'sheet') setSessionExpired(true);
       throw error;
@@ -263,6 +273,7 @@ export function useApplications() {
     reopenSetup: () => setSetupDeclined(false),
     setUpIds,
     sessionExpired,
+    syncPaused,
     connecting,
     connectError,
     connect,

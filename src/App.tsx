@@ -26,6 +26,7 @@ export function App() {
         {...(connection && { sheetName: connection.name })}
         tab={tab}
         sessionExpired={data.sessionExpired}
+        syncPaused={data.syncPaused}
         busy={data.connecting}
         onConnect={() => void data.connect()}
         onReconnect={() => void data.reconnect()}
@@ -61,17 +62,23 @@ export function App() {
           onDismiss={data.dismissIssues}
           dismissLabel="Dismiss sheet problems"
         >
-          <div className="notice__title">
-            {pluralizeRows(data.issues.length)} in {tab}{' '}
-            {data.issues.length === 1 ? 'needs' : 'need'} a look. They’re shown as they are:
-          </div>
-          <ul className="notice__list">
-            {data.issues.map((issue) => (
-              <li key={issue.row}>
-                Row {issue.row}: {issue.problems.join('; ')}
-              </li>
-            ))}
-          </ul>
+          {/* Collapsed, so a long list doesn't push the page down. */}
+          <details className="notice__details">
+            <summary className="notice__summary">
+              {pluralizeRows(data.issues.length)} in {tab}{' '}
+              {data.issues.length === 1 ? 'needs' : 'need'} a look
+            </summary>
+            <div className="notice__intro">
+              They’re shown in the table as they are in the sheet.
+            </div>
+            <ul className="notice__list">
+              {data.issues.map((issue) => (
+                <li key={issue.row}>
+                  Row {issue.row}: {issue.problems.join('; ')}
+                </li>
+              ))}
+            </ul>
+          </details>
         </Notice>
       )}
 

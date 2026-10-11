@@ -20,18 +20,21 @@ export const SheetProblems: Story = {
     onDismiss: fn(),
     dismissLabel: 'Dismiss sheet problems',
     children: (
-      <>
-        <div className="notice__title">
-          2 rows in Sheet1 need a look. They’re shown as they are:
-        </div>
+      <details className="notice__details">
+        <summary className="notice__summary">2 rows in Sheet1 need a look</summary>
+        <div className="notice__intro">They’re shown in the table as they are in the sheet.</div>
         <ul className="notice__list">
           <li>Row 4: status “Ghosted” not recognized</li>
           <li>Row 9: no date</li>
         </ul>
-      </>
+      </details>
     ),
   },
   play: async ({ canvas, userEvent, args }) => {
+    const row = canvas.getByText('Row 4: status “Ghosted” not recognized');
+    await expect(row).not.toBeVisible();
+    await userEvent.click(canvas.getByText('2 rows in Sheet1 need a look'));
+    await expect(row).toBeVisible();
     await userEvent.click(canvas.getByRole('button', { name: 'Dismiss sheet problems' }));
     await expect(args.onDismiss).toHaveBeenCalled();
   },

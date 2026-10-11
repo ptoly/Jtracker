@@ -2,8 +2,11 @@
 
 // <div class="notice notice--warning" role="status">
 //   <div class="notice__body">
-//     <div class="notice__title">…</div>       (optional)
-//     <ul class="notice__list">…</ul>          (optional)
+//     <details class="notice__details">        (optional: a collapsible list)
+//       <summary class="notice__summary">…</summary>
+//       <div class="notice__intro">…</div>
+//       <ul class="notice__list">…</ul>
+//     </details>
 //   </div>
 //   <div class="notice__actions"><button class="btn">Retry</button></div>
 // </div>
@@ -35,6 +38,16 @@
 
   &__body {
     flex: 1 1 gridx(30);
+  }
+
+  &__summary {
+    width: fit-content;
+    font-weight: 500;
+    cursor: pointer;
+  }
+
+  &__intro {
+    margin-block: gridx(1) 0;
   }
 
   &__list {
