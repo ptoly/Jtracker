@@ -3,8 +3,10 @@ import { ApplicationForm } from './components/ApplicationForm/ApplicationForm';
 import { ApplicationsTable } from './components/ApplicationsTable/ApplicationsTable';
 import { ConfirmDialog } from './components/ConfirmDialog/ConfirmDialog';
 import { ConnectionBar } from './components/ConnectionBar/ConnectionBar';
+import { SheetActions } from './components/ConnectionBar/SheetActions';
 import { Notice, SaveError } from './components/Notice/Notice';
 import { useApplications } from './useApplications';
+import logoUrl from './assets/jtracker-logo.svg';
 
 function pluralizeRows(count: number): string {
   return `${count} row${count === 1 ? '' : 's'}`;
@@ -17,161 +19,189 @@ export function App() {
   const { applications, connection, tab, idSetup } = data;
 
   return (
-    <main className="app max-width">
-      <h1 className="app__title size-h3">Job Tracker History</h1>
+    <>
+      <header className="site-header">
+        <div className="site-header__inner max-width">
+          <a href="/" className="site-header__home">
+            <img
+              src={logoUrl}
+              width={140}
+              height={40}
+              alt="Jtracker"
+              className="site-header__logo"
+            />
+          </a>
+        </div>
+      </header>
 
-      <ConnectionBar
-        key={`${connection?.spreadsheetId ?? 'sample'}-${tab}`}
-        mode={data.mode}
-        {...(connection && { sheetName: connection.name })}
-        tab={tab}
-        sessionExpired={data.sessionExpired}
-        syncPaused={data.syncPaused}
-        busy={data.connecting}
-        onConnect={() => void data.connect()}
-        onReconnect={() => void data.reconnect()}
-        onDisconnect={data.disconnect}
-        onReload={() => void data.reload()}
-        onTabChange={data.changeTab}
-        onPreload={data.preloadGoogle}
-      />
+      <main className="app max-width">
+        <div className="app__page-header">
+          <h1 className="size-h3">Job Tracker History</h1>
+          <p className="app__subtitle">You can add and update job applications here</p>
+        </div>
 
-      {data.connectError && (
-        <SaveError
-          className="app__notice"
-          error={data.connectError.error}
-          fallback="Couldn’t connect to Google."
-          retrying={data.connecting}
-          onRetry={() => void (data.mode === 'sample' ? data.connect() : data.reconnect())}
+        <ConnectionBar
+          mode={data.mode}
+          {...(connection && { sheetName: connection.name })}
+          sessionExpired={data.sessionExpired}
+          syncPaused={data.syncPaused}
+          busy={data.connecting}
+          onConnect={() => void data.connect()}
+          onReconnect={() => void data.reconnect()}
+          onDisconnect={data.disconnect}
+          onReload={() => void data.reload()}
+          onPreload={data.preloadGoogle}
         />
-      )}
 
-      {data.loadError && (
-        <SaveError
-          className="app__notice"
-          error={data.loadError.error}
-          fallback="Couldn’t load the sheet."
-          onRetry={() => void data.reload()}
-        />
-      )}
+        {data.connectError && (
+          <SaveError
+            className="app__notice"
+            error={data.connectError.error}
+            fallback="Couldn’t connect to Google."
+            retrying={data.connecting}
+            onRetry={() => void (data.mode === 'sample' ? data.connect() : data.reconnect())}
+          />
+        )}
 
-      {data.issues.length > 0 && (
-        <Notice
-          tone="warning"
-          className="app__notice"
-          onDismiss={data.dismissIssues}
-          dismissLabel="Dismiss sheet problems"
-        >
-          {/* Collapsed, so a long list doesn't push the page down. */}
-          <details className="notice__details">
-            <summary className="notice__summary">
-              {pluralizeRows(data.issues.length)} in {tab}{' '}
-              {data.issues.length === 1 ? 'needs' : 'need'} a look
-            </summary>
-            <div className="notice__intro">
-              They’re shown in the table as they are in the sheet.
-            </div>
-            <ul className="notice__list">
-              {data.issues.map((issue) => (
-                <li key={issue.row}>
-                  Row {issue.row}: {issue.problems.join('; ')}
-                </li>
-              ))}
-            </ul>
-          </details>
-        </Notice>
-      )}
+        {data.loadError && (
+          <SaveError
+            className="app__notice"
+            error={data.loadError.error}
+            fallback="Couldn’t load the sheet."
+            onRetry={() => void data.reload()}
+          />
+        )}
 
-      {data.readOnly && !data.setupDialogOpen && (
-        <Notice
-          tone="warning"
-          className="app__notice"
-          actions={
-            <button type="button" className="btn" onClick={data.reopenSetup}>
-              Set up IDs
-            </button>
-          }
-        >
-          Read-only. Jtracker needs an ID in every row before it can add, edit or delete.
-        </Notice>
-      )}
+        {data.ageError && (
+          <SaveError
+            className="app__notice"
+            error={data.ageError.error}
+            fallback={`Added ${data.ageError.failure.application.company}, but couldn’t set its Age formula.`}
+            onRetry={() => void data.retryAge()}
+          />
+        )}
 
-      {data.ageError && (
-        <SaveError
-          className="app__notice"
-          error={data.ageError.error}
-          fallback={`Added ${data.ageError.failure.application.company}, but couldn’t set its Age formula.`}
-          onRetry={() => void data.retryAge()}
-        />
-      )}
-
-      {applications ? (
-        <>
-          <div className="app__top">
-            <section className="app__form" aria-labelledby="add-application-heading">
-              <div className="app__section-header">
-                <h2 id="add-application-heading" className="size-h5">
-                  New Job Application
-                </h2>
-                <p className="app__subtitle">Add new applications here</p>
-              </div>
+        {applications ? (
+          <>
+            <section aria-labelledby="add-application-heading">
+              <h2 id="add-application-heading" className="app__section-title size-h5">
+                Add Job Application
+              </h2>
               {data.readOnly ? (
                 <p>Adding is off until the sheet has IDs.</p>
               ) : (
                 <ApplicationForm applications={applications} today={today} onAdd={data.add} />
               )}
             </section>
-            <section className="app__stats" aria-labelledby="stats-heading">
-              <div className="app__section-header app__stats-header">
-                <h2 id="stats-heading" className="size-h5">
-                  Stats
-                </h2>
-              </div>
-              <div className="app__stats-placeholder" />
-            </section>
-          </div>
-          <section className="card card--clip" aria-labelledby="applications-heading">
-            <div className="card__header">
-              <h2 id="applications-heading" className="size-h5">
-                Applications
-              </h2>
-            </div>
-            <ApplicationsTable
-              applications={applications}
-              today={today}
-              onUpdate={data.update}
-              onDelete={data.remove}
-              readOnly={data.readOnly}
-              onEditingChange={data.setTableBusy}
-            />
-          </section>
-        </>
-      ) : (
-        data.mode !== 'reconnect' && !data.loadError && <p>Loading…</p>
-      )}
 
-      <ConfirmDialog
-        open={data.setupDialogOpen}
-        title="Set up IDs in your sheet?"
-        confirmLabel="Add IDs"
-        confirmTone="primary"
-        onConfirm={data.setUpIds}
-        onCancel={data.declineSetup}
-      >
-        {idSetup && (
-          <>
-            <p>
-              {idSetup.addsColumn
-                ? `Jtracker will add an ID column to ${tab}${idSetup.rowsWithoutId > 0 ? ` and fill IDs for ${pluralizeRows(idSetup.rowsWithoutId)}` : ''}.`
-                : `Jtracker will fill IDs for ${pluralizeRows(idSetup.rowsWithoutId)} in the ID column of ${tab}.`}
-            </p>
-            <p>
-              IDs let Jtracker find the right row when you edit or delete, even after you sort the
-              sheet. Nothing else changes. Without them, the sheet is read-only here.
-            </p>
+            <section aria-labelledby="applications-heading">
+              <div className="app__section-header">
+                <div>
+                  <h2 id="applications-heading" className="size-h5">
+                    Job Applications Table
+                  </h2>
+                  <p className="app__subtitle">
+                    {connection ? (
+                      <>
+                        Connected to <strong className="app__sheet-name">{connection.name}</strong>
+                        <span aria-hidden="true"> · </span>
+                        <span className="sr-only">, tab </span>
+                        {tab}
+                      </>
+                    ) : (
+                      'Sample data'
+                    )}
+                  </p>
+                </div>
+                {data.mode === 'sheet' && (
+                  <SheetActions
+                    key={tab}
+                    tab={tab}
+                    onReload={() => void data.reload()}
+                    onDisconnect={data.disconnect}
+                    onTabChange={data.changeTab}
+                  />
+                )}
+              </div>
+
+              {data.issues.length > 0 && (
+                <Notice
+                  tone="warning"
+                  className="app__notice"
+                  onDismiss={data.dismissIssues}
+                  dismissLabel="Dismiss sheet problems"
+                >
+                  {/* Collapsed, so a long list doesn't push the page down. */}
+                  <details className="notice__details">
+                    <summary className="notice__summary">
+                      {pluralizeRows(data.issues.length)} in {tab}{' '}
+                      {data.issues.length === 1 ? 'needs' : 'need'} a look
+                    </summary>
+                    <div className="notice__intro">
+                      They’re shown in the table as they are in the sheet.
+                    </div>
+                    <ul className="notice__list">
+                      {data.issues.map((issue) => (
+                        <li key={issue.row}>
+                          Row {issue.row}: {issue.problems.join('; ')}
+                        </li>
+                      ))}
+                    </ul>
+                  </details>
+                </Notice>
+              )}
+
+              {data.readOnly && !data.setupDialogOpen && (
+                <Notice
+                  tone="warning"
+                  className="app__notice"
+                  actions={
+                    <button type="button" className="btn" onClick={data.reopenSetup}>
+                      Set up IDs
+                    </button>
+                  }
+                >
+                  Read-only. Jtracker needs an ID in every row before it can add, edit or delete.
+                </Notice>
+              )}
+
+              <ApplicationsTable
+                applications={applications}
+                today={today}
+                onUpdate={data.update}
+                onDelete={data.remove}
+                readOnly={data.readOnly}
+                onEditingChange={data.setTableBusy}
+              />
+            </section>
           </>
+        ) : (
+          data.mode !== 'reconnect' && !data.loadError && <p>Loading…</p>
         )}
-      </ConfirmDialog>
-    </main>
+
+        <ConfirmDialog
+          open={data.setupDialogOpen}
+          title="Set up IDs in your sheet?"
+          confirmLabel="Add IDs"
+          confirmTone="primary"
+          onConfirm={data.setUpIds}
+          onCancel={data.declineSetup}
+        >
+          {idSetup && (
+            <>
+              <p>
+                {idSetup.addsColumn
+                  ? `Jtracker will add an ID column to ${tab}${idSetup.rowsWithoutId > 0 ? ` and fill IDs for ${pluralizeRows(idSetup.rowsWithoutId)}` : ''}.`
+                  : `Jtracker will fill IDs for ${pluralizeRows(idSetup.rowsWithoutId)} in the ID column of ${tab}.`}
+              </p>
+              <p>
+                IDs let Jtracker find the right row when you edit or delete, even after you sort the
+                sheet. Nothing else changes. Without them, the sheet is read-only here.
+              </p>
+            </>
+          )}
+        </ConfirmDialog>
+      </main>
+    </>
   );
 }

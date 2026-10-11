@@ -1,6 +1,7 @@
 @use 'pkg:octet-scss/abstracts' as *;
 
 // <div class="notice notice--warning" role="status">
+//   <span class="notice__icon"><svg aria-hidden="true">…</svg></span>
 //   <div class="notice__body">
 //     <details class="notice__details">        (optional: a collapsible list)
 //       <summary class="notice__summary">…</summary>
@@ -9,26 +10,26 @@
 //     </details>
 //   </div>
 //   <div class="notice__actions"><button class="btn">Retry</button></div>
+//   <div class="notice__dismiss"><IconButton …></div>
 // </div>
-// Tones: --warning (sample data, sheet problems), --error (failed saves).
+// Untitled UI alert: white card, the tone carried by a ringed icon.
+// Tones: --warning (sample data, sheet problems), --error (failed saves,
+// which also get a tinted surface so they stand out).
 // One line of text makes a 48px notice: 24px line + 11px padding + 1px border,
 // top and bottom.
 .notice {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
+  align-items: flex-start;
   gap: gridx(1) gridx(2);
   padding-block: calc(#{gridx(1.5)} - 1px);
   @include fluid-gutter(padding-inline, 16px, 24px, 360px, 1441px);
-  border: 1px solid;
+  border: 1px solid var(--border-default);
   border-radius: $radius-lg;
+  background-color: var(--surface-card);
+  color: var(--text-primary);
   font-size: rem(16px);
-
-  &--warning {
-    border-color: var(--warning-border);
-    background-color: var(--warning-surface);
-    color: var(--warning-text);
-  }
+  @include elevation(1);
 
   &--error {
     border-color: var(--danger-border);
@@ -36,22 +37,41 @@
     color: var(--danger-text);
   }
 
+  // Featured icon: the 24px icon with two fading rings, drawn as shadows so
+  // they don't add height.
+  &__icon {
+    display: inline-grid;
+    flex-shrink: 0;
+    border-radius: 50%;
+    color: var(--warning-text);
+    box-shadow:
+      0 0 0 gridx(0.5) color-mix(in srgb, currentColor 30%, transparent),
+      0 0 0 gridx(1) color-mix(in srgb, currentColor 10%, transparent);
+
+    .notice--error & {
+      color: var(--danger);
+    }
+  }
+
   &__body {
     flex: 1 1 gridx(30);
+    align-self: center;
   }
 
   &__summary {
     width: fit-content;
-    font-weight: 500;
+    font-weight: 600;
     cursor: pointer;
   }
 
   &__intro {
-    margin-block: gridx(1) 0;
+    margin-block: gridx(0.5) gridx(1);
+    color: var(--text-secondary);
   }
 
   &__list {
     padding-left: gridx(3);
+    color: var(--text-secondary);
     list-style: disc;
   }
 
@@ -59,5 +79,11 @@
     display: flex;
     flex-wrap: wrap;
     gap: gridx(1);
+  }
+
+  // The 48px close button overlaps the padding, so a one-line notice stays 48px.
+  &__dismiss {
+    margin-block: gridx(-1.5);
+    margin-inline-end: gridx(-1.5);
   }
 }

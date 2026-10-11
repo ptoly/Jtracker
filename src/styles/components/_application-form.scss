@@ -9,6 +9,7 @@
 //         <span class="field-error">…</span>
 //       </div>
 //       … <PositionCombobox> (position-combobox block) with the same inline classes
+//       <div class="application-form__field application-form__field--notes">…</div>
 //     </div>
 //     <div class="card__footer application-form__actions">…</div>
 //   </div>
@@ -20,9 +21,15 @@
   font-size: rem(16px);
   line-height: rem(gridx(3)); // hint, warning and errors on the same 24px line
 
+  // Stacked on narrow screens. From 720px: date, company and position on the
+  // left; Notes on the right, as tall as the left column.
   &__fields {
     display: grid;
     gap: gridx(3);
+
+    @include from(720px) {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    }
   }
 
   &__field {
@@ -31,6 +38,15 @@
 
     &--date {
       max-width: gridx(30);
+    }
+
+    &--notes {
+      grid-template-rows: auto 1fr;
+
+      @include from(720px) {
+        grid-column: 2;
+        grid-row: 1 / span 3;
+      }
     }
   }
 

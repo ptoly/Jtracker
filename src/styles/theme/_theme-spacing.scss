@@ -50,59 +50,68 @@ ol {
 }
 
 // ---- App shell ------------------------------------------------------------------
-// Page padding; the top row's gap and its inset once the two columns sit side
-// by side (the columns themselves are in _theme-layout.scss).
-.app {
+// Page padding. The site header's content shares the page's side gutter, so
+// the logo lines up with the page title.
+.app,
+.site-header__inner {
   margin-inline: auto;
-  @include scaled-spacing(padding-top padding-bottom, 4, 32px);
   @include fluid-gutter(padding-inline, 8px, 32px, 360px, 1441px);
 }
 
-.app__top {
-  gap: gridx(4);
-
-  @include from(900px) {
-    @include fluid-gutter(padding-inline, 0px, 80px, 900px, 1441px);
-  }
+.app {
+  @include scaled-spacing(padding-top padding-bottom, 4, 48px);
 }
 
-.app__stats-header {
-  padding-bottom: gridx(2);
+// 40px logo + 12px above and below: a 64px bar, on the grid.
+.site-header__inner {
+  padding-block: gridx(1.5);
 }
 
 // ---- Page rhythm ----------------------------------------------------------------
-// Page title, then section headers (heading + subtitle read as one group).
-.app__title {
+// Page header (title + subtitle), then sections. A section opens with its
+// title, or a header row of title, subtitle and actions.
+.app__page-header {
   @include scaled-spacing(margin-bottom, 4, 40px);
 }
 
+.app__section-title,
 .app__section-header {
   margin-bottom: gridx(3);
 }
 
-// The connection bar and page notices sit between the title and the content.
+.app__section-header {
+  gap: gridx(2);
+}
+
+// The connection banners and page notices sit above the content they're about.
 .connection-bar,
 .app__notice {
   margin-bottom: gridx(3);
 }
 
-// Headings that label a group or a bar drop their flow margin.
-.app__section-header > h2,
+// Headings that group with a subtitle or a bar drop their flow margin.
+.app__page-header > h1,
+.app__section-header h2,
 .card__header > :is(h2, h3) {
   margin-bottom: 0;
 }
 
+// A subtitle sits close under its heading.
+.app__page-header > h1,
+.app__section-header h2 {
+  & + .app__subtitle {
+    margin-top: gridx(0.5);
+  }
+}
+
 // ---- Shared gutter --------------------------------------------------------------
-// One horizontal inset for card content and the table toolbar and footer, so
-// their left edges align. 16px at 360px, growing to 24px at 1441px. (Table
-// cells step 16 → 24px on their own; see Table cells below.)
+// One horizontal inset for card and dialog content. 16px at 360px, growing to
+// 24px at 1441px. (Table cells step 16 → 24px on their own; see Table cells
+// below. The table's toolbar and footer run flush with the page edge.)
 .card__header,
 .card__body,
 .card__footer,
-.confirm-dialog,
-.applications-table__controls,
-.applications-table__notice,
-.applications-table__pagination {
+.confirm-dialog {
   @include fluid-gutter(padding-inline, 16px, 24px, 360px, 1441px);
 }
 
@@ -123,11 +132,9 @@ ol {
 }
 
 // ---- Bars ---------------------------------------------------------------------
-// Vertical inset for header, toolbar and footer bars.
+// Vertical inset for card header and footer bars.
 .card__header,
-.card__footer,
-.applications-table__controls,
-.applications-table__pagination {
+.card__footer {
   padding-block: gridx(2);
 }
 
@@ -143,7 +150,7 @@ ol {
 .applications-table__search-input,
 .applications-table__select,
 .applications-table__field,
-.connection-bar__input,
+.sheet-actions__input,
 .btn,
 .icon-button,
 .position-combobox__toggle {

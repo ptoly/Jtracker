@@ -54,3 +54,43 @@ export function ChevronDownIcon(props: SVGProps<SVGSVGElement>) {
     </Icon>
   );
 }
+
+export function AlertCircleIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon {...props}>
+      <path d="M10 6.667V10m0 3.333h.008M18.333 10a8.333 8.333 0 11-16.666 0 8.333 8.333 0 0116.666 0z" />
+    </Icon>
+  );
+}
+
+export function XCloseIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon {...props}>
+      <path d="M15 5L5 15M5 5l10 10" />
+    </Icon>
+  );
+}
+
+export function DotsVerticalIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon {...props}>
+      <path d="M10 10.833a.833.833 0 100-1.666.833.833 0 000 1.666zM10 5a.833.833 0 100-1.667A.833.833 0 0010 5zm0 11.667a.833.833 0 100-1.667.833.833 0 000 1.667z" />
+    </Icon>
+  );
+}
+
+export function ArrowLeftIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon {...props}>
+      <path d="M15.833 10H4.167m0 0L10 15.833M4.167 10L10 4.167" />
+    </Icon>
+  );
+}
+
+export function ArrowRightIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon {...props}>
+      <path d="M4.167 10h11.666m0 0L10 4.167M15.833 10L10 15.833" />
+    </Icon>
+  );
+}

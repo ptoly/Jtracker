@@ -1,21 +1,23 @@
 import type { ReactNode } from 'react';
 import { canRetry, errorMessage } from '../../storage/errors';
+import { IconButton } from '../IconButton/IconButton';
+import { AlertCircleIcon, XCloseIcon } from '../Icons/Icons';
 
 export interface NoticeProps {
   tone: 'warning' | 'error';
   children: ReactNode;
   /** Buttons that act on the notice (Retry, Reconnect…). */
   actions?: ReactNode;
-  /** Shows a Dismiss button. */
+  /** Shows a close (X) button. */
   onDismiss?: () => void;
-  /** Accessible name for Dismiss when there could be several on a page; must contain "Dismiss". */
+  /** Accessible name for the close button when there could be several on a page; must start with "Dismiss". */
   dismissLabel?: string;
   /** 'alert' for failures the user just caused; 'status' for news; none for what's there on load. */
   role?: 'alert' | 'status';
   className?: string;
 }
 
-/** A banner for sample data, sheet problems and failed saves. */
+/** A banner for sample data, sheet problems and failed saves: icon, message, actions, close. */
 export function Notice({
   tone,
   children,
@@ -27,15 +29,19 @@ export function Notice({
 }: NoticeProps) {
   return (
     <div className={`notice notice--${tone} ${className}`} role={role}>
+      <span className="notice__icon">
+        <AlertCircleIcon />
+      </span>
       <div className="notice__body">{children}</div>
-      {(actions || onDismiss) && (
-        <div className="notice__actions">
-          {actions}
-          {onDismiss && (
-            <button type="button" className="btn" aria-label={dismissLabel} onClick={onDismiss}>
-              Dismiss
-            </button>
-          )}
+      {actions && <div className="notice__actions">{actions}</div>}
+      {onDismiss && (
+        <div className="notice__dismiss">
+          <IconButton
+            label={dismissLabel ?? 'Dismiss'}
+            tooltip="Dismiss"
+            icon={<XCloseIcon />}
+            onClick={onDismiss}
+          />
         </div>
       )}
     </div>

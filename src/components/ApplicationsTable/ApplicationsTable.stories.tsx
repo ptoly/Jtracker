@@ -71,10 +71,10 @@ const meta = {
     onDelete: fn(),
   },
   render: (args) => <StatefulTable {...args} />,
-  // Rendered inside the card it sits in on the page.
+  // Rendered inside the section it sits in on the page.
   decorators: [
     (Story) => (
-      <section className="card card--clip" aria-label="Applications">
+      <section aria-label="Applications">
         <Story />
       </section>
     ),
@@ -89,7 +89,7 @@ export const Default: Story = {};
 export const NeedsFollowUpTab: Story = {
   name: 'Needs Follow Up tab',
   play: async ({ canvas, userEvent }) => {
-    const tab = canvas.getByRole('tab', { name: 'Needs Follow Up' });
+    const tab = canvas.getByRole('tab', { name: /^Needs Follow Up \d+$/ });
     await userEvent.click(tab);
     await expect(tab).toHaveAttribute('aria-selected', 'true');
   },

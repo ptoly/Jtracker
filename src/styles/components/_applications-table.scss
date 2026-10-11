@@ -1,11 +1,11 @@
 @use 'pkg:octet-scss/abstracts' as *;
 
-// Sits inside a .card (see App). The toolbar, table and footer run edge to
-// edge; the card supplies the border and rounded corners.
+// Sits directly on the page (see App): toolbar, table and footer run flush
+// with the page's edges, separated by hairlines.
 // <div class="applications-table">
 //   <div class="applications-table__controls">
 //     <div role="tablist" class="applications-table__tabs">
-//       <button role="tab" class="applications-table__tab">View all</button>
+//       <button role="tab" class="applications-table__tab">View all <span class="applications-table__count">12</span></button>
 //     </div>
 //     <div class="applications-table__search">…</div>
 //   </div>
@@ -21,12 +21,12 @@
     align-items: center;
     justify-content: space-between;
     gap: gridx(2) gridx(3);
-    border-bottom: 1px solid var(--border-default);
+    padding-bottom: gridx(2);
   }
 
   // A failed status change, between the toolbar and the table.
   &__notice {
-    padding-top: gridx(2);
+    padding-bottom: gridx(2);
   }
 
   // Tabs: a segmented track -----------------------------------------------------
@@ -43,6 +43,9 @@
   }
 
   &__tab {
+    display: inline-flex;
+    align-items: center;
+    gap: gridx(1);
     padding-inline: gridx(2);
     border: 1px solid transparent;
     border-radius: $radius-md;
@@ -64,6 +67,19 @@
       background-color: var(--surface-card);
       color: var(--text-primary);
     }
+  }
+
+  // How many applications the tab holds (search included). 22px tall with its
+  // border, inside the tab's 24px line.
+  &__count {
+    padding-inline: gridx(0.75);
+    border: 1px solid var(--border-default);
+    border-radius: $radius-md;
+    background-color: var(--surface-raised);
+    color: var(--text-secondary);
+    font-size: rem(14px);
+    font-weight: 500;
+    line-height: rem(gridx(2.5));
   }
 
   // Search ----------------------------------------------------------------------
@@ -304,14 +320,14 @@
     text-align: center;
   }
 
+  // Previous left, page number centered, Next right.
   &__pagination {
     display: flex;
-    flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
     gap: gridx(2);
+    padding-top: gridx(2);
     border-top: 1px solid var(--border-default);
-    background-color: var(--surface-raised);
   }
 
   &__page {
@@ -319,9 +335,9 @@
     font-size: rem(16px);
   }
 
-  &__page-buttons {
-    display: flex;
-    gap: gridx(1.5);
+  &__page-button {
+    gap: gridx(1);
+    padding-inline: gridx(2);
   }
 }
 

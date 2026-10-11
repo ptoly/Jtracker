@@ -132,14 +132,14 @@ export function ApplicationForm({ applications, today, onAdd }: ApplicationFormP
             <FieldError id={errorId('position')} message={errors.position} />
           </div>
 
-          <div className="application-form__field">
+          <div className="application-form__field application-form__field--notes">
             <label htmlFor={ids.notes} className="application-form__label">
               Notes <span className="application-form__optional">(optional)</span>
             </label>
             <textarea
               id={ids.notes}
               className="application-form__input application-form__textarea"
-              rows={1}
+              rows={3}
               value={draft.notes}
               onChange={(event) => setField('notes', event.target.value)}
               onKeyDown={handleNotesKeyDown}

@@ -12,14 +12,13 @@
 // =============================================================================
 
 // ---- App shell ------------------------------------------------------------------
-// Form left, stats right from 900px; stacked below.
-.app__top {
-  display: grid;
-
-  @include from(900px) {
-    grid-template-columns: minmax(0, 640px) minmax(0, 340px);
-    justify-content: space-between;
-  }
+// A section header: title and subtitle left, actions right; the actions wrap
+// below on narrow screens.
+.app__section-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
 }
 
 // ---- Reading measure --------------------------------------------------------------

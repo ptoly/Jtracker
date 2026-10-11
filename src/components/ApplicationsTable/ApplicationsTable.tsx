@@ -7,7 +7,7 @@ import { StatusOptions } from '../ApplicationFields/StatusOptions';
 import { ConfirmDialog } from '../ConfirmDialog/ConfirmDialog';
 import { DateText } from '../DateText/DateText';
 import { IconButton } from '../IconButton/IconButton';
-import { PencilIcon, SearchIcon, TrashIcon } from '../Icons/Icons';
+import { ArrowLeftIcon, ArrowRightIcon, PencilIcon, SearchIcon, TrashIcon } from '../Icons/Icons';
 import { SaveError } from '../Notice/Notice';
 import { EditRow } from './EditRow';
 
@@ -18,9 +18,9 @@ const SEARCH_ANNOUNCE_DELAY_MS = 500;
 
 const TABS = [
   { key: 'all', label: 'View all' },
+  { key: 'follow-up', label: 'Needs Follow Up' },
   { key: 'rejected', label: 'Rejected' },
   { key: 'interviewed', label: 'Interviewed' },
-  { key: 'follow-up', label: 'Needs Follow Up' },
 ] as const;
 
 type TabKey = (typeof TABS)[number]['key'];
@@ -436,6 +436,9 @@ export function ApplicationsTable({
                 onKeyDown={(event) => handleTabKeyDown(event, index)}
               >
                 {label}
+                <span className="applications-table__count">
+                  {filterRows(applications, followUpDays, today, key, query).length}
+                </span>
               </button>
             );
           })}
@@ -615,27 +618,27 @@ export function ApplicationsTable({
             </div>
 
             <nav className="applications-table__pagination" aria-label="Pagination">
+              <button
+                type="button"
+                className="btn applications-table__page-button"
+                disabled={editing || currentPage === 1}
+                onClick={() => goToPage(currentPage - 1)}
+              >
+                <ArrowLeftIcon />
+                Previous
+              </button>
               <span className="applications-table__page">
                 Page {currentPage} of {pageCount}
               </span>
-              <div className="applications-table__page-buttons">
-                <button
-                  type="button"
-                  className="btn"
-                  disabled={editing || currentPage === 1}
-                  onClick={() => goToPage(currentPage - 1)}
-                >
-                  Previous
-                </button>
-                <button
-                  type="button"
-                  className="btn"
-                  disabled={editing || currentPage === pageCount}
-                  onClick={() => goToPage(currentPage + 1)}
-                >
-                  Next
-                </button>
-              </div>
+              <button
+                type="button"
+                className="btn applications-table__page-button"
+                disabled={editing || currentPage === pageCount}
+                onClick={() => goToPage(currentPage + 1)}
+              >
+                Next
+                <ArrowRightIcon />
+              </button>
             </nav>
           </>
         )}

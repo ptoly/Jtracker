@@ -1,18 +1,21 @@
 @use 'pkg:octet-scss/abstracts' as *;
 
 // <main class="app">
-//   <h1 class="app__title">…</h1>
-//   <div class="app__top">
-//     <section class="app__form">
-//       <div class="app__section-header"><h2>…</h2><p class="app__subtitle">…</p></div>
-//       …
-//     </section>
-//     <section class="app__stats">…</section>
-//   </div>
-//   <section class="card">…table…</section>
+//   <div class="app__page-header"><h1>…</h1><p class="app__subtitle">…</p></div>
+//   <section>
+//     <h2 class="app__section-title">…</h2>
+//     …form…
+//   </section>
+//   <section>
+//     <div class="app__section-header">
+//       <div><h2>…</h2><p class="app__subtitle">Connected to <strong class="app__sheet-name">…</strong></p></div>
+//       …actions…
+//     </div>
+//     …notices, table…
+//   </section>
 // </main>
-// The app shell's spacing and layout (page padding, the two-column top row,
-// section rhythm) are page-level, so they live in theme/_theme-spacing.scss and
+// The app shell's spacing and layout (page padding, header rows, section
+// rhythm) are page-level, so they live in theme/_theme-spacing.scss and
 // theme/_theme-layout.scss. This partial keeps how the shell's parts look.
 .app {
   &__subtitle {
@@ -21,7 +24,8 @@
     line-height: rem(gridx(3));
   }
 
-  &__stats-header {
-    border-bottom: 1px solid var(--border-default);
+  &__sheet-name {
+    color: var(--text-primary);
+    font-weight: 600;
   }
 }

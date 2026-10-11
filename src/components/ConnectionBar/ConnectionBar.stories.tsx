@@ -9,12 +9,10 @@ const meta = {
   args: {
     mode: 'sample',
     sheetName: 'Job search 2026',
-    tab: 'Sheet1',
     onConnect: fn(),
     onReconnect: fn(),
     onDisconnect: fn(),
     onReload: fn(),
-    onTabChange: fn(),
     onPreload: fn(),
   },
 } satisfies Meta<typeof ConnectionBar>;
@@ -35,10 +33,6 @@ export const Reconnect: Story = {
   args: { mode: 'reconnect' },
 };
 
-export const Connected: Story = {
-  args: { mode: 'sheet' },
-};
-
 export const SyncPaused: Story = {
   name: 'Sign-in timed out while away',
   args: { mode: 'sheet', syncPaused: true },
@@ -47,16 +41,4 @@ export const SyncPaused: Story = {
 export const SessionExpired: Story = {
   name: 'Sign-in couldn’t renew',
   args: { mode: 'sheet', sessionExpired: true },
-};
-
-export const ChangeTab: Story = {
-  name: 'Change the sheet tab',
-  args: { mode: 'sheet' },
-  play: async ({ canvas, userEvent, args }) => {
-    await userEvent.click(canvas.getByText('Sheet settings'));
-    const input = canvas.getByRole('textbox', { name: 'Sheet tab name' });
-    await userEvent.clear(input);
-    await userEvent.type(input, 'Applications{Enter}');
-    await expect(args.onTabChange).toHaveBeenCalledWith('Applications');
-  },
 };
