@@ -3,5 +3,5 @@
 // <span class="field-error" id="…">Enter a company.</span>
 // Shared by the add form and the table's edit row.
 .field-error {
-  color: var(--danger);
+  color: var(--danger-text); // passes on white, the page and the edit row's tint
 }

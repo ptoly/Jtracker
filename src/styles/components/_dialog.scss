@@ -17,7 +17,6 @@
   border-radius: $radius-xl;
   background-color: var(--surface-card);
   color: var(--text-primary);
-  @include elevation(8);
 
   &--small {
     width: min(100% - #{gridx(4)}, #{gridx(60)});

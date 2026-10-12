@@ -1,116 +1,134 @@
 // =============================================================================
-//  Brand — Untitled UI light palette on octet's tokens.
+//  Brand — a light, neutral palette on octet's tokens (Tailwind's values,
+//  written as plain hex; no Tailwind).
 //  ---------------------------------------------------------------------------
-//  Loaded after octet base's :root, so everything here wins. Ramps are
-//  Untitled UI's (100 lightest → 900 darkest, same direction as octet's);
-//  semantic roles are re-pointed for a light UI, since octet's defaults
-//  assume a dark one.
+//  Loaded after octet base's :root, so everything here wins. Ramps run light
+//  → dark like octet's (100 → 900); neutral adds 25, 50 and 950, and the
+//  colour ramps add 50 for tinted surfaces. Semantic roles are re-pointed for
+//  a light UI, since octet's defaults assume a dark one.
 //
-//  Contrast (WCAG AA) on white unless noted:
-//    text-primary 17.8 · text-secondary 7.7 · text-muted 5.0 (4.8 on raised)
-//    brand fill w/ white text 5.0 · link 6.6 · danger 4.8 · focus ring 5.0
-//    border-strong 5.0 — form-control edges need 3:1, so inputs use gray-500
-//    rather than Untitled's gray-300 (1.5:1). Cards and dividers use the
-//    lighter border-default, which is decorative.
+//    primary   — indigo, the one accent: brand, links, focus ring
+//    secondary — red: danger
+//    tertiary  — amber: warning
+//    neutral   — gray: surfaces, text, lines
+//
+//  Contrast (WCAG AA) — worst case of white, the page (neutral-50) and the
+//  edit row's tint (primary-50):
+//    text-primary 15.9 · text-secondary 9.2 · text-muted 4.6 (page; white 4.8)
+//    link 5.6 · white on brand 6.3 · white on danger 4.8
+//    danger-text 5.8 · warning-text 4.8 on its surface
+//    border-strong 4.6 and focus ring 5.6 (3:1 needed, WCAG 1.4.11)
+//  Muted text never sits on the tint; muted icons there are 4.3 (3:1 needed).
+//  Four roles sit a step darker than the obvious pick, to pass:
+//    border-strong 500, not 400 (2.4:1) — control edges need 3:1
+//    danger-text red-700, not 600 (4.4:1 on red-50, 4.3:1 on the tint)
+//    warning-text amber-700, not 600 (3.1:1 on amber-50)
+//  border-subtle and border-default separate surfaces; they're decorative.
 //
 //  Full token list: node_modules/octet-scss/abstracts/_colors.scss.
 // =============================================================================
 
 :root {
   color-scheme: light; // native controls (date picker, scrollbars) match
+
   // ---- Ramps ----------------------------------------------------------------
-  // Primary — Untitled "Brand" purple
-  --primary-100: #f4ebff;
-  --primary-200: #e9d7fe;
-  --primary-300: #d6bbfb;
-  --primary-400: #b692f6;
-  --primary-500: #9e77ed;
-  --primary-600: #7f56d9;
-  --primary-700: #6941c6;
-  --primary-800: #53389e;
-  --primary-900: #42307d;
+  // Primary — indigo
+  --primary-50: #eef2ff;
+  --primary-100: #e0e7ff;
+  --primary-200: #c7d2fe;
+  --primary-300: #a5b4fc;
+  --primary-400: #818cf8;
+  --primary-500: #6366f1;
+  --primary-600: #4f46e5;
+  --primary-700: #4338ca;
+  --primary-800: #3730a3;
+  --primary-900: #312e81;
 
-  // Secondary — Untitled "Success" green
-  --secondary-100: #d1fadf;
-  --secondary-200: #a6f4c5;
-  --secondary-300: #6ce9a6;
-  --secondary-400: #32d583;
-  --secondary-500: #12b76a;
-  --secondary-600: #039855;
-  --secondary-700: #027a48;
-  --secondary-800: #05603a;
-  --secondary-900: #054f31;
+  // Secondary — red
+  --secondary-50: #fef2f2;
+  --secondary-100: #fee2e2;
+  --secondary-200: #fecaca;
+  --secondary-300: #fca5a5;
+  --secondary-400: #f87171;
+  --secondary-500: #ef4444;
+  --secondary-600: #dc2626;
+  --secondary-700: #b91c1c;
+  --secondary-800: #991b1b;
+  --secondary-900: #7f1d1d;
 
-  // Tertiary — Untitled "Warning" amber
-  --tertiary-100: #fef0c7;
-  --tertiary-200: #fedf89;
-  --tertiary-300: #fec84b;
-  --tertiary-400: #fdb022;
-  --tertiary-500: #f79009;
-  --tertiary-600: #dc6803;
-  --tertiary-700: #b54708;
-  --tertiary-800: #93370d;
-  --tertiary-900: #7a2e0e;
+  // Tertiary — amber
+  --tertiary-50: #fffbeb;
+  --tertiary-100: #fef3c7;
+  --tertiary-200: #fde68a;
+  --tertiary-300: #fcd34d;
+  --tertiary-400: #fbbf24;
+  --tertiary-500: #f59e0b;
+  --tertiary-600: #d97706;
+  --tertiary-700: #b45309;
+  --tertiary-800: #92400e;
+  --tertiary-900: #78350f;
 
-  // Neutral — Untitled "Gray"
-  --neutral-100: #f2f4f7;
-  --neutral-200: #eaecf0;
-  --neutral-300: #d0d5dd;
-  --neutral-400: #98a2b3;
-  --neutral-500: #667085;
-  --neutral-600: #475467;
-  --neutral-700: #344054;
-  --neutral-800: #1d2939;
-  --neutral-900: #101828;
+  // Neutral — gray, 12 steps
+  --neutral-25: #fcfcfd;
+  --neutral-50: #f9fafb;
+  --neutral-100: #f3f4f6;
+  --neutral-200: #e5e7eb;
+  --neutral-300: #d1d5db;
+  --neutral-400: #9ca3af;
+  --neutral-500: #6b7280;
+  --neutral-600: #4b5563;
+  --neutral-700: #374151;
+  --neutral-800: #1f2937;
+  --neutral-900: #111827;
+  --neutral-950: #030712;
 
   // ---- Semantic roles (light) -------------------------------------------------
   --brand: var(--primary-600);
   --brand-hover: var(--primary-700);
   --brand-active: var(--primary-800);
-  --brand-subtle: #f9f5ff; // Untitled brand-50: tinted surface (highlighted options)
+  --brand-subtle: var(--primary-50); // tinted surface: highlighted options, the row being edited
 
-  --accent: var(--secondary-600);
+  // One accent: everything that would be an accent is the brand.
+  --accent: var(--brand);
   --highlight: var(--tertiary-500);
 
-  --link: var(--primary-700);
-  --link-hover: var(--primary-800);
+  --link: var(--primary-600);
+  --link-hover: var(--primary-700);
   --focus-ring: var(--primary-600);
 
-  --surface-page: #fff;
-  --surface-raised: #f9fafb; // Untitled gray-50: toolbars, table footers, tab tracks
+  --surface-page: var(--neutral-50);
+  --surface-raised: #fff;
   --surface-card: #fff;
-  --surface-elevated: #fff; // menus and popovers (they lift with a shadow)
+  --surface-elevated: #fff;
 
   --text-primary: var(--neutral-900);
-  --text-secondary: var(--neutral-600);
+  --text-secondary: var(--neutral-700);
   --text-muted: var(--neutral-500);
   --text-on-brand: #fff;
 
   --border-subtle: var(--neutral-200);
-  --border-default: var(--neutral-200);
-  --border-strong: var(--neutral-400);
+  --border-default: var(--neutral-300);
+  --border-strong: var(--neutral-500); // control edges: 4.8:1 (400 is 2.5:1)
 
-  --danger: #d92d20; // Untitled error-600
+  --danger: var(--secondary-600); // fills and icons; white on it is 4.8:1
 
   // ---- Status roles -----------------------------------------------------------
-  // Placeholder values (Untitled UI ramps) until the palette is settled.
-  // Danger: failed saves and other errors. Text is error-700 because --danger
-  // (error-600) is only 4.45:1 on --danger-surface.
-  --danger-surface: #fef3f2; // Untitled error-50
-  --danger-border: #fda29b; // Untitled error-300
-  --danger-text: #b42318; // Untitled error-700, 6.0:1 on --danger-surface
+  // Danger: failed saves, field errors and other errors.
+  --danger-surface: var(--secondary-50);
+  --danger-border: var(--secondary-200);
+  --danger-text: var(--secondary-700); // 5.9:1 on --danger-surface, 5.8:1 on --brand-subtle
 
   // Warning: the calculated "Follow Up Due" state, the duplicate notice, the
   // sample-data banner and sheet notices.
-  --warning-surface: #fffaeb; // Untitled warning-50
-  --warning-border: var(--tertiary-300);
-  --warning-text: var(--tertiary-700); // 5.2:1 on --warning-surface
+  --warning-surface: var(--tertiary-50);
+  --warning-border: var(--tertiary-200);
+  --warning-text: var(--tertiary-700); // 4.8:1 on --warning-surface
   --warning-indicator: var(--tertiary-500);
 
-  // Tooltips: inverted, like Untitled UI's dark tooltip. White on gray-900 is 17.8:1.
+  // Tooltips: inverted. White on gray-900 is 17.7:1.
   --tooltip-surface: var(--neutral-900);
   --tooltip-text: #fff;
 
   // Scrim behind modal dialogs.
-  --backdrop: rgb(16 24 40 / 0.7); // Untitled gray-900 at 70%
+  --backdrop: rgb(17 24 39 / 0.7); // gray-900 at 70%
 }

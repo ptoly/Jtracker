@@ -18,7 +18,7 @@
 // Padding is the same on every side and steps with the viewport
 // (_theme-spacing.scss): one line of text makes a 48px notice, 56px on the
 // widest screens. The hairline is a real border on an overlay (::after), so it
-// adds no height; the elevation already uses box-shadow.
+// adds no height. No shadow: only cards are elevated.
 .notice {
   position: relative;
   display: flex;
@@ -29,13 +29,12 @@
   background-color: var(--surface-card);
   color: var(--text-primary);
   font-size: rem(16px);
-  @include elevation(1);
 
   &::after {
     content: '';
     position: absolute;
     inset: 0;
-    border: 1px solid var(--border-default);
+    border: 1px solid var(--border-subtle);
     border-radius: inherit;
     pointer-events: none;
   }

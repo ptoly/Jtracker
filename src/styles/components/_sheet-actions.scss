@@ -33,11 +33,10 @@
     width: max-content;
     min-width: gridx(30);
     padding-block: gridx(0.5);
-    border: 1px solid var(--border-default);
+    border: 1px solid var(--border-default); // no shadow, so a firmer edge than a card's
     border-radius: $radius-lg;
     background-color: var(--surface-elevated);
     font-size: rem(16px);
-    @include elevation(4);
   }
 
   &__item {

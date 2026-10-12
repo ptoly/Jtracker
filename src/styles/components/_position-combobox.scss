@@ -38,11 +38,10 @@
     max-height: gridx(30);
     padding: gridx(0.5) 0;
     overflow-y: auto;
-    border: 1px solid var(--border-default);
+    border: 1px solid var(--border-default); // no shadow, so a firmer edge than a card's
     border-radius: $radius-lg;
     background-color: var(--surface-elevated);
     list-style: none;
-    @include elevation(4);
 
     &[data-open] {
       display: block;

@@ -23,7 +23,7 @@
     content: '';
     position: absolute;
     inset: 0;
-    border: 1px solid var(--border-default);
+    border: 1px solid var(--border-subtle);
     border-radius: inherit;
     pointer-events: none;
   }
@@ -33,7 +33,7 @@
     align-items: center;
     justify-content: space-between;
     gap: gridx(2);
-    box-shadow: inset 0 -1px 0 var(--border-default);
+    box-shadow: inset 0 -1px 0 var(--border-subtle);
 
     @media (forced-colors: active) {
       border-bottom: 1px solid;
@@ -48,7 +48,7 @@
     gap: gridx(2);
     border-radius: 0 0 $radius-lg $radius-lg;
     background-color: var(--surface-raised);
-    box-shadow: inset 0 1px 0 var(--border-default);
+    box-shadow: inset 0 1px 0 var(--border-subtle);
 
     @media (forced-colors: active) {
       border-top: 1px solid;

@@ -26,7 +26,6 @@
     white-space: nowrap;
     opacity: 0;
     visibility: hidden;
-    @include elevation(4);
     @include transition(opacity visibility, $duration-fast);
 
     &[data-open] {
