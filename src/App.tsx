@@ -44,9 +44,8 @@ export function App() {
       </header>
 
       <main className="app max-width">
-        <div className="app__page-header">
-          <h1 className="size-h3">Job Tracker History</h1>
-          <p className="app__subtitle">You can add and update job applications here</p>
+        <div className="app__page-header has-divider">
+          <h1>Job Tracker History</h1>
         </div>
 
         <ConnectionBar

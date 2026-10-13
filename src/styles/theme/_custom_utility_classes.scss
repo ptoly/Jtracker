@@ -1,0 +1,5 @@
+@use "pkg:octet-scss/abstracts" as *;
+
+.has-divider {
+  border-bottom: 1px var(--border-subtle) solid;
+}

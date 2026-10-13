@@ -14,11 +14,11 @@
 //   </dialog>
 // </div>
 // The menu drops below the ⋮ button, right-aligned so it stays on screen.
+// Spacing between the buttons and in the settings form: _theme-spacing.scss.
 .sheet-actions {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: gridx(1);
 
   &__menu {
     position: relative;
@@ -80,11 +80,6 @@
 
   &__form {
     display: grid;
-    gap: gridx(1);
-
-    .dialog__actions {
-      margin-top: gridx(2);
-    }
   }
 
   &__label {

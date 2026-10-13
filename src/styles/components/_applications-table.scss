@@ -27,6 +27,8 @@
 //     </nav>
 //   </div>
 // </div>
+// Spacing between the parts (gaps in rows, margins between stacked items) is
+// in _theme-spacing.scss (Applications table). Padding inside a part stays here.
 .applications-table {
   // The toolbar: a raised bar, search left and tabs right. The tabs run to
   // its bottom edge, so the selected tab's underline sits on the bar's
@@ -36,7 +38,6 @@
     flex-wrap: wrap;
     align-items: stretch;
     justify-content: space-between;
-    column-gap: gridx(3);
     border-radius: $radius-lg $radius-lg 0 0;
     background-color: var(--surface-raised);
     box-shadow: inset 0 -1px 0 var(--border-default); // the edge used on tinted zones
@@ -44,11 +45,6 @@
     @media (forced-colors: active) {
       border-bottom: 1px solid;
     }
-  }
-
-  // A failed status change, between the toolbar and the table.
-  &__notice {
-    padding-block: gridx(2);
   }
 
   // Tabs: underlined ---------------------------------------------------------------
@@ -60,7 +56,6 @@
   &__tabs {
     display: flex;
     align-items: stretch;
-    gap: gridx(1);
     min-width: 0;
     max-width: 100%;
     overflow-x: auto;
@@ -71,7 +66,6 @@
     display: inline-flex;
     flex: none;
     align-items: center;
-    gap: gridx(1);
     padding-inline: gridx(1);
     border: 0;
     background: none;
@@ -248,7 +242,6 @@
   // The selects fill the column, so ones with a dot match the rest.
   &__status {
     display: grid;
-    gap: gridx(0.5);
   }
 
   // tertiary-700 on the page: 5:1.
@@ -262,7 +255,6 @@
   &__row-icons {
     display: flex;
     justify-content: flex-end;
-    gap: gridx(0.5);
   }
 
   // Edit mode -------------------------------------------------------------------
@@ -284,14 +276,7 @@
 
   &__stack {
     display: grid;
-    gap: gridx(1);
     min-width: gridx(30);
-  }
-
-  // Position in the edit card: its visible label over the input.
-  &__combobox {
-    display: grid;
-    gap: gridx(1);
   }
 
   // Edit-row fields, mixed with .control, which supplies the look.
@@ -303,14 +288,8 @@
     }
   }
 
-  // A failed save under the edit row's buttons.
-  &__row-error {
-    margin-top: gridx(1);
-  }
-
   &__row-actions {
     display: flex;
-    gap: gridx(1);
   }
 
   // octet's .btn is 48px tall; fits the edit row's 48px fields.
@@ -338,7 +317,6 @@
   &__sort {
     display: inline-flex;
     align-items: center;
-    gap: gridx(1);
     padding: 0;
     border: 0;
     background: none;
@@ -352,7 +330,6 @@
   &__sort-icon {
     display: inline-flex;
     flex-direction: column;
-    gap: gridx(0.25);
 
     &::before,
     &::after {
@@ -383,8 +360,6 @@
   &__sort-by {
     display: flex;
     align-items: center;
-    gap: gridx(1.5);
-    padding-top: gridx(2);
   }
 
   &__sort-label {
@@ -399,15 +374,11 @@
   }
 
   &__cards {
-    display: grid;
-    gap: gridx(2);
-    padding-block: gridx(2);
     list-style: none;
   }
 
   &__card {
     display: grid;
-    gap: gridx(2);
     @include scaled-spacing(padding, 4, 24px, 4);
     border-radius: $radius-lg;
     background-color: var(--surface-card);
@@ -417,17 +388,9 @@
     @media (forced-colors: active) {
       border: 1px solid;
     }
-
-    // The buttons reach 12px into the padding, so their icons line up with
-    // the card's text edge.
-    > .applications-table__row-icons {
-      margin: gridx(-1.5);
-      margin-top: 0;
-    }
   }
 
   &__card-title {
-    margin: 0;
     color: var(--text-primary);
     font-size: rem(18px);
     font-weight: 600;
@@ -438,7 +401,6 @@
   &__facts {
     display: flex;
     flex-wrap: wrap;
-    gap: gridx(1) gridx(3);
 
     dt {
       color: var(--text-secondary);
@@ -446,7 +408,6 @@
     }
 
     dd {
-      margin: 0;
       color: var(--text-primary);
     }
   }
@@ -465,7 +426,6 @@
   &__empty {
     display: grid;
     justify-items: center;
-    gap: gridx(2);
     @include scaled-spacing(padding-top padding-bottom, 3, 48px);
     @include fluid-gutter(padding-inline, 16px, 24px, 360px, 1441px);
     color: var(--text-secondary);
@@ -484,7 +444,6 @@
     flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
-    gap: gridx(2);
     padding-top: gridx(2);
     box-shadow: inset 0 1px 0 var(--border-subtle);
 
@@ -497,7 +456,6 @@
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: gridx(0.5);
     list-style: none;
 
     @include until(720px) {
@@ -550,7 +508,6 @@
   }
 
   &__page-button {
-    gap: gridx(1);
     padding-inline: gridx(2);
   }
 }

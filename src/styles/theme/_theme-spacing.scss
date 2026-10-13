@@ -7,7 +7,10 @@
 //  here, applied by selector:
 //    • rhythm BETWEEN blocks (sections, headings, list items, page rhythm)
 //    • gutters, insets and control padding SHARED by several components
-//  Spacing that belongs to one component alone stays in its partial.
+//    • spacing BETWEEN a component's children (that's rhythm too)
+//  Stacked items are spaced with margin-bottom, never gap; gap is only for
+//  items side by side (grid columns, a row of buttons). A component partial
+//  keeps only the padding inside its own boxes.
 //
 //  Vertical values step on the 8pt grid (gridx / scaled-spacing); horizontal
 //  values are fluid (fluid-gutter). Blocks are spaced with margin-bottom,
@@ -18,8 +21,13 @@
 // ---- Block rhythm -------------------------------------------------------------
 
 // Space between stacked sections.
-section {
+section,
+.app__page-header {
   @include scaled-spacing(margin-bottom, 5, 64px);   // tight, app-like rhythm (starter: 5, 88px)
+
+  &.has-divider {
+    @include scaled-spacing(padding-bottom, 4, 32px);
+  }
 }
 
 // Flow spacing — bottom margin on stacked text blocks.
@@ -70,21 +78,21 @@ ol {
 // ---- Page rhythm ----------------------------------------------------------------
 // Page header (title + subtitle), then sections. A section opens with its
 // title, or a header row of title, subtitle and actions.
-.app__page-header {
-  @include scaled-spacing(margin-bottom, 4, 40px);
-}
 
 .app__section-header {
   gap: gridx(2);
   margin-bottom: gridx(3);
 }
 
-// Check/Add: the grid's gap does the spacing, so the title block drops its own.
+// Check/Add: the title block over the form card when stacked; side by side
+// from 900px, with a column gap instead.
 .app__add {
-  gap: gridx(3) gridx(4);
+  @include from(900px) {
+    column-gap: gridx(4);
 
-  > .app__section-header {
-    margin-bottom: 0;
+    > .app__section-header {
+      margin-bottom: 0;
+    }
   }
 }
 
@@ -207,6 +215,22 @@ ol {
   @include scaled-spacing(padding, 4, 24px, 4);
 }
 
+// The match alert: its list beside the ✕, and one group per company.
+.match-alert {
+  column-gap: gridx(2);
+}
+
+.match-alert__group:not(:last-child) {
+  margin-bottom: gridx(2);
+}
+
+// The 48px ✕ reaches 12px into the padding on three sides (as .notice's
+// does), so it takes one 24px line.
+.match-alert__dismiss {
+  margin-block: gridx(-1.5);
+  margin-inline-end: gridx(-1.5);
+}
+
 // ---- Card insets --------------------------------------------------------------
 // Vertical inset for card bodies and dialogs.
 .card__body,
@@ -217,4 +241,189 @@ ol {
 // Icon buttons are square: the same 12px on every side of the 24px icon box.
 .icon-button {
   padding-inline: gridx(1.5);
+}
+
+// ---- Add form -------------------------------------------------------------------
+// The card, then a failed-add message when there is one.
+.application-form > .card:has(+ .application-form__error) {
+  margin-bottom: gridx(2);
+}
+
+// Fields beside the match alert from 720px; above it when stacked (only when
+// there's an alert).
+.application-form__body {
+  @include from(720px) {
+    column-gap: gridx(3);
+  }
+}
+
+.application-form__fields:has(+ .application-form__matches:not(:empty)) {
+  @include until(720px) {
+    margin-bottom: gridx(3);
+  }
+}
+
+// 24px between fields.
+.application-form__fields > :not(:last-child) {
+  margin-bottom: gridx(3);
+}
+
+// Company and Date Applied: 16px apart side by side. Each keeps 24px below,
+// so the space is the same whether Date sits beside Company or wraps under it;
+// the row itself adds none.
+.application-form__row {
+  column-gap: gridx(2);
+
+  .application-form__fields > & {
+    margin-bottom: 0;
+  }
+
+  > .application-form__field {
+    margin-bottom: gridx(3);
+  }
+}
+
+// Inside a field: label, input, helper text, error and button 8px apart.
+.application-form__field > :not(:last-child),
+.application-form__combobox > label {
+  margin-bottom: gridx(1);
+}
+
+// The asterisk after a label.
+.application-form__required {
+  margin-left: gridx(0.25);
+}
+
+// Add Note: its icon and text.
+.application-form__note-toggle {
+  column-gap: gridx(1);
+}
+
+// ---- Sheet actions -------------------------------------------------------------
+// Reload and the ⋮ button, side by side.
+.sheet-actions {
+  gap: gridx(1);
+}
+
+// Sheet settings dialog: label, field, then the buttons 24px below.
+.sheet-actions__label {
+  margin-bottom: gridx(1);
+}
+
+.sheet-actions__form > .control {
+  margin-bottom: gridx(3);
+}
+
+// ---- Applications table --------------------------------------------------------
+// Side by side: search and tabs; tabs; a tab's label and count; a header's
+// label and caret; row buttons; Sort by and its select; page buttons.
+.applications-table__controls {
+  column-gap: gridx(3);
+}
+
+.applications-table__tabs,
+.applications-table__tab,
+.applications-table__sort,
+.applications-table__row-actions,
+.applications-table__page-button {
+  column-gap: gridx(1);
+}
+
+.applications-table__row-icons,
+.applications-table__pages {
+  gap: gridx(0.5);
+}
+
+.applications-table__sort-by {
+  column-gap: gridx(1.5);
+}
+
+// The unsorted caret pair: up over down, 2px apart.
+th:not([aria-sort]) .applications-table__sort-icon::before {
+  margin-bottom: gridx(0.25);
+}
+
+// A failed status change, between the toolbar and the table.
+.applications-table__notice {
+  padding-block: gridx(2);
+}
+
+// Status: the select, then "Follow Up Due" under it.
+.applications-table__status > :not(:last-child) {
+  margin-bottom: gridx(0.5);
+}
+
+// Edit row and edit card fields: 8px apart (labels show in the card); the
+// buttons, then a failed save under them.
+.applications-table__stack > :not(:last-child),
+.applications-table__combobox > label {
+  margin-bottom: gridx(1);
+}
+
+.applications-table__row-actions:has(+ .applications-table__row-error) {
+  margin-bottom: gridx(1);
+}
+
+// Empty state: the message, then the "Add application for …" button.
+.applications-table__empty > p:not(:last-child) {
+  margin-bottom: gridx(2);
+}
+
+// Cards (under 720px): Sort by, then the cards, 16px apart, then pagination.
+.applications-table__sort-by {
+  padding-top: gridx(2);
+  margin-bottom: gridx(2);
+}
+
+.applications-table__cards {
+  margin-bottom: gridx(2);
+}
+
+.applications-table__card:not(:last-child) {
+  margin-bottom: gridx(2);
+}
+
+// Inside a card: 16px between its parts.
+.applications-table__card > :not(:last-child) {
+  margin-bottom: gridx(2);
+}
+
+.applications-table__card-title {
+  margin-bottom: 0;
+}
+
+// Applied, Followed up and Age: 24px apart in a row; 8px under each, so a
+// wrapped row is spaced too. The facts block makes up the rest of the 16px.
+.applications-table__facts {
+  column-gap: gridx(3);
+
+  > div {
+    margin-bottom: gridx(1);
+  }
+
+  .applications-table__card > & {
+    margin-bottom: gridx(1);
+  }
+
+  dd {
+    margin: 0;
+  }
+}
+
+// The card's buttons reach 12px into its padding, so their icons line up
+// with the card's text edge.
+.applications-table__card > .applications-table__row-icons {
+  margin: 0 gridx(-1.5) gridx(-1.5);
+}
+
+// Pagination: Previous, pages, Next 16px apart; under 720px the pages take
+// their own row above the buttons.
+.applications-table__pagination {
+  column-gap: gridx(2);
+}
+
+.applications-table__pages {
+  @include until(720px) {
+    margin-bottom: gridx(2);
+  }
 }

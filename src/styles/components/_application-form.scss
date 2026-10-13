@@ -25,17 +25,16 @@
 // From 720px the fields take three fifths of the card and earlier
 // applications the rest. That column is kept even while it's empty,
 // so the fields never change width when the alert comes and goes.
+// Spacing between the parts is in _theme-spacing.scss (Add form).
 .application-form {
   display: grid;
   grid-template-columns: minmax(0, 1fr); // fields shrink to a narrow screen
-  gap: gridx(2);
   font-size: rem(16px);
   line-height: rem(gridx(3)); // help and errors on the same 24px line
 
   &__body {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
-    gap: gridx(3);
 
     // Fields get three fifths, so Company and Date fit on one row on most
     // screens; the alert gets the rest.
@@ -48,10 +47,9 @@
   &__fields {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
-    gap: gridx(3);
   }
 
-  // Below the fields when stacked; nothing there means no extra gap.
+  // Below the fields when stacked; nothing there means nothing at all.
   &__matches:empty {
     @include until(720px) {
       display: none;
@@ -62,7 +60,6 @@
   &__combobox {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
-    gap: gridx(1);
   }
 
   // Company and Date Applied side by side: Company takes the room, Date its
@@ -71,7 +68,6 @@
     display: flex;
     flex-wrap: wrap;
     align-items: flex-start;
-    gap: gridx(3) gridx(2);
 
     > .application-form__field {
       flex: 1 1 gridx(22);
@@ -91,7 +87,6 @@
 
   // primary-600: 6:1 on the card.
   &__required {
-    margin-left: gridx(0.25);
     color: var(--brand);
   }
 
@@ -132,7 +127,6 @@
     display: inline-flex;
     align-items: center;
     justify-self: start;
-    gap: gridx(1);
   }
 
   // Manage Positions: right-aligned under the Position field.
@@ -145,10 +139,5 @@
   &__actions {
     justify-content: flex-end;
     font-size: rem(16px);
-  }
-
-  // A failed add, under the card; the fields keep what was typed.
-  &__error {
-    margin-top: gridx(2);
   }
 }
