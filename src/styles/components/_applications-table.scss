@@ -1,13 +1,12 @@
 @use 'pkg:octet-scss/abstracts' as *;
+@use '../theme/hairline' as *;
 
 // Sits directly on the page (see App): toolbar, table and footer run flush
 // with the page's edges, separated by hairlines.
 // <div class="applications-table">
 //   <div class="applications-table__controls">
 //     <div class="applications-table__search">… <kbd class="applications-table__shortcut">⌘K</kbd></div>
-//     <div role="tablist" class="applications-table__tabs">
-//       <button role="tab" class="applications-table__tab">View all <span class="applications-table__count">12</span></button>
-//     </div>
+//     <div role="tablist" class="tabs">…</div>      (the shared tabs block, _tabs.scss)
 //   </div>
 //   <div role="tabpanel" class="applications-table__panel">
 //     <div class="applications-table__scroll"><table class="applications-table__table">…</table></div>
@@ -30,77 +29,14 @@
 // Spacing between the parts (gaps in rows, margins between stacked items) is
 // in _theme-spacing.scss (Applications table). Padding inside a part stays here.
 .applications-table {
-  // The toolbar: a raised bar, search left and tabs right. The tabs run to
-  // its bottom edge, so the selected tab's underline sits on the bar's
-  // hairline. Side padding matches the table cells (_theme-spacing.scss).
+  // The toolbar: search left, tabs right. The tabs run to its bottom edge.
+  // Side padding matches the table cells (_theme-spacing.scss).
   &__controls {
     display: flex;
     flex-wrap: wrap;
     align-items: stretch;
     justify-content: space-between;
     border-radius: $radius-lg $radius-lg 0 0;
-  }
-
-  // Tabs: underlined ---------------------------------------------------------------
-  // The selected tab has brand text (5.7:1 on the bar) and a 2px brand
-  // underline, drawn as an inset shadow so it takes no space. Tabs stretch to
-  // the bar's height, so a tab is at least the 48px control size.
-  // One row that scrolls sideways when it doesn't fit (the selected tab is
-  // focused, so the browser scrolls it into view).
-  &__tabs {
-    display: flex;
-    align-items: stretch;
-    min-width: 0;
-    max-width: 100%;
-    overflow-x: auto;
-    scrollbar-width: thin;
-  }
-
-  &__tab {
-    display: inline-flex;
-    flex: none;
-    align-items: center;
-    padding-inline: gridx(1);
-    color: var(--text-secondary);
-    font-weight: 600;
-    @include transition(color box-shadow, $duration-fast);
-
-    @include hover-only {
-      &:hover:not(:disabled) {
-        color: var(--text-primary);
-      }
-    }
-
-    &[aria-selected='true'] {
-      color: var(--brand);
-      box-shadow: inset 0 -2px 0 var(--brand);
-
-      @media (forced-colors: active) {
-        border-bottom: 2px solid;
-      }
-    }
-
-    // Drawn inside the tab: the scrolling row would clip a ring outside it.
-    &:focus-visible {
-      outline-offset: gridx(-0.25);
-    }
-  }
-
-  // How many applications the tab holds (search included). The card colour
-  // on the raised bar (a raised-colour pill wouldn't show on it); brand-50
-  // with brand-700 text (7:1) on the selected tab. One 24px line, inside the
-  // tab's.
-  &__count {
-    padding-inline: gridx(1);
-    border-radius: $radius-lg;
-    background-color: var(--surface-card);
-    color: var(--text-secondary);
-    font-weight: 500;
-
-    [aria-selected='true'] > & {
-      background-color: var(--brand-subtle);
-      color: var(--brand-hover); // primary-700
-    }
   }
 
   // Search -------------------------------------------------------------------------
@@ -137,7 +73,7 @@
   &__shortcut {
     padding-inline: gridx(0.75);
     border-radius: $radius-md;
-    box-shadow: inset 0 0 0 1px var(--border-default);
+    @include hairline(all, var(--border-default));
     color: var(--text-muted);
     font-family: inherit;
     font-size: inherit;
@@ -165,20 +101,16 @@
     // takes no space and rows stay on the grid.
     th,
     td {
-      box-shadow: inset 0 -1px 0 var(--border-subtle);
+      @include hairline(bottom);
       text-align: left;
       vertical-align: middle;
-
-      @media (forced-colors: active) {
-        border-bottom: 1px solid;
-      }
     }
 
     // The header row is a raised zone, like the toolbar above it, with the
     // darker edge used on tinted zones. Secondary text is 6.9:1 on it.
     th {
       background-color: var(--surface-raised);
-      box-shadow: inset 0 -1px 0 var(--border-default);
+      @include hairline(bottom, var(--border-default));
       color: var(--text-secondary);
       font-weight: 600;
       white-space: nowrap;
@@ -336,11 +268,7 @@
     border-radius: $radius-lg;
     background-color: var(--surface-card);
     color: var(--text-secondary);
-    box-shadow: inset 0 0 0 1px var(--border-subtle);
-
-    @media (forced-colors: active) {
-      border: 1px solid;
-    }
+    @include hairline;
   }
 
   &__card-title {
@@ -387,11 +315,7 @@
     align-items: center;
     justify-content: space-between;
     padding-top: gridx(2);
-    box-shadow: inset 0 1px 0 var(--border-subtle);
-
-    @media (forced-colors: active) {
-      border-top: 1px solid;
-    }
+    @include hairline(top);
   }
 
   &__pages {

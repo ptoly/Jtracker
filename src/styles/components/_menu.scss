@@ -1,4 +1,5 @@
 @use 'pkg:octet-scss/abstracts' as *;
+@use '../theme/hairline' as *;
 @use '../theme/elevation' as *;
 
 // <ul class="menu" role="listbox"><li class="menu__item" aria-selected>…</li></ul>
@@ -6,13 +7,13 @@
 // The one look for a list that drops over the page: the combobox's
 // suggestions and the ⋮ menu. The host places it (position, offset, when it
 // shows); this owns the surface and the items. Padding is in
-// _theme-spacing.scss (Menus). No shadow edge to lean on, so a firmer
-// hairline than a card's.
+// _theme-spacing.scss (Menus). A firmer hairline than a card's, since it
+// floats over content.
 .menu {
-  border: 1px solid var(--border-default);
   border-radius: $radius-lg;
   background-color: var(--surface-elevated);
   @include shadow(3);
+  @include hairline(all, var(--border-default));
 
   // A 48px row: the shared 24px line plus the menu padding. The current
   // item is tinted: Downshift's highlighted option (aria-selected), a

@@ -1,4 +1,5 @@
 @use 'pkg:octet-scss/abstracts' as *;
+@use '../theme/hairline' as *;
 
 // <input class="control"> <textarea class="control"> <select class="control select__input">
 // The one look for text inputs, textareas and selects across the app, on any
@@ -9,20 +10,17 @@
 // padding (_theme-spacing.scss). Font comes from octet's reset (font: inherit
 // on form elements); don't repeat the shorthand here, it would also reset
 // the shared line-height.
-// The edge is a 1px outline, so it takes no space: 24px line + 12px padding
-// = 48px. It stands down while the control has keyboard focus, so octet's
-// focus ring (base/_a11y.scss) shows instead. Outlines survive forced-colors
-// mode.
+// The edge is a hairline (theme/_hairline.scss): it takes no space, so
+// 24px line + 12px padding = 48px, and gives way to the focus ring.
 .control {
   border: 0;
   border-radius: $radius-lg;
   background-color: white;
   color: var(--text-primary);
   @include transition(outline-color, $duration-fast);
+  @include hairline(all, var(--border-control));
 
   &:not(:focus-visible) {
-    outline: 1px solid var(--border-control);
-
     @include hover-only {
       &:hover:not(:disabled, [aria-invalid='true']) {
         outline-color: var(--border-control-hover);

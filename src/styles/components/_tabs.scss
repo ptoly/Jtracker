@@ -1,0 +1,62 @@
+@use 'pkg:octet-scss/abstracts' as *;
+@use '../theme/hairline' as *;
+
+// <div role="tablist" class="tabs">
+//   <button role="tab" class="tabs__tab" aria-selected="true">View all <span class="tabs__count">12</span></button>
+// </div>
+// The one look for a row of tabs: underlined, one row that scrolls sideways
+// when it doesn't fit (the selected tab is focused, so the browser scrolls it
+// into view). Tabs stretch to the row's height, so a tab is at least the 48px
+// control size; spacing is in _theme-spacing.scss (Tabs). The host only
+// places the row.
+.tabs {
+  display: flex;
+  align-items: stretch;
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: thin;
+
+  @include hairline(bottom);
+
+  // The selected tab has brand text (6:1) and a 2px brand underline, a
+  // hairline (theme/_hairline.scss) so it takes no space.
+  &__tab {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    color: var(--text-secondary);
+    font-weight: 600;
+    @include transition(color box-shadow, $duration-fast);
+
+    @include hover-only {
+      &:hover:not(:disabled) {
+        color: var(--text-primary);
+      }
+    }
+
+    &[aria-selected='true'] {
+      color: var(--brand);
+      @include hairline(bottom, var(--brand), 4px);
+    }
+
+    // Drawn inside the tab: the scrolling row would clip a ring outside it.
+    &:focus-visible {
+      outline-offset: gridx(-0.25);
+    }
+  }
+
+  // How many items the tab holds: a pill on the line, inside the tab's.
+  // brand-50 with brand-700 text (7:1) on the selected tab.
+  &__count {
+    border-radius: $radius-lg;
+    background-color: var(--surface-raised);
+    color: var(--text-secondary);
+    font-weight: 500;
+
+    [aria-selected='true'] > & {
+      background-color: var(--brand-subtle);
+      color: var(--brand-hover); // primary-700
+    }
+  }
+}

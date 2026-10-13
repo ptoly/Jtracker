@@ -1,4 +1,5 @@
 @use 'pkg:octet-scss/abstracts' as *;
+@use '../theme/hairline' as *;
 
 // Inside a .dialog: <div class="positions-dialog"> holding
 // <p class="positions-dialog__intro">…</p>
@@ -43,11 +44,7 @@
     flex-wrap: wrap;
     align-items: center;
     padding-block: gridx(1);
-    box-shadow: inset 0 -1px 0 var(--border-subtle);
-
-    @media (forced-colors: active) {
-      border-bottom: 1px solid;
-    }
+    @include hairline(bottom);
   }
 
   // Its look is .item-name (_typography.scss); here only its share of the row.

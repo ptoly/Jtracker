@@ -1,4 +1,5 @@
 @use 'pkg:octet-scss/abstracts' as *;
+@use '../theme/hairline' as *;
 @use '../theme/elevation' as *;
 
 // <section class="card">
@@ -12,34 +13,20 @@
 // No overflow clipping by default, so popovers (e.g. a combobox menu) can
 // escape the card; add .card--clip when edge-to-edge content needs it.
 // Gaps in the header and footer rows are in _theme-spacing.scss.
-// Hairlines take no space, so the card is exactly its content's height:
-//   • the outline is a real border on an overlay (::after), because the
-//     shadow already uses box-shadow; it also survives forced-colors mode
-//   • the header and footer dividers are inset shadows
+// Its edge and the header and footer dividers are hairlines
+// (theme/_hairline.scss), so the card is exactly its content's height.
 .card {
   position: relative;
   border-radius: $radius-lg;
   background-color: var(--surface-elevated);
   @include shadow(1);
-
-  &::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border: 1px solid var(--border-subtle);
-    border-radius: inherit;
-    pointer-events: none;
-  }
+  @include hairline;
 
   &__header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    box-shadow: inset 0 -1px 0 var(--border-subtle);
-
-    @media (forced-colors: active) {
-      border-bottom: 1px solid;
-    }
+    @include hairline(bottom);
   }
 
   &__footer {
@@ -48,8 +35,7 @@
     align-items: center;
     justify-content: space-between;
     border-radius: 0 0 $radius-lg $radius-lg;
-    border-top: 1px solid var(--border-subtle);
-    box-sizing: content-box;
+    @include hairline(top);
   }
 
   &--clip {

@@ -1,4 +1,5 @@
 @use 'pkg:octet-scss/abstracts' as *;
+@use '../theme/hairline' as *;
 
 // <header class="site-header">
 //   <div class="site-header__inner max-width">
@@ -8,19 +9,17 @@
 // Full-width bar above the page, wordmark only; its content lines up with the
 // page's. Height: the 40px logo plus the inner's padding (_theme-spacing.scss)
 // = 64px.
-// The divider is an inset shadow, so it doesn't add a 65th pixel.
+// The divider is a hairline, so it doesn't add a 65th pixel.
 .site-header {
   background-color: var(--surface-card);
-  box-shadow: inset 0 -1px 0 var(--border-subtle);
-
-  @media (forced-colors: active) {
-    border-bottom: 1px solid;
-  }
+  height: 64px;
+  @include hairline(bottom, var(--primary-200));
 
   &__inner {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    height: 64px;
   }
 
   &__home {

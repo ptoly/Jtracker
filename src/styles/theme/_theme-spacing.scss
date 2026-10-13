@@ -183,7 +183,7 @@ ol {
 // (_typography.scss). Inputs, selects, textareas, buttons, tabs, the search
 // box and icon buttons all share it, so their text sits on the same baseline.
 .control,
-.applications-table__tab,
+.tabs__tab,
 .applications-table__page,
 .btn,
 .icon-button,
@@ -353,16 +353,13 @@ ol {
 }
 
 // ---- Applications table --------------------------------------------------------
-// Side by side: search and tabs; tabs; a tab's label and count; a header's
-// label and caret; row buttons; Sort by and its select; page numbers.
+// Side by side: search and tabs; a header's label and caret; row buttons; Sort by and its select; page numbers.
 .applications-table__controls {
   column-gap: gridx(3);
 
   @include scaled-spacing(margin-bottom, 4, 24px, 4);
 }
 
-.applications-table__tabs,
-.applications-table__tab,
 .applications-table__sort,
 .applications-table__row-actions {
   column-gap: gridx(1);
@@ -530,6 +527,19 @@ th:not([aria-sort]) .applications-table__sort-icon::before {
 // While renaming, a hint can wrap below the field and buttons.
 .positions-dialog__rename:has(> .positions-dialog__hint) > :not(.positions-dialog__hint) {
   margin-bottom: gridx(1);
+}
+
+// ---- Tabs --------------------------------------------------------------------------
+// Tabs 8px apart, 8px in from their sides; a tab's label and count 8px apart.
+// The count pill: 8px either side of its number.
+.tabs,
+.tabs__tab {
+  column-gap: gridx(1);
+}
+
+.tabs__tab,
+.tabs__count {
+  padding-inline: gridx(1);
 }
 
 // ---- Menus -------------------------------------------------------------------------

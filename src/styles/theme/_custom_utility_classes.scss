@@ -1,5 +1,6 @@
 @use "pkg:octet-scss/abstracts" as *;
+@use "hairline" as *;
 
 .has-divider {
-  border-bottom: 1px var(--border-subtle) solid;
+  @include hairline(bottom);
 }

@@ -570,7 +570,7 @@ export function ApplicationsTable({
           )}
         </div>
 
-        <div role="tablist" aria-label="Filter applications" className="applications-table__tabs">
+        <div role="tablist" aria-label="Filter applications" className="tabs">
           {TABS.map(({ key, label }, index) => {
             const selected = key === tab;
             return (
@@ -586,13 +586,13 @@ export function ApplicationsTable({
                 aria-selected={selected}
                 aria-controls={panelId}
                 tabIndex={selected ? 0 : -1}
-                className="applications-table__tab"
+                className="tabs__tab"
                 disabled={editing}
                 onClick={() => selectTab(key)}
                 onKeyDown={(event) => handleTabKeyDown(event, index)}
               >
                 {label}
-                <span className="applications-table__count">
+                <span className="tabs__count">
                   {filterRows(applications, followUpDays, today, key, query).length}
                 </span>
               </button>

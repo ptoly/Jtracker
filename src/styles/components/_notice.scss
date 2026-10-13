@@ -1,4 +1,5 @@
 @use 'pkg:octet-scss/abstracts' as *;
+@use '../theme/hairline' as *;
 
 // <div class="card card--flat notice notice--warning" role="status">
 //   <span class="notice__icon"><svg aria-hidden="true">…</svg></span>
@@ -29,10 +30,7 @@
   &--error {
     background-color: var(--danger-surface);
     color: var(--danger-text);
-
-    &::after {
-      border-color: var(--danger-border);
-    }
+    @include hairline(all, var(--danger-border));
   }
 
   // Featured icon: the 24px icon with two fading rings, drawn as shadows so
