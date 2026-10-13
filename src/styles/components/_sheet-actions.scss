@@ -1,16 +1,15 @@
 @use 'pkg:octet-scss/abstracts' as *;
-@use '../theme/elevation' as *;
 
 // <div class="sheet-actions">
 //   <button class="btn">Reload from sheet</button>
 //   <div class="sheet-actions__menu">
 //     <button class="icon-button sheet-actions__toggle" aria-haspopup="menu" aria-expanded aria-controls="…">⋮</button>
-//     <div class="sheet-actions__list" role="menu" hidden>
-//       <button class="sheet-actions__item" role="menuitem">…</button> …
+//     <div class="menu sheet-actions__list" role="menu" hidden>
+//       <button class="menu__item" role="menuitem">…</button> …
 //     </div>
 //   </div>
 //   <dialog class="dialog">
-//     <form class="sheet-actions__form"><label class="sheet-actions__label">…</label><input class="control">…</form>
+//     <form class="sheet-actions__form"><div class="field"><label>…</label><input class="control"></div>…</form>
 //   </dialog>
 // </div>
 // The menu drops below the ⋮ button, right-aligned so it stays on screen.
@@ -35,6 +34,7 @@
     }
   }
 
+  // Its look is .menu; here only where it drops.
   &__list {
     position: absolute;
     top: calc(100% + #{gridx(0.5)});
@@ -42,48 +42,9 @@
     z-index: $z-overlay;
     width: max-content;
     min-width: gridx(30);
-    padding-block: gridx(0.5);
-    border: 1px solid var(--border-default);
-    border-radius: $radius-lg;
-    background-color: var(--surface-elevated);
-    font-size: rem(16px);
-    @include shadow(3);
-
-    &[hidden] {
-      display: none;
-    }
-  }
-
-  // A 48px row: the shared 24px line plus 12px above and below. The focused
-  // item is tinted, so the arrow keys' position shows without the ring too.
-  &__item {
-    display: block;
-    width: 100%;
-    padding: gridx(1.5) gridx(2);
-    border: 0;
-    background: none;
-    color: var(--text-primary);
-    font-weight: 600;
-    text-align: left;
-    cursor: pointer;
-
-    &:focus {
-      background-color: var(--brand-subtle);
-    }
-
-    @include hover-only {
-      &:hover {
-        background-color: var(--brand-subtle);
-      }
-    }
   }
 
   &__form {
     display: grid;
-  }
-
-  &__label {
-    color: var(--text-primary);
-    font-weight: 600;
   }
 }

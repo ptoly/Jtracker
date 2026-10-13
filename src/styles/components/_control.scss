@@ -1,25 +1,36 @@
 @use 'pkg:octet-scss/abstracts' as *;
 
 // <input class="control"> <textarea class="control"> <select class="control select__input">
-// The one look for text inputs, textareas and selects across the app. Size
-// comes from the shared control line-height (_typography.scss) and padding
-// (_theme-spacing.scss); host components add only their own width.
-// Font comes from octet's reset (font: inherit on form elements). Don't
-// repeat the shorthand here: it would also reset the shared line-height.
-// The hairline is an inset shadow, so it takes no space: 24px line + 12px
-// padding = 48px. Forced-colors mode drops shadows, so a real border comes
-// back there.
+// The one look for text inputs, textareas and selects across the app, on any
+// surface: host components add only their own width and padding, never their
+// own edge. A surface that needs a darker edge (the edit row's tint) changes
+// --border-control for everything on it instead.
+// Size comes from the shared line-height (_typography.scss) and control
+// padding (_theme-spacing.scss). Font comes from octet's reset (font: inherit
+// on form elements); don't repeat the shorthand here, it would also reset
+// the shared line-height.
+// The edge is a 1px outline, so it takes no space: 24px line + 12px padding
+// = 48px. It stands down while the control has keyboard focus, so octet's
+// focus ring (base/_a11y.scss) shows instead. Outlines survive forced-colors
+// mode.
 .control {
   border: 0;
-  outline: 1px solid var(--border-control);
   border-radius: $radius-lg;
   background-color: white;
   color: var(--text-primary);
-  @include transition(box-shadow, $duration-fast);
+  @include transition(outline-color, $duration-fast);
 
-  @include hover-only {
-    &:hover:not(:disabled, [aria-invalid='true']) {
-      box-shadow: inset 0 0 0 1px var(--border-control-hover);
+  &:not(:focus-visible) {
+    outline: 1px solid var(--border-control);
+
+    @include hover-only {
+      &:hover:not(:disabled, [aria-invalid='true']) {
+        outline-color: var(--border-control-hover);
+      }
+    }
+
+    &[aria-invalid='true'] {
+      outline-color: var(--danger);
     }
   }
 
@@ -27,15 +38,10 @@
     color: var(--text-muted);
   }
 
-  &[aria-invalid='true'] {
-    box-shadow: inset 0 0 0 1px var(--danger);
-  }
-
   // Muted text fails on the raised surface (4.4:1), so disabled text is secondary.
   &:disabled {
     background-color: var(--surface-raised);
     color: var(--text-secondary);
-    cursor: not-allowed;
 
     &::placeholder {
       color: var(--text-secondary);
@@ -50,9 +56,5 @@
 
   &:is(textarea) {
     resize: vertical;
-  }
-
-  @media (forced-colors: active) {
-    border: 1px solid;
   }
 }

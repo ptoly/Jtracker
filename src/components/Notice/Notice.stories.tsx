@@ -21,9 +21,9 @@ export const SheetProblems: Story = {
     dismissLabel: 'Dismiss sheet problems',
     children: (
       <details className="notice__details">
-        <summary className="notice__summary">2 rows in Sheet1 need a look</summary>
+        <summary>2 rows in Sheet1 need a look</summary>
         <div className="notice__intro">They’re shown in the table as they are in the sheet.</div>
-        <ul className="notice__list">
+        <ul className="bullets notice__list">
           <li>Row 4: status “Ghosted” not recognized</li>
           <li>Row 9: no date</li>
         </ul>

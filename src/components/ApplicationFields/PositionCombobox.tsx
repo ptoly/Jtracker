@@ -111,13 +111,13 @@ export function PositionCombobox({
         </button>
       </div>
       <ul
-        className={`position-combobox__menu position-combobox__menu--${menu}`}
+        className={`menu position-combobox__menu position-combobox__menu--${menu}`}
         data-open={open ? '' : undefined}
         {...getMenuProps()}
       >
         {isOpen &&
           matches.map((item, index) => (
-            <li key={item} className="position-combobox__option" {...getItemProps({ item, index })}>
+            <li key={item} className="menu__item" {...getItemProps({ item, index })}>
               {item}
             </li>
           ))}

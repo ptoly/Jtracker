@@ -683,7 +683,7 @@ export function ApplicationsTable({
                       <li key={app.id} className="applications-table__card">
                         <div className="applications-table__lines">
                           <h3 className="applications-table__card-title">{app.company}</h3>
-                          <span className="applications-table__secondary">{app.position}</span>
+                          <span className="item-meta">{app.position}</span>
                         </div>
                         {statusControl(app, due)}
                         <dl className="applications-table__facts">
@@ -765,7 +765,7 @@ export function ApplicationsTable({
                                   <span className="sr-only">Applied: </span>
                                   {appliedDate(app)}
                                 </span>
-                                <span className="applications-table__secondary">
+                                <span className="item-meta">
                                   <span className="sr-only">Followed up: </span>
                                   {followedUpDate(app)}
                                 </span>
@@ -773,10 +773,8 @@ export function ApplicationsTable({
                             </td>
                             <td>
                               <span className="applications-table__lines">
-                                <span className="applications-table__company">{app.company}</span>
-                                <span className="applications-table__secondary">
-                                  {app.position}
-                                </span>
+                                <span className="item-name">{app.company}</span>
+                                <span className="item-meta">{app.position}</span>
                               </span>
                             </td>
                             <td>{statusControl(app, due)}</td>
@@ -799,7 +797,7 @@ export function ApplicationsTable({
             <nav className="applications-table__pagination" aria-label="Pagination">
               <button
                 type="button"
-                className="btn applications-table__page-button"
+                className="btn btn--compact"
                 disabled={editing || currentPage === 1}
                 onClick={() => goToPage(currentPage - 1)}
               >
@@ -831,7 +829,7 @@ export function ApplicationsTable({
               </ol>
               <button
                 type="button"
-                className="btn applications-table__page-button"
+                className="btn btn--compact"
                 disabled={editing || currentPage === pageCount}
                 onClick={() => goToPage(currentPage + 1)}
               >

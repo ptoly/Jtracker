@@ -34,6 +34,14 @@
   }
 }
 
+// ---- Controls ---------------------------------------------------------------------
+// Inputs, selects and textareas fill the width they're given (a form field,
+// a table cell, a flex row); the container decides how wide that is. A
+// control that needs its own width (the table's search box) sets it.
+.control {
+  width: 100%;
+}
+
 // ---- Icons inside controls ---------------------------------------------------------
 // A 24px icon sits 12px in from the field's edge, the same inset as the
 // text, and centered on the line. (The combobox toggle gets there with its

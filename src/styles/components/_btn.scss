@@ -25,17 +25,39 @@
 
 // Outline buttons sit on the card colour; octet's default is the raised zone
 // colour. (Filled variants keep octet's fills.)
-.btn:not(.btn--primary, .btn--ghost, .btn--danger) {
+.btn:not(.btn--primary, .btn--ghost, .btn--danger, .btn--link) {
   background-color: var(--surface-card);
 }
 
-// Filled buttons have no hairline.
+// Filled and text buttons have no hairline.
 .btn--primary,
-.btn--ghost {
+.btn--ghost,
+.btn--link {
   &,
   &:hover {
     box-shadow: none;
   }
+}
+
+// A text button that reads as a link: link colour, no fill, and no side
+// padding, so its text lines up with the fields around it. Still 48px tall,
+// and wider than 48px. (Add Note, Manage Positions.)
+.btn--link {
+  padding-inline: 0;
+  background: none;
+  color: var(--link);
+
+  @include hover-only {
+    &:hover {
+      color: var(--link-hover);
+    }
+  }
+}
+
+// Narrower sides (16px instead of 32px), for buttons in tight rows: the
+// edit row's Save and Cancel, and Previous / Next.
+.btn--compact {
+  padding-inline: gridx(2);
 }
 
 // Destructive fill, alongside octet's .btn--primary. White on --danger is 4.8:1.

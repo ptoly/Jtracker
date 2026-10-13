@@ -12,16 +12,12 @@
 //  items side by side (grid columns, a row of buttons). A component partial
 //  keeps only the padding inside its own boxes.
 //
-//  Bottom margins are responsive: half size on small screens, in 4px steps
-//  up to the full value from 1280px:
-//    16px:  8 → 12 (900) → 16 (1280)
-//    24px: 12 → 16 (720) → 20 (900) → 24 (1280)
-//    32px: 16 → 20 (540) → 24 (720) → 28 (900) → 32 (1280)
-//  They're written out with from(): scaled-spacing only steps at the widest
-//  breakpoints, so it would reach the full value at 1441 instead. The block
-//  rhythm below (sections, text, headings, list items) and the paddings do
-//  the same, also reaching their full values at 1280; fluid gutters end at
-//  1280 too.
+//  Responsive spacing uses octet's scaled-spacing(). global.scss sets
+//  $breakpoints to end at 1280px, so ramps reach their full value there
+//  instead of 1441px. Bottom margins are half size on small screens:
+//    16px: scaled-spacing(…, 3, 16px, 4)   8 → 12 (900) → 16 (1280)
+//    24px: scaled-spacing(…, 4, 24px, 4)  12 → 16 (720) → 20 (900) → 24 (1280)
+//    32px: scaled-spacing(…, 5, 32px, 4)  16 → 20 (540) → … → 32 (1280)
 //  8px and less (a label over its field, text over a note) stays fixed:
 //  halved, it would drop below the 8pt grid. So do rules that only apply
 //  under 720px, where the ramps never step.
@@ -37,85 +33,25 @@
 // Space between stacked sections.
 section,
 .app__page-header {
-  margin-bottom: gridx(4); // tight, app-like rhythm: 32 → 64px (the starter went to 88px)
-
-  @include from(540px) {
-    margin-bottom: gridx(5);
-  }
-
-  @include from(720px) {
-    margin-bottom: gridx(6);
-  }
-
-  @include from(900px) {
-    margin-bottom: gridx(7);
-  }
-
-  @include from(1280px) {
-    margin-bottom: gridx(8);
-  }
+  @include scaled-spacing(margin-bottom, 5, 64px); // tight, app-like rhythm: 32 → 64px (the starter went to 88px)
 
   &.has-divider {
-    padding-bottom: gridx(1);
-
-    @include from(720px) {
-      padding-bottom: gridx(2);
-    }
-
-    @include from(900px) {
-      padding-bottom: gridx(3);
-    }
-
-    @include from(1280px) {
-      padding-bottom: gridx(4);
-    }
+    @include scaled-spacing(padding-bottom, 4, 32px);
   }
 }
 
 // Flow spacing — bottom margin on stacked text blocks.
 p:not(:last-child), blockquote, .rtf p, .bullet-list {
-  margin-bottom: gridx(2);
-
-  @include from(900px) {
-    margin-bottom: gridx(3);
-  }
-
-  @include from(1280px) {
-    margin-bottom: gridx(4);
-  }
+  @include scaled-spacing(margin-bottom, 3, 32px);
 }
 
 // Headings: h1 gets generous space below, h2–h6 tighter.
 h1 {
-  margin-bottom: gridx(5);
-
-  @include from(720px) {
-    margin-bottom: gridx(6);
-  }
-
-  @include from(900px) {
-    margin-bottom: gridx(7);
-  }
-
-  @include from(1280px) {
-    margin-bottom: gridx(8);
-  }
+  @include scaled-spacing(margin-bottom, 4, 64px);
 }
 
 h2, h3, h4, h5, h6 {
-  margin-bottom: gridx(2);
-
-  @include from(720px) {
-    margin-bottom: gridx(3);
-  }
-
-  @include from(900px) {
-    margin-bottom: gridx(4);
-  }
-
-  @include from(1280px) {
-    margin-bottom: gridx(5);
-  }
+  @include scaled-spacing(margin-bottom, 4, 40px);
 }
 
 // A caption sits just under the figure it describes.
@@ -123,15 +59,16 @@ figcaption {
   margin-top: gridx(1);
 }
 
+// A bulleted list's markers sit inside the box, in a 24px indent.
+.bullets {
+  padding-left: gridx(3);
+}
+
 // List item rhythm.
 .bullet-list,
 ol {
   li:not(:last-child) {
-    margin-bottom: gridx(1);
-
-    @include from(1280px) {
-      margin-bottom: gridx(2);
-    }
+    @include scaled-spacing(margin-bottom, 2, 16px);
   }
 }
 
@@ -141,27 +78,11 @@ ol {
 .app,
 .site-header__inner {
   margin-inline: auto;
-  @include fluid-gutter(padding-inline, 8px, 32px, 360px, 1280px);
+  @include fluid-gutter(padding-inline, 8px, 64px, 360px, 1280px);
 }
 
 .app {
-  padding-top: gridx(3);
-  padding-bottom: gridx(3);
-
-  @include from(720px) {
-    padding-top: gridx(4);
-    padding-bottom: gridx(4);
-  }
-
-  @include from(900px) {
-    padding-top: gridx(5);
-    padding-bottom: gridx(5);
-  }
-
-  @include from(1280px) {
-    padding-top: gridx(6);
-    padding-bottom: gridx(6);
-  }
+  @include scaled-spacing(padding-top padding-bottom, 4, 48px);
 }
 
 // The 40px logo + 12px above and below: a 64px bar, on the grid.
@@ -175,18 +96,10 @@ ol {
 
 .app__section-header {
   gap: gridx(2);
-  margin-bottom: gridx(1.5);
+  @include scaled-spacing(margin-bottom, 4, 24px, 4);
 
-  @include from(720px) {
-    margin-bottom: gridx(2);
-  }
-
-  @include from(900px) {
-    margin-bottom: gridx(2.5);
-  }
-
-  @include from(1280px) {
-    margin-bottom: gridx(3);
+  &.has-divider {
+    @include scaled-spacing(padding-bottom, 4, 24px, 4);
   }
 }
 
@@ -205,19 +118,7 @@ ol {
 // The connection banners and page notices sit above the content they're about.
 .connection-bar,
 .app__notice {
-  margin-bottom: gridx(1.5);
-
-  @include from(720px) {
-    margin-bottom: gridx(2);
-  }
-
-  @include from(900px) {
-    margin-bottom: gridx(2.5);
-  }
-
-  @include from(1280px) {
-    margin-bottom: gridx(3);
-  }
+  @include scaled-spacing(margin-bottom, 4, 24px, 4);
 }
 
 // Headings that group with a subtitle or a bar drop their flow margin.
@@ -252,36 +153,14 @@ ol {
 // follows from padding plus content, so rows stay on the 8pt grid.
 .applications-table__table th,
 .applications-table__table td {
-  padding-top: gridx(1);
-  padding-bottom: gridx(1);
-
-  @include from(900px) {
-    padding-top: gridx(1.5);
-    padding-bottom: gridx(1.5);
-  }
-
-  @include from(1280px) {
-    padding-top: gridx(2);
-    padding-bottom: gridx(2);
-  }
+  @include scaled-spacing(padding-top padding-bottom, 3, 16px, 4);
 }
 
 // The toolbar's sides line up with the cells' text.
 .applications-table__controls,
 .applications-table__table th,
 .applications-table__table td {
-  padding-left: gridx(2);
-  padding-right: gridx(2);
-
-  @include from(900px) {
-    padding-left: gridx(2.5);
-    padding-right: gridx(2.5);
-  }
-
-  @include from(1280px) {
-    padding-left: gridx(3);
-    padding-right: gridx(3);
-  }
+  @include scaled-spacing(padding-left padding-right, 3, 24px, 4);
 }
 
 // A row being edited: its fields are already 48px tall, so cells keep a
@@ -354,19 +233,7 @@ ol {
 // 4pt grid (one line: 48px, rising to 72px).
 .notice,
 .match-alert {
-  padding: gridx(1.5);
-
-  @include from(720px) {
-    padding: gridx(2);
-  }
-
-  @include from(900px) {
-    padding: gridx(2.5);
-  }
-
-  @include from(1280px) {
-    padding: gridx(3);
-  }
+  @include scaled-spacing(padding, 4, 24px, 4);
 }
 
 // A notice's icon, text, buttons and ✕ sit in a row that wraps on narrow
@@ -390,15 +257,7 @@ ol {
 
 // One group per company in the match alert.
 .match-alert__group:not(:last-child) {
-  margin-bottom: gridx(1);
-
-  @include from(900px) {
-    margin-bottom: gridx(1.5);
-  }
-
-  @include from(1280px) {
-    margin-bottom: gridx(2);
-  }
+  @include scaled-spacing(margin-bottom, 3, 16px, 4);
 }
 
 // The 48px ✕ pulls out by its own 12px of padding around the 24px icon, so
@@ -415,13 +274,7 @@ ol {
 // Vertical inset for card bodies and dialogs.
 .card__body,
 .dialog {
-  padding-top: gridx(2);
-  padding-bottom: gridx(2);
-
-  @include from(1280px) {
-    padding-top: gridx(3);
-    padding-bottom: gridx(3);
-  }
+  @include scaled-spacing(padding-top padding-bottom, 2, 24px);
 }
 
 // Icon buttons are square: the same 12px on every side of the 24px icon box.
@@ -429,18 +282,29 @@ ol {
   padding-inline: gridx(1.5);
 }
 
+// ---- Buttons ----------------------------------------------------------------------
+// An icon and its text inside a button sit 8px apart.
+.btn {
+  column-gap: gridx(1);
+}
+
+// ---- Form fields (every form) -------------------------------------------------------
+// Inside a field: label, control, help text, error, and any button under them,
+// 8px apart. A position combobox's own visible label gets the same.
+.field > :not(:last-child),
+.position-combobox > label {
+  margin-bottom: gridx(1);
+}
+
+// The required mark, just after its label text.
+.field__required {
+  margin-left: gridx(0.25);
+}
+
 // ---- Add form -------------------------------------------------------------------
 // The card, then a failed-add message when there is one.
 .application-form > .card:has(+ .application-form__error) {
-  margin-bottom: gridx(1);
-
-  @include from(900px) {
-    margin-bottom: gridx(1.5);
-  }
-
-  @include from(1280px) {
-    margin-bottom: gridx(2);
-  }
+  @include scaled-spacing(margin-bottom, 3, 16px, 4);
 }
 
 // Fields beside the match alert from 720px; above it when stacked (only when
@@ -459,15 +323,7 @@ ol {
 
 // Form rows: 16px apart on wide screens, 8px on small ones.
 .application-form__fields > :not(:last-child) {
-  margin-bottom: gridx(1);
-
-  @include from(900px) {
-    margin-bottom: gridx(1.5);
-  }
-
-  @include from(1280px) {
-    margin-bottom: gridx(2);
-  }
+  @include scaled-spacing(margin-bottom, 3, 16px, 4);
 }
 
 // Company and Date Applied: 16px apart side by side. Each keeps the row
@@ -480,33 +336,9 @@ ol {
     margin-bottom: 0;
   }
 
-  > .application-form__field {
-    margin-bottom: gridx(1);
-
-    @include from(900px) {
-      margin-bottom: gridx(1.5);
-    }
-
-    @include from(1280px) {
-      margin-bottom: gridx(2);
-    }
+  > .field {
+    @include scaled-spacing(margin-bottom, 3, 16px, 4);
   }
-}
-
-// Inside a field: label, input, helper text, error and button 8px apart.
-.application-form__field > :not(:last-child),
-.application-form__combobox > label {
-  margin-bottom: gridx(1);
-}
-
-// The asterisk after a label.
-.application-form__required {
-  margin-left: gridx(0.25);
-}
-
-// Add Note: its icon and text.
-.application-form__note-toggle {
-  column-gap: gridx(1);
 }
 
 // ---- Sheet actions -------------------------------------------------------------
@@ -515,39 +347,24 @@ ol {
   gap: gridx(1);
 }
 
-// Sheet settings dialog: label, field, then the buttons.
-.sheet-actions__label {
-  margin-bottom: gridx(1);
-}
-
-.sheet-actions__form > .control {
-  margin-bottom: gridx(1.5);
-
-  @include from(720px) {
-    margin-bottom: gridx(2);
-  }
-
-  @include from(900px) {
-    margin-bottom: gridx(2.5);
-  }
-
-  @include from(1280px) {
-    margin-bottom: gridx(3);
-  }
+// Sheet settings dialog: the tab name field, then the buttons.
+.sheet-actions__form > .field {
+  @include scaled-spacing(margin-bottom, 4, 24px, 4);
 }
 
 // ---- Applications table --------------------------------------------------------
 // Side by side: search and tabs; tabs; a tab's label and count; a header's
-// label and caret; row buttons; Sort by and its select; page buttons.
+// label and caret; row buttons; Sort by and its select; page numbers.
 .applications-table__controls {
   column-gap: gridx(3);
+
+  @include scaled-spacing(margin-bottom, 4, 24px, 4);
 }
 
 .applications-table__tabs,
 .applications-table__tab,
 .applications-table__sort,
-.applications-table__row-actions,
-.applications-table__page-button {
+.applications-table__row-actions {
   column-gap: gridx(1);
 }
 
@@ -575,10 +392,9 @@ th:not([aria-sort]) .applications-table__sort-icon::before {
   margin-bottom: gridx(0.5);
 }
 
-// Edit row and edit card fields: 8px apart (labels show in the card); the
-// buttons, then a failed save under them.
-.applications-table__stack > :not(:last-child),
-.applications-table__combobox > label {
+// Edit row and edit card: fields grouped in a cell 8px apart; the buttons,
+// then a failed save under them.
+.applications-table__stack > :not(:last-child) {
   margin-bottom: gridx(1);
 }
 
@@ -588,15 +404,7 @@ th:not([aria-sort]) .applications-table__sort-icon::before {
 
 // Empty state: the message, then the "Add application for …" button.
 .applications-table__empty > p:not(:last-child) {
-  margin-bottom: gridx(1);
-
-  @include from(900px) {
-    margin-bottom: gridx(1.5);
-  }
-
-  @include from(1280px) {
-    margin-bottom: gridx(2);
-  }
+  @include scaled-spacing(margin-bottom, 3, 16px, 4);
 }
 
 // Cards (under 720px, so fixed values: the ramps never step there): Sort by,
@@ -663,19 +471,7 @@ th:not([aria-sort]) .applications-table__sort-icon::before {
 // Header: title and ✕ side by side, then the content.
 .dialog__header {
   gap: gridx(2);
-  margin-bottom: gridx(1.5);
-
-  @include from(720px) {
-    margin-bottom: gridx(2);
-  }
-
-  @include from(900px) {
-    margin-bottom: gridx(2.5);
-  }
-
-  @include from(1280px) {
-    margin-bottom: gridx(3);
-  }
+  @include scaled-spacing(margin-bottom, 4, 24px, 4);
 }
 
 .dialog__title {
@@ -689,35 +485,11 @@ th:not([aria-sort]) .applications-table__sort-icon::before {
 }
 
 .dialog__description {
-  margin-bottom: gridx(2);
-
-  @include from(540px) {
-    margin-bottom: gridx(2.5);
-  }
-
-  @include from(720px) {
-    margin-bottom: gridx(3);
-  }
-
-  @include from(900px) {
-    margin-bottom: gridx(3.5);
-  }
-
-  @include from(1280px) {
-    margin-bottom: gridx(4);
-  }
+  @include scaled-spacing(margin-bottom, 5, 32px, 4);
 }
 
 .dialog__error {
-  margin-bottom: gridx(1);
-
-  @include from(900px) {
-    margin-bottom: gridx(1.5);
-  }
-
-  @include from(1280px) {
-    margin-bottom: gridx(2);
-  }
+  @include scaled-spacing(margin-bottom, 3, 16px, 4);
 }
 
 .dialog__actions {
@@ -731,36 +503,12 @@ th:not([aria-sort]) .applications-table__sort-icon::before {
 .positions-dialog > .positions-dialog__list,
 .positions-dialog > .positions-dialog__empty,
 .positions-dialog__removed {
-  margin-bottom: gridx(1.5);
-
-  @include from(720px) {
-    margin-bottom: gridx(2);
-  }
-
-  @include from(900px) {
-    margin-bottom: gridx(2.5);
-  }
-
-  @include from(1280px) {
-    margin-bottom: gridx(3);
-  }
+  @include scaled-spacing(margin-bottom, 4, 24px, 4);
 }
 
 .positions-dialog__find,
 .positions-dialog__error {
-  margin-bottom: gridx(1);
-
-  @include from(900px) {
-    margin-bottom: gridx(1.5);
-  }
-
-  @include from(1280px) {
-    margin-bottom: gridx(2);
-  }
-}
-
-.positions-dialog__label {
-  margin-bottom: gridx(1);
+  @include scaled-spacing(margin-bottom, 3, 16px, 4);
 }
 
 // Side by side: the add field and its button; the rename field and its
@@ -782,6 +530,17 @@ th:not([aria-sort]) .applications-table__sort-icon::before {
 // While renaming, a hint can wrap below the field and buttons.
 .positions-dialog__rename:has(> .positions-dialog__hint) > :not(.positions-dialog__hint) {
   margin-bottom: gridx(1);
+}
+
+// ---- Menus -------------------------------------------------------------------------
+// The combobox's suggestions and the ⋮ menu: 4px inside the menu's edge, then
+// 48px items (12px above and below the 24px line), text 16px in.
+.menu {
+  padding-block: gridx(0.5);
+}
+
+.menu__item {
+  padding: gridx(1.5) gridx(2);
 }
 
 // ---- Position combobox -----------------------------------------------------------

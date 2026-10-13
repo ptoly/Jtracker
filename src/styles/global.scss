@@ -1,7 +1,7 @@
 // Load order (octet-scss CONVENTIONS.md §2):
 // octet abstracts (no CSS) → octet base → octet components → brand → theme →
 // component partials → octet utilities (last, so a utility class wins).
-@use 'pkg:octet-scss/abstracts' as *;
+@use 'pkg:octet-scss/abstracts' as * with ($breakpoints: (360px, 540px, 720px, 900px, 1280px));
 @use 'pkg:octet-scss/base';
 @use 'pkg:octet-scss/components' as octet-components;
 @use 'theme/brand';

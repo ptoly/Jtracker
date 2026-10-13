@@ -39,12 +39,6 @@
     align-items: stretch;
     justify-content: space-between;
     border-radius: $radius-lg $radius-lg 0 0;
-    background-color: var(--surface-raised);
-    box-shadow: inset 0 -1px 0 var(--border-default); // the edge used on tinted zones
-
-    @media (forced-colors: active) {
-      border-bottom: 1px solid;
-    }
   }
 
   // Tabs: underlined ---------------------------------------------------------------
@@ -67,11 +61,8 @@
     flex: none;
     align-items: center;
     padding-inline: gridx(1);
-    border: 0;
-    background: none;
     color: var(--text-secondary);
     font-weight: 600;
-    cursor: pointer;
     @include transition(color box-shadow, $duration-fast);
 
     @include hover-only {
@@ -87,10 +78,6 @@
       @media (forced-colors: active) {
         border-bottom: 2px solid;
       }
-    }
-
-    &:disabled {
-      cursor: not-allowed;
     }
 
     // Drawn inside the tab: the scrolling row would clip a ring outside it.
@@ -117,9 +104,8 @@
   }
 
   // Search -------------------------------------------------------------------------
-  // On the raised bar the default control edge is only 2.8:1, so the search
-  // box takes the darker edge (4.3:1). 8px above and below it on the bar.
-  // Its own full-width row on narrow screens, with the tabs below.
+  // 8px above and below it on the bar. Its own full-width row on narrow
+  // screens, with the tabs below.
   &__search {
     position: relative;
     align-self: center;
@@ -137,18 +123,13 @@
     pointer-events: none;
   }
 
-  // Mixed with .control, which supplies the look.
+  // Mixed with .control, which supplies the look; this is only its width.
   &__search-input {
     width: gridx(40);
     max-width: 100%;
 
     @include until(720px) {
       width: 100%;
-    }
-
-    &,
-    &:hover:not(:disabled) {
-      box-shadow: inset 0 0 0 1px var(--border-control-hover);
     }
   }
 
@@ -178,8 +159,6 @@
   &__table {
     width: 100%;
     border-collapse: collapse;
-    font-size: rem(16px); // reader-scalable like octet body copy; nothing in the table goes smaller
-    line-height: rem(gridx(3)); // 24px at default size; scales with the text
 
     // Cell padding lives in theme/_theme-spacing.scss; row height follows
     // from it plus the content. The row divider is an inset shadow, so it
@@ -227,16 +206,6 @@
     white-space: nowrap;
   }
 
-  &__company {
-    color: var(--text-primary);
-    font-weight: 600;
-  }
-
-  // The second line: followed-up date, position. Muted is 4.7:1 on the page.
-  &__secondary {
-    color: var(--text-muted);
-  }
-
   // Live status: native select (with a dot), and the calculated Follow Up Due
   // in words under it.
   // The selects fill the column, so ones with a dot match the rest.
@@ -259,15 +228,14 @@
 
   // Edit mode -------------------------------------------------------------------
   // A row being edited (EditRow sets data-editing).
+  // The default control edge is 2.8:1 on the tint (3:1 needed), so controls
+  // and outline buttons here take the next step darker (4.3:1), and hover one
+  // more. Their own rules stay as they are.
   &__row[data-editing],
   &__card[data-editing] {
+    --border-control: var(--neutral-500);
+    --border-control-hover: var(--neutral-600);
     background-color: var(--brand-subtle);
-
-    // border-control is 2.8:1 on the tint; the hover edge is 4.3:1 (3:1 needed).
-    .control:not([aria-invalid='true']),
-    .btn:not(.btn--primary, .btn--ghost, .btn--danger) {
-      box-shadow: inset 0 0 0 1px var(--border-control-hover);
-    }
 
     td {
       vertical-align: top;
@@ -279,22 +247,13 @@
     min-width: gridx(30);
   }
 
-  // Edit-row fields, mixed with .control, which supplies the look.
-  &__field {
-    width: 100%;
-
-    &--notes {
-      min-width: gridx(24);
-    }
+  // The edit row's Notes box keeps a usable width in a squeezed table.
+  &__notes-field {
+    min-width: gridx(24);
   }
 
   &__row-actions {
     display: flex;
-  }
-
-  // octet's .btn is 48px tall; fits the edit row's 48px fields.
-  &__row-button {
-    padding-inline: gridx(2);
   }
 
   // Notes take whatever width is left: the column claims it all (width 100%)
@@ -318,10 +277,6 @@
     display: inline-flex;
     align-items: center;
     padding: 0;
-    border: 0;
-    background: none;
-    color: inherit;
-    cursor: pointer;
   }
 
   // Unsorted columns show a stacked up/down pair; the sorted column shows only
@@ -364,8 +319,6 @@
 
   &__sort-label {
     flex: none;
-    color: var(--text-primary);
-    font-weight: 600;
   }
 
   &__sort-select {
@@ -392,9 +345,8 @@
 
   &__card-title {
     color: var(--text-primary);
-    font-size: rem(18px);
+    font-size: rem(18px); // on the shared 24px line
     font-weight: 600;
-    line-height: rem(gridx(3));
   }
 
   // Applied, Followed up and Age side by side, wrapping when there's no room.
@@ -416,36 +368,15 @@
     overflow-wrap: anywhere;
   }
 
-  &__card-label {
-    color: var(--text-primary);
-    font-weight: 600;
-  }
-
   // Empty state & pagination ----------------------------------------------------
   // The message, and under it (after a search) a button to add the term.
   &__empty {
     display: grid;
     justify-items: center;
-    padding-top: gridx(4);
-    padding-bottom: gridx(4);
-
-    @include from(900px) {
-      padding-top: gridx(5);
-      padding-bottom: gridx(5);
-    }
-
-    @include from(1280px) {
-      padding-top: gridx(6);
-      padding-bottom: gridx(6);
-    }
+    @include scaled-spacing(padding-top padding-bottom, 3, 48px);
     @include fluid-gutter(padding-inline, 16px, 24px, 360px, 1280px);
     color: var(--text-secondary);
     text-align: center;
-
-    > p {
-      max-width: none; // the theme caps paragraphs at a reading measure
-      font-size: inherit;
-    }
   }
 
   // Previous left, page numbers centered, Next right. On narrow screens the
@@ -480,12 +411,9 @@
   &__page {
     min-width: gridx(6);
     padding-inline: gridx(1.5);
-    border: 0;
     border-radius: $radius-lg;
-    background: none;
     color: var(--text-secondary);
     font-weight: 600;
-    cursor: pointer;
     @include transition(background-color color, $duration-fast);
 
     @include hover-only {
@@ -504,10 +432,6 @@
         outline-offset: -2px;
       }
     }
-
-    &:disabled {
-      cursor: not-allowed;
-    }
   }
 
   // Same box as a page button, so the bar keeps its width.
@@ -516,10 +440,6 @@
     place-items: center;
     min-width: gridx(6);
     color: var(--text-secondary);
-  }
-
-  &__page-button {
-    padding-inline: gridx(2);
   }
 }
 

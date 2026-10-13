@@ -118,7 +118,7 @@ export function App() {
             </section>
 
             <section aria-labelledby="applications-heading">
-              <div className="app__section-header">
+              <div className="app__section-header has-divider">
                 <div>
                   <h2 id="applications-heading">Applications History</h2>
                   <p className="app__subtitle">
@@ -153,14 +153,14 @@ export function App() {
                 >
                   {/* Collapsed, so a long list doesn't push the page down. */}
                   <details className="notice__details">
-                    <summary className="notice__summary">
+                    <summary>
                       {pluralizeRows(data.issues.length)} in {tab}{' '}
                       {data.issues.length === 1 ? 'needs' : 'need'} a look
                     </summary>
                     <div className="notice__intro">
                       They’re shown in the table as they are in the sheet.
                     </div>
-                    <ul className="notice__list">
+                    <ul className="bullets notice__list">
                       {data.issues.map((issue) => (
                         <li key={issue.row}>
                           Row {issue.row}: {issue.problems.join('; ')}

@@ -48,12 +48,12 @@ function MatchLine({ app, today }: { app: Application; today: Date }) {
  */
 export function MatchAlert({ matches, today, onDismiss }: MatchAlertProps) {
   return (
-    <div className="match-alert">
+    <div className="card match-alert">
       <div className="match-alert__content">
         {matches.map((match) => (
           <div key={match.company} className="match-alert__group">
             <div className="match-alert__title">Applied to {match.company} before:</div>
-            <ul className="match-alert__list">
+            <ul className="bullets">
               {match.applications.map((app) => (
                 <MatchLine key={app.id} app={app} today={today} />
               ))}

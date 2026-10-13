@@ -1,0 +1,33 @@
+@use 'pkg:octet-scss/abstracts' as *;
+
+// <div class="field">
+//   <label for="…">Company<span class="field__required" aria-hidden="true">*</span></label>
+//      or <label for="…">Note <span class="field__optional">(optional)</span></label>
+//   <input class="control">            (or a select, textarea, or position combobox)
+//   <div class="field__help" id="…">Defaults to today</div>
+//   <span class="field-error" id="…">…</span>
+// </div>
+// One form field, for every form: the label over its control, then help
+// text and an error when there are any. Labels themselves are styled
+// site-wide (_typography.scss), controls by .control, and the spacing
+// between the parts is in _theme-spacing.scss (Form fields).
+.field {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr); // the control shrinks to a narrow screen
+
+  // The required mark after a label: primary-600, 6:1 on the card. Screen
+  // readers get the control's required state instead (aria-hidden mark).
+  &__required {
+    color: var(--tertiary-700);
+  }
+
+  // "(optional)" after a label, in normal weight.
+  &__optional {
+    color: var(--text-muted);
+    font-weight: 400;
+  }
+
+  &__help {
+    color: var(--text-secondary);
+  }
+}

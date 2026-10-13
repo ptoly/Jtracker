@@ -112,7 +112,7 @@ export function ApplicationForm({
   }
 
   const required = (
-    <span className="application-form__required" aria-hidden="true">
+    <span className="field__required" aria-hidden="true">
       *
     </span>
   );
@@ -121,15 +121,13 @@ export function ApplicationForm({
     <div className="application-form__fields">
       {/* Company and Date Applied share a row while there's room; Date drops below when not. */}
       <div className="application-form__row">
-        <div className="application-form__field">
-          <label htmlFor={ids.company} className="application-form__label">
-            Company/Search{required}
-          </label>
+        <div className="field">
+          <label htmlFor={ids.company}>Company/Search{required}</label>
           <div className="application-form__company">
             <input
               id={ids.company}
               type="text"
-              className="control application-form__input application-form__company-input"
+              className="control application-form__company-input"
               autoComplete="off"
               required
               value={draft.company}
@@ -153,14 +151,12 @@ export function ApplicationForm({
           <FieldError id={errorId('company')} message={errors.company} />
         </div>
 
-        <div className="application-form__field application-form__field--date">
-          <label htmlFor={ids.dateApplied} className="application-form__label">
-            Date Applied{required}
-          </label>
+        <div className="field application-form__date">
+          <label htmlFor={ids.dateApplied}>Date Applied{required}</label>
           <input
             id={ids.dateApplied}
             type="date"
-            className="control application-form__input"
+            className="control"
             required
             value={draft.dateApplied}
             onChange={(event) => setField('dateApplied', event.target.value)}
@@ -169,30 +165,28 @@ export function ApplicationForm({
               errors.dateApplied ? `${dateHelpId} ${errorId('dateApplied')}` : dateHelpId
             }
           />
-          <div id={dateHelpId} className="application-form__help">
+          <div id={dateHelpId} className="field__help">
             Defaults to today
           </div>
           <FieldError id={errorId('dateApplied')} message={errors.dateApplied} />
         </div>
       </div>
 
-      <div className="application-form__field">
+      <div className="field">
         <PositionCombobox
           id={ids.position}
           value={draft.position}
           onValueChange={(value) => setField('position', value)}
           positions={positions}
           label={<>Position{required}</>}
-          className="application-form__combobox"
-          labelClassName="application-form__label"
-          inputClassName="control application-form__input"
+          inputClassName="control"
           errorProps={errorProps('position')}
         />
         <FieldError id={errorId('position')} message={errors.position} />
         {onManagePositions && (
           <button
             type="button"
-            className="btn btn--ghost application-form__link-button application-form__manage"
+            className="btn btn--link application-form__manage"
             onClick={onManagePositions}
           >
             Manage Positions
@@ -201,9 +195,9 @@ export function ApplicationForm({
       </div>
 
       {noteOpen || draft.notes ? (
-        <div className="application-form__field">
-          <label htmlFor={ids.notes} className="application-form__label">
-            Note <span className="application-form__optional">(optional)</span>
+        <div className="field">
+          <label htmlFor={ids.notes}>
+            Note <span className="field__optional">(optional)</span>
           </label>
           <textarea
             id={ids.notes}
@@ -213,7 +207,7 @@ export function ApplicationForm({
                 setFocusNote(false);
               }
             }}
-            className="control application-form__input"
+            className="control"
             rows={3}
             value={draft.notes}
             onChange={(event) => setField('notes', event.target.value)}
@@ -222,7 +216,7 @@ export function ApplicationForm({
       ) : (
         <button
           type="button"
-          className="btn btn--ghost application-form__link-button application-form__note-toggle"
+          className="btn btn--link application-form__note-toggle"
           onClick={() => {
             setNoteOpen(true);
             setFocusNote(true);

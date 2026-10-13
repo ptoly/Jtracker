@@ -6,8 +6,9 @@
 //   <div class="card__body">…</div>
 //   <div class="card__footer">…</div>
 // </section>
-// Untitled UI container: white, hairline border, soft shadow. Header and
-// footer are optional; a footer sits on the raised surface below a divider.
+// The app's one box: surface, radius, hairline and soft shadow. Notices
+// (.card--flat) and the form's match alert build on it rather than repeating
+// it. Header and footer are optional; a footer sits below a divider.
 // No overflow clipping by default, so popovers (e.g. a combobox menu) can
 // escape the card; add .card--clip when edge-to-edge content needs it.
 // Gaps in the header and footer rows are in _theme-spacing.scss.
@@ -53,5 +54,11 @@
 
   &--clip {
     overflow: clip;
+  }
+
+  // No shadow, for boxes that sit in the page's flow (notices): only cards
+  // are elevated.
+  &--flat {
+    box-shadow: none;
   }
 }

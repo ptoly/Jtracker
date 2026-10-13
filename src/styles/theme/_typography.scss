@@ -13,51 +13,29 @@
 // =============================================================================
 
 // ---- Base text --------------------------------------------------------------
-// body line-height lives in base/_document.scss. The family is overridden here:
 // Untitled UI's Inter, loaded from @fontsource/inter in src/styles/fonts.ts.
+// Everything in the app is UI text: 16px (the browser default) on one 24px
+// line, so text baselines line up across a row and down the page. Set once
+// here and inherited; octet's base/_document.scss has a reading-copy 1.6667.
+// Control height is this line plus the shared control padding in
+// _theme-spacing.scss; there are no height rules.
 body {
   font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  line-height: rem(gridx(3)); // 24px at default size; scales with the text
 }
 
 // Spacing (margin, padding, gap) lives in _theme-spacing.scss; size and
 // arrangement (max-width, position, alignment) in _theme-layout.scss.
 
-// ---- Controls and labels ------------------------------------------------------
-// One line-height for every form control, button and label, so text baselines
-// line up across a row and down the page. Control height is this line plus the
-// shared control padding in _theme-spacing.scss; there are no height rules.
-// (Overrides octet's .btn line-height: 1, which loads earlier.)
-.control,
-.application-form__label,
-.applications-table__tab,
-.applications-table__page,
-.applications-table__shortcut,
-.sheet-actions__label,
-.sheet-actions__item,
-.notice,
+// ---- Buttons -----------------------------------------------------------------
+// octet's .btn sets line-height: 1 (it loads earlier); buttons take the shared line.
 .btn {
-  line-height: rem(gridx(3)); // 24px at default size; scales with the text
+  line-height: inherit;
 }
 
-// Body / copy type — p, li, ol, etc. Authored in px but emitted as rem via
-// rem(), so reading text honors the reader's browser font-size (WCAG 1.4.4)
-// while the rest of the framework stays in px. One step down at narrow widths;
-// fluid-font-size() is for headline/display type only (see the heading scale
-// below). Identical rendering at the default 16px root.
-p {
-  font-weight: 400;
-  line-height: rem(32px);
-  font-size: rem(18px);
-
-  @include until($layout-readable-width) {   // below the readable measure → single column
-    font-size: rem(16px);
-    line-height: rem(24px);
-  }
-
-  small {
-    line-height: rem(24px);
-  }
-}
+// Paragraphs are UI text too (subtitles, messages, empty states), so they
+// take the body's 16px on the 24px line; the starter's reading-copy sizes
+// (18px on 32px) don't suit an app.
 
 // Link color + hover live in base/_document.scss; this is the theme's treatment.
 a {
@@ -67,6 +45,26 @@ a {
 
 address {
   font-style: normal;
+}
+
+// Items in lists and table rows: the item's name (an application's company,
+// a position) and the details beside or under it (its position, dates, how
+// many applications use it). Muted is 4.7:1 on the page and card colour;
+// don't use it on raised zones.
+.item-name {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.item-meta {
+  color: var(--text-muted);
+}
+
+// Form labels, site-wide: secondary text, semibold. Components add only
+// layout and spacing.
+label {
+  color: var(--text-secondary);
+  font-weight: 600;
 }
 
 // =============================================================

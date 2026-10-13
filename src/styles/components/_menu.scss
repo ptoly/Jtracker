@@ -1,0 +1,39 @@
+@use 'pkg:octet-scss/abstracts' as *;
+@use '../theme/elevation' as *;
+
+// <ul class="menu" role="listbox"><li class="menu__item" aria-selected>…</li></ul>
+// <div class="menu" role="menu"><button class="menu__item" role="menuitem">…</button></div>
+// The one look for a list that drops over the page: the combobox's
+// suggestions and the ⋮ menu. The host places it (position, offset, when it
+// shows); this owns the surface and the items. Padding is in
+// _theme-spacing.scss (Menus). No shadow edge to lean on, so a firmer
+// hairline than a card's.
+.menu {
+  border: 1px solid var(--border-default);
+  border-radius: $radius-lg;
+  background-color: var(--surface-elevated);
+  @include shadow(3);
+
+  // A 48px row: the shared 24px line plus the menu padding. The current
+  // item is tinted: Downshift's highlighted option (aria-selected), a
+  // focused menu item (the arrow keys move focus), or the one under the
+  // pointer.
+  &__item {
+    display: block;
+    width: 100%;
+    color: var(--text-primary);
+    text-align: left;
+    cursor: pointer;
+
+    &[aria-selected='true'],
+    &:focus {
+      background-color: var(--brand-subtle);
+    }
+
+    @include hover-only {
+      &:hover {
+        background-color: var(--brand-subtle);
+      }
+    }
+  }
+}

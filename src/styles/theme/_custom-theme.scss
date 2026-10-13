@@ -3,3 +3,37 @@
 main {
   background-color: var(--primary-25);
 }
+
+table {
+  background-color: var(--surface-card);
+}
+
+// ---- Element defaults -------------------------------------------------------------
+// Looks every instance shares, set once on the element. Components add only
+// what's different about them.
+
+// Buttons start bare: no browser border or fill, the surrounding text colour.
+// .btn and .icon-button add their own look over this.
+button {
+  border: 0;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+:disabled {
+  cursor: not-allowed;
+}
+
+// A <details> toggle: semibold, and only as wide as its text, so the space
+// beside it isn't a click target.
+summary {
+  width: fit-content;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+// A bulleted list (ul has no bullets by default; see _typography.scss).
+.bullets {
+  list-style: disc;
+}

@@ -4,18 +4,19 @@
 //   <div class="card">
 //     <div class="card__body application-form__body">
 //       <div class="application-form__fields">
-//         <div class="application-form__field">
-//           <label class="application-form__label">Company/Search<span class="application-form__required">*</span></label>
-//           <div class="application-form__company">
-//             <input class="control application-form__input application-form__company-input">
-//             <span class="application-form__clear"><IconButton ✕></span>
+//         <div class="application-form__row">
+//           <div class="field">                       (the shared field block, _field.scss)
+//             <label>Company/Search<span class="field__required">*</span></label>
+//             <div class="application-form__company">
+//               <input class="control application-form__company-input">
+//               <span class="application-form__clear"><IconButton ✕></span>
+//             </div>
 //           </div>
-//           <span class="field-error">…</span>
+//           <div class="field application-form__date">… Date Applied + field__help</div>
 //         </div>
-//         (Company and Date Applied are wrapped in <div class="application-form__row">)
-//         … Date Applied (+ application-form__help)
-//         Position (position-combobox block) + <button class="btn btn--ghost application-form__link-button application-form__manage">
-//         <button class="btn btn--ghost application-form__link-button application-form__note-toggle"> or the Note field
+//         <div class="field">Position (position-combobox block) +
+//           <button class="btn btn--link application-form__manage"></div>
+//         <button class="btn btn--link application-form__note-toggle"> or the Note field
 //       </div>
 //       <div class="application-form__matches"><div class="match-alert">…</div></div>
 //     </div>
@@ -29,8 +30,6 @@
 .application-form {
   display: grid;
   grid-template-columns: minmax(0, 1fr); // fields shrink to a narrow screen
-  font-size: rem(16px);
-  line-height: rem(gridx(3)); // help and errors on the same 24px line
 
   &__body {
     display: grid;
@@ -56,12 +55,6 @@
     }
   }
 
-  &__field,
-  &__combobox {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-  }
-
   // Company and Date Applied side by side: Company takes the room, Date its
   // own width. Date wraps below when Company would get narrower than 176px.
   &__row {
@@ -69,39 +62,15 @@
     flex-wrap: wrap;
     align-items: flex-start;
 
-    > .application-form__field {
+    > .field {
       flex: 1 1 gridx(22);
       min-width: 0;
     }
 
     // A date field's natural width: 168px.
-    > .application-form__field--date {
+    > .application-form__date {
       flex: 0 1 gridx(21);
     }
-  }
-
-  &__label {
-    color: var(--text-primary);
-    font-weight: 600;
-  }
-
-  // primary-600: 6:1 on the card.
-  &__required {
-    color: var(--brand);
-  }
-
-  &__optional {
-    color: var(--text-muted);
-    font-weight: 400;
-  }
-
-  &__help {
-    color: var(--text-secondary);
-  }
-
-  // Mixed with .control, which supplies the look.
-  &__input {
-    width: 100%;
   }
 
   // Company field with its clear button over the right end.
@@ -115,17 +84,8 @@
     right: 0;
   }
 
-  // Link-coloured text buttons (btn--ghost) in the fields column: Add Note
-  // and Manage Positions. No side padding, so their text lines up with the
-  // field edges; still 48px tall, and wider than 48px.
-  &__link-button {
-    padding-inline: 0;
-  }
-
-  // Add Note: a leading icon, at the fields' left edge.
+  // Add Note (a .btn--link with a leading icon), at the fields' left edge.
   &__note-toggle {
-    display: inline-flex;
-    align-items: center;
     justify-self: start;
   }
 
@@ -138,6 +98,5 @@
   // Add Application on its own, at the right.
   &__actions {
     justify-content: flex-end;
-    font-size: rem(16px);
   }
 }

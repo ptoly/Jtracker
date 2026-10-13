@@ -151,7 +151,7 @@ export function SheetActions({ tab, onReload, onDisconnect, onTabChange }: Sheet
           id={menuId}
           role="menu"
           aria-labelledby={toggleId}
-          className="sheet-actions__list"
+          className="menu sheet-actions__list"
           hidden={!open}
           onKeyDown={handleMenuKeyDown}
         >
@@ -159,7 +159,7 @@ export function SheetActions({ tab, onReload, onDisconnect, onTabChange }: Sheet
             type="button"
             role="menuitem"
             tabIndex={-1}
-            className="sheet-actions__item"
+            className="menu__item"
             onClick={openSettings}
           >
             Sheet settings…
@@ -168,7 +168,7 @@ export function SheetActions({ tab, onReload, onDisconnect, onTabChange }: Sheet
             type="button"
             role="menuitem"
             tabIndex={-1}
-            className="sheet-actions__item"
+            className="menu__item"
             onClick={() => {
               closeMenu({ returnFocus: true });
               onDisconnect();
@@ -186,19 +186,19 @@ export function SheetActions({ tab, onReload, onDisconnect, onTabChange }: Sheet
         onClose={() => setSettingsOpen(false)}
       >
         <form className="sheet-actions__form" onSubmit={saveSettings}>
-          <label htmlFor={inputId} className="sheet-actions__label">
-            Sheet tab name
-          </label>
-          <input
-            id={inputId}
-            type="text"
-            className="control"
-            autoComplete="off"
-            spellCheck={false}
-            data-autofocus=""
-            value={tabDraft}
-            onChange={(event) => setTabDraft(event.target.value)}
-          />
+          <div className="field">
+            <label htmlFor={inputId}>Sheet tab name</label>
+            <input
+              id={inputId}
+              type="text"
+              className="control"
+              autoComplete="off"
+              spellCheck={false}
+              data-autofocus=""
+              value={tabDraft}
+              onChange={(event) => setTabDraft(event.target.value)}
+            />
+          </div>
           <div className="dialog__actions">
             <button type="button" className="btn" onClick={() => setSettingsOpen(false)}>
               Cancel

@@ -28,7 +28,7 @@ export function Notice({
   className = '',
 }: NoticeProps) {
   return (
-    <div className={`notice notice--${tone} ${className}`} role={role}>
+    <div className={`card card--flat notice notice--${tone} ${className}`} role={role}>
       <span className="notice__icon">
         <AlertCircleIcon />
       </span>

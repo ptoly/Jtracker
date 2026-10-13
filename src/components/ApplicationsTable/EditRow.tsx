@@ -105,70 +105,77 @@ export function EditRow({
   }
 
   // In the table the column headers name the fields; a card shows its labels.
-  const labelClass = layout === 'row' ? 'sr-only' : 'applications-table__card-label';
+  const labelClass = layout === 'row' ? 'sr-only' : undefined;
 
   const dateFields = (
     <>
-      <label htmlFor={ids.dateApplied} className={labelClass}>
-        Date applied
-      </label>
-      <input
-        id={ids.dateApplied}
-        type="date"
-        className="control applications-table__field"
-        required
-        value={draft.dateApplied}
-        onChange={(event) => setField('dateApplied', event.target.value)}
-        {...errorProps('dateApplied')}
-      />
-      <FieldError id={errorId('dateApplied')} message={errors.dateApplied} />
-      <label htmlFor={ids.followedUpDate} className={labelClass}>
-        Followed up
-      </label>
-      <input
-        id={ids.followedUpDate}
-        type="date"
-        className="control applications-table__field"
-        value={draft.followedUpDate}
-        onChange={(event) => setField('followedUpDate', event.target.value)}
-      />
+      <div className="field">
+        <label htmlFor={ids.dateApplied} className={labelClass}>
+          Date applied
+        </label>
+        <input
+          id={ids.dateApplied}
+          type="date"
+          className="control"
+          required
+          value={draft.dateApplied}
+          onChange={(event) => setField('dateApplied', event.target.value)}
+          {...errorProps('dateApplied')}
+        />
+        <FieldError id={errorId('dateApplied')} message={errors.dateApplied} />
+      </div>
+      <div className="field">
+        <label htmlFor={ids.followedUpDate} className={labelClass}>
+          Followed up
+        </label>
+        <input
+          id={ids.followedUpDate}
+          type="date"
+          className="control"
+          value={draft.followedUpDate}
+          onChange={(event) => setField('followedUpDate', event.target.value)}
+        />
+      </div>
     </>
   );
 
   const companyFields = (
     <>
-      <label htmlFor={ids.company} className={labelClass}>
-        Company
-      </label>
-      <input
-        id={ids.company}
-        type="text"
-        className="control applications-table__field"
-        autoComplete="off"
-        required
-        value={draft.company}
-        onChange={(event) => setField('company', event.target.value)}
-        {...errorProps('company')}
-      />
-      <FieldError id={errorId('company')} message={errors.company} />
-      <PositionCombobox
-        id={ids.position}
-        value={draft.position}
-        onValueChange={(value) => setField('position', value)}
-        positions={positions}
-        label="Position"
-        className="applications-table__combobox"
-        labelClassName={labelClass}
-        inputClassName="control applications-table__field"
-        errorProps={errorProps('position')}
-        menu="inline"
-      />
-      <FieldError id={errorId('position')} message={errors.position} />
+      <div className="field">
+        <label htmlFor={ids.company} className={labelClass}>
+          Company
+        </label>
+        <input
+          id={ids.company}
+          type="text"
+          className="control"
+          autoComplete="off"
+          required
+          value={draft.company}
+          onChange={(event) => setField('company', event.target.value)}
+          {...errorProps('company')}
+        />
+        <FieldError id={errorId('company')} message={errors.company} />
+      </div>
+      <div className="field">
+        <PositionCombobox
+          id={ids.position}
+          value={draft.position}
+          onValueChange={(value) => setField('position', value)}
+          positions={positions}
+          label="Position"
+          {...(labelClass && { labelClassName: labelClass })}
+          inputClassName="control"
+          errorProps={errorProps('position')}
+          menu="inline"
+        />
+        <FieldError id={errorId('position')} message={errors.position} />
+      </div>
     </>
   );
 
   const statusField = (
-    <>
+    <div className="field">
       <label htmlFor={ids.status} className={labelClass}>
         Status
       </label>
@@ -181,22 +188,22 @@ export function EditRow({
           app={{ status: draft.status, ...(app.unparsed && { unparsed: app.unparsed }) }}
         />
       </Select>
-    </>
+    </div>
   );
 
   const notesField = (
-    <>
+    <div className="field">
       <label htmlFor={ids.notes} className={labelClass}>
         Notes
       </label>
       <textarea
         id={ids.notes}
-        className="control applications-table__field applications-table__field--notes"
+        className="control applications-table__notes-field"
         rows={2}
         value={draft.notes}
         onChange={(event) => setField('notes', event.target.value)}
       />
-    </>
+    </div>
   );
 
   const actions = (
@@ -204,13 +211,13 @@ export function EditRow({
       <div className="applications-table__row-actions">
         <button
           type="button"
-          className="btn btn--primary applications-table__row-button"
+          className="btn btn--primary btn--compact"
           aria-disabled={saving}
           onClick={() => void save()}
         >
           Save
         </button>
-        <button type="button" className="btn applications-table__row-button" onClick={onCancel}>
+        <button type="button" className="btn btn--compact" onClick={onCancel}>
           Cancel
         </button>
       </div>
@@ -232,9 +239,9 @@ export function EditRow({
       // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
       <li className="applications-table__card" data-editing onKeyDown={handleKeyDown}>
         <div className="applications-table__stack">{companyFields}</div>
-        <div className="applications-table__stack">{statusField}</div>
+        {statusField}
         <div className="applications-table__stack">{dateFields}</div>
-        <div className="applications-table__stack">{notesField}</div>
+        {notesField}
         <div>{actions}</div>
       </li>
     );

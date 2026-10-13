@@ -1,43 +1,30 @@
 @use 'pkg:octet-scss/abstracts' as *;
 
-// <div class="notice notice--warning" role="status">
+// <div class="card card--flat notice notice--warning" role="status">
 //   <span class="notice__icon"><svg aria-hidden="true">…</svg></span>
 //   <div class="notice__body">
 //     <details class="notice__details">        (optional: a collapsible list)
-//       <summary class="notice__summary">…</summary>
+//       <summary>…</summary>
 //       <div class="notice__intro">…</div>
-//       <ul class="notice__list">…</ul>
+//       <ul class="bullets notice__list">…</ul>
 //     </details>
 //   </div>
 //   <div class="notice__actions"><button class="btn">Retry</button></div>
 //   <div class="notice__dismiss"><IconButton …></div>
 // </div>
-// Untitled UI alert: white card, the tone carried by a ringed icon.
+// Untitled UI alert: a flat card (_card.scss: surface, radius, hairline), the
+// tone carried by a ringed icon.
 // Tones: --warning (sample data, sheet problems), --error (failed saves,
 // which also get a tinted surface so they stand out).
 // Padding is the same on every side and steps with the viewport
 // (_theme-spacing.scss): one line of text makes a 48px notice, rising to
-// 72px from 1280px. The hairline is a real border on an overlay (::after), so it
-// adds no height. No shadow: only cards are elevated. Spacing between its
-// parts is in _theme-spacing.scss (Message boxes).
+// 72px from 1280px. Spacing between its parts is in _theme-spacing.scss
+// (Message boxes).
 .notice {
-  position: relative;
   display: flex;
   flex-wrap: wrap;
   align-items: flex-start;
-  border-radius: $radius-lg;
-  background-color: var(--surface-card);
   color: var(--text-primary);
-  font-size: rem(16px);
-
-  &::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border: 1px solid var(--border-subtle);
-    border-radius: inherit;
-    pointer-events: none;
-  }
 
   &--error {
     background-color: var(--danger-surface);
@@ -69,20 +56,12 @@
     align-self: center;
   }
 
-  &__summary {
-    width: fit-content;
-    font-weight: 600;
-    cursor: pointer;
-  }
-
   &__intro {
     color: var(--text-secondary);
   }
 
   &__list {
-    padding-left: gridx(3);
     color: var(--text-secondary);
-    list-style: disc;
   }
 
   &__actions {

@@ -2,13 +2,13 @@
 
 // Inside a .dialog: <div class="positions-dialog"> holding
 // <p class="positions-dialog__intro">…</p>
-// <form class="positions-dialog__find">
-//   <label class="positions-dialog__label">…</label>
+// <form class="field positions-dialog__find">     (the shared field block)
+//   <label>…</label>
 //   <div class="positions-dialog__find-row"><input class="control positions-dialog__query"><button class="btn">Add</button></div>
 // </form>
 // <ul class="positions-dialog__list">
 //   <li class="positions-dialog__item">
-//     <span class="positions-dialog__name">…</span><span class="positions-dialog__count">…</span>
+//     <span class="item-name positions-dialog__name">…</span><span class="item-meta">…</span>
 //     <span class="positions-dialog__buttons">…icon buttons…</span>
 //     or, while renaming:
 //     <form class="positions-dialog__rename">input, <div class="positions-dialog__rename-buttons">…</div>, <span class="positions-dialog__hint">…</span></form>
@@ -22,24 +22,11 @@
 .positions-dialog {
   &__intro,
   &__empty {
-    max-width: none; // the theme caps paragraphs at a reading measure
     color: var(--text-secondary);
-    font-size: rem(16px);
-    line-height: rem(gridx(3));
   }
 
   &__empty {
     padding-block: gridx(2);
-  }
-
-  &__find {
-    display: grid;
-  }
-
-  &__label {
-    color: var(--text-primary);
-    font-weight: 600;
-    line-height: rem(gridx(3));
   }
 
   &__find-row {
@@ -48,7 +35,6 @@
 
   &__query {
     flex: 1;
-    width: 100%;
     min-width: 0;
   }
 
@@ -57,8 +43,6 @@
     flex-wrap: wrap;
     align-items: center;
     padding-block: gridx(1);
-    font-size: rem(16px);
-    line-height: rem(gridx(3));
     box-shadow: inset 0 -1px 0 var(--border-subtle);
 
     @media (forced-colors: active) {
@@ -66,14 +50,9 @@
     }
   }
 
+  // Its look is .item-name (_typography.scss); here only its share of the row.
   &__name {
     flex: 1 1 gridx(20);
-    color: var(--text-primary);
-    font-weight: 600;
-  }
-
-  &__count {
-    color: var(--text-muted);
   }
 
   &__buttons {
@@ -97,11 +76,7 @@
   }
 
   &__summary {
-    width: fit-content;
     padding-block: gridx(1);
     color: var(--text-secondary);
-    font-weight: 600;
-    line-height: rem(gridx(3));
-    cursor: pointer;
   }
 }

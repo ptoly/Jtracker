@@ -144,10 +144,8 @@ export function PositionsDialog({
           keep their text. Renaming changes every application that uses it.
         </p>
 
-        <form className="positions-dialog__find" onSubmit={add}>
-          <label htmlFor={queryId} className="positions-dialog__label">
-            Find or add a position
-          </label>
+        <form className="field positions-dialog__find" onSubmit={add}>
+          <label htmlFor={queryId}>Find or add a position</label>
           <div className="positions-dialog__find-row">
             <input
               id={queryId}
@@ -246,8 +244,8 @@ export function PositionsDialog({
               }
               return (
                 <li key={name} className="positions-dialog__item">
-                  <span className="positions-dialog__name">{name}</span>
-                  <span className="positions-dialog__count">
+                  <span className="item-name positions-dialog__name">{name}</span>
+                  <span className="item-meta">
                     {count > 0 ? pluralizeApplications(count) : 'Added'}
                   </span>
                   <span className="positions-dialog__buttons">
@@ -282,8 +280,8 @@ export function PositionsDialog({
             <ul className="positions-dialog__list">
               {removed.map((name) => (
                 <li key={name} className="positions-dialog__item">
-                  <span className="positions-dialog__name">{name}</span>
-                  <span className="positions-dialog__count">
+                  <span className="item-name positions-dialog__name">{name}</span>
+                  <span className="item-meta">
                     {pluralizeApplications(usageCount(applications, name))}
                   </span>
                   <span className="positions-dialog__buttons">

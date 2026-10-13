@@ -20,9 +20,7 @@
     border-radius: $radius-lg;
     background-color: var(--tooltip-surface);
     color: var(--tooltip-text);
-    font-size: rem(16px);
     font-weight: 600;
-    line-height: rem(gridx(3));
     white-space: nowrap;
     opacity: 0;
     visibility: hidden;
