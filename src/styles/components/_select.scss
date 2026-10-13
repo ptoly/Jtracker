@@ -1,12 +1,14 @@
 @use 'pkg:octet-scss/abstracts' as *;
 
-// <span class="select">
+// <span class="select [select--dot]">
+//   <span class="select__dot select__dot--warning|success" aria-hidden="true"></span>
 //   <select class="control select__input">…</select>
 //   <svg class="select__icon" aria-hidden="true">…</svg>
 // </span>
 // A native select with the browser's caret replaced by the app's chevron, so
 // it gets the same inset as text and other control icons. The icon's position
 // and the select's room for it are shared with other controls (theme files).
+// The optional dot sits where the text would start; the text moves over for it.
 .select {
   position: relative;
   display: inline-grid;
@@ -17,8 +19,36 @@
   }
 
   // Clicks pass through to the select underneath.
+  &__icon,
+  &__dot {
+    pointer-events: none;
+  }
+
   &__icon {
     color: var(--text-muted);
-    pointer-events: none;
+  }
+
+  // 8px, centred on the text line, 12px in from the border like the text.
+  &__dot {
+    position: absolute;
+    top: 50%;
+    left: gridx(1.5);
+    width: gridx(1);
+    height: gridx(1);
+    border-radius: 50%;
+    transform: translateY(-50%);
+
+    // Amber is 2.1:1 and green 3.2:1 on the field: the words beside them carry the meaning.
+    &--warning {
+      background-color: var(--warning-indicator);
+    }
+
+    &--success {
+      background-color: var(--success-indicator);
+    }
+
+    @media (forced-colors: active) {
+      background-color: CanvasText;
+    }
   }
 }

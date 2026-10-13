@@ -1,7 +1,9 @@
-import { useEffect, useId, useRef, useState, type KeyboardEvent } from 'react';
+import { useEffect, useId, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { distinctPositions } from '../../lib/applicationRules';
 import { toIsoDate } from '../../lib/dates';
 import { ageInDays, DEFAULT_FOLLOW_UP_DAYS, isFollowUpDue } from '../../lib/derive';
+import { pageItems } from '../../lib/pagination';
+import { useMediaQuery } from '../../lib/useMediaQuery';
 import type { Application, ApplicationPatch, Status } from '../../types/application';
 import { StatusOptions } from '../ApplicationFields/StatusOptions';
 import { ConfirmDialog } from '../ConfirmDialog/ConfirmDialog';
@@ -16,6 +18,9 @@ const PAGE_SIZE = 100;
 
 /** How long typing must pause before the result count is announced. */
 const SEARCH_ANNOUNCE_DELAY_MS = 500;
+
+/** Apple keyboards say ⌘K; everyone else gets Ctrl K. */
+const IS_APPLE = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.userAgent);
 
 const TABS = [
   { key: 'all', label: 'View all' },
@@ -40,6 +45,20 @@ const STATUS_ORDER = [
 ] as const;
 
 type StatusLabel = (typeof STATUS_ORDER)[number];
+
+/**
+ * The card view's sort choices: every column sort, both ways for the dates
+ * and companies. The value is `${key} ${direction}`.
+ */
+const SORT_OPTIONS: { key: SortKey; direction: SortDirection; label: string }[] = [
+  { key: 'date', direction: 'descending', label: 'Date applied, newest first' },
+  { key: 'date', direction: 'ascending', label: 'Date applied, oldest first' },
+  { key: 'company', direction: 'ascending', label: 'Company, A to Z' },
+  { key: 'company', direction: 'descending', label: 'Company, Z to A' },
+  { key: 'status', direction: 'ascending', label: 'Status' },
+  { key: 'age', direction: 'descending', label: 'Age, longest first' },
+  { key: 'age', direction: 'ascending', label: 'Age, shortest first' },
+];
 
 /** Direction applied the first time a column is sorted. */
 const INITIAL_DIRECTION: Record<SortKey, SortDirection> = {
@@ -73,6 +92,8 @@ export interface ApplicationsTableProps {
   onEditingChange?: (editing: boolean) => void;
   /** Position suggestions for the edit row. Defaults to the positions in `applications`. */
   positions?: string[];
+  /** Offered when a search finds nothing: starts a new application for the search term. */
+  onAddForSearch?: (term: string) => void;
 }
 
 function pluralize(count: number, noun: string): string {
@@ -165,15 +186,20 @@ export function ApplicationsTable({
   readOnly = false,
   onEditingChange,
   positions: suggestions,
+  onAddForSearch,
 }: ApplicationsTableProps) {
   const baseId = useId();
   const tabId = (key: TabKey) => `${baseId}-tab-${key}`;
   const panelId = `${baseId}-panel`;
   const regionId = `${baseId}-region`;
   const searchId = `${baseId}-search`;
+  const sortSelectId = `${baseId}-sort`;
   const editButtonId = (id: string) => `${baseId}-edit-${id}`;
   const deleteButtonId = (id: string) => `${baseId}-delete-${id}`;
+  const dueId = (id: string) => `${baseId}-due-${id}`;
   const tabRefs = useRef(new Map<TabKey, HTMLButtonElement>());
+  // Below the 720px breakpoint the table becomes a list of cards.
+  const cards = useMediaQuery('(width < 720px)');
 
   const [tab, setTab] = useState<TabKey>('all');
   const [query, setQuery] = useState('');
@@ -204,6 +230,20 @@ export function ApplicationsTable({
   const pendingFocus = useRef<string[] | null>(null);
 
   useEffect(() => () => window.clearTimeout(announceTimer.current), []);
+
+  // ⌘K (Ctrl+K off Apple) jumps to the search box from anywhere on the page.
+  useEffect(() => {
+    function handleKeyDown(event: globalThis.KeyboardEvent) {
+      if (event.key.toLowerCase() !== 'k' || !(IS_APPLE ? event.metaKey : event.ctrlKey)) return;
+      const search = document.getElementById(searchId);
+      if (!(search instanceof HTMLInputElement) || search.disabled) return;
+      event.preventDefault();
+      search.focus();
+      search.select();
+    }
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [searchId]);
 
   // A row deleted elsewhere (e.g. in the sheet, then reloaded) is no longer being edited.
   const editing = editingId !== null && applications.some((app) => app.id === editingId);
@@ -297,6 +337,15 @@ export function ApplicationsTable({
     setPinned(null);
   }
 
+  /** The card view's Sort by select: a key and direction in one choice. */
+  function chooseSort(value: string) {
+    const option = SORT_OPTIONS.find((o) => `${o.key} ${o.direction}` === value);
+    if (!option) return;
+    setSort({ key: option.key, direction: option.direction });
+    setPage(1);
+    setPinned(null);
+  }
+
   function goToPage(next: number) {
     setPage(next);
     setPinned(null);
@@ -374,25 +423,18 @@ export function ApplicationsTable({
   function sortHeader(
     key: SortKey,
     label: string,
-    { className, buttonLabel }: { className?: string; buttonLabel?: string } = {},
+    { className, content = label }: { className?: string; content?: ReactNode } = {},
   ) {
     const active = sort.key === key;
     return (
-      <th
-        scope="col"
-        className={className}
-        // The header keeps its visible text as its name, even when the button is renamed.
-        {...(buttonLabel && { 'aria-label': label })}
-        {...(active && { 'aria-sort': sort.direction })}
-      >
+      <th scope="col" className={className} {...(active && { 'aria-sort': sort.direction })}>
         <button
           type="button"
           className="applications-table__sort"
           disabled={editing}
-          {...(buttonLabel && { 'aria-label': buttonLabel })}
           onClick={() => handleSort(key)}
         >
-          {label}
+          {content}
           <span className="applications-table__sort-icon" aria-hidden="true" />
         </button>
       </th>
@@ -408,6 +450,87 @@ export function ApplicationsTable({
     );
   }
 
+  function appliedDate(app: Application) {
+    return app.dateApplied ? (
+      <DateText iso={app.dateApplied} />
+    ) : (
+      (app.unparsed?.dateApplied ?? notApplicable('No date'))
+    );
+  }
+
+  function followedUpDate(app: Application) {
+    return app.followedUpDate ? (
+      <DateText iso={app.followedUpDate} />
+    ) : (
+      (app.unparsed?.followedUpDate ?? notApplicable('Not yet'))
+    );
+  }
+
+  /** The status select (with its dot) and, when due, "Follow Up Due" in words. */
+  function statusControl(app: Application, due: boolean) {
+    return (
+      <div className="applications-table__status">
+        <Select
+          aria-label={`Status, ${app.company}, ${app.position}`}
+          {...(due && { 'aria-describedby': dueId(app.id) })}
+          dot={due ? 'warning' : app.status === 'Followed Up' ? 'success' : undefined}
+          value={app.status}
+          disabled={readOnly}
+          onChange={(event) => void changeStatus(app, event.target.value as Status)}
+        >
+          <StatusOptions app={app} />
+        </Select>
+        {due && (
+          <span id={dueId(app.id)} className="applications-table__due">
+            Follow Up Due
+          </span>
+        )}
+      </div>
+    );
+  }
+
+  function rowActions(app: Application) {
+    return (
+      <div className="applications-table__row-icons">
+        <IconButton
+          id={deleteButtonId(app.id)}
+          label={`Delete ${app.company} application`}
+          tooltip="Delete"
+          icon={<TrashIcon />}
+          variant="danger"
+          disabled={editing || readOnly}
+          onClick={() => setDeleting(app)}
+        />
+        <IconButton
+          id={editButtonId(app.id)}
+          label={`Edit ${app.company} application`}
+          tooltip="Edit"
+          icon={<PencilIcon />}
+          disabled={editing || readOnly}
+          onClick={() => startEdit(app.id)}
+        />
+      </div>
+    );
+  }
+
+  function editRow(app: Application, age: ReactNode, layout: 'row' | 'card') {
+    return (
+      <EditRow
+        key={app.id}
+        app={app}
+        positions={positions}
+        today={today}
+        age={age}
+        layout={layout}
+        onSave={(patch) => saveEdit(app.id, patch)}
+        onCancel={() => {
+          closeEdit(app.id);
+          announce('Edit cancelled');
+        }}
+      />
+    );
+  }
+
   const emptyMessage =
     applications.length === 0
       ? 'No applications yet.'
@@ -417,7 +540,36 @@ export function ApplicationsTable({
 
   return (
     <div className="applications-table">
+      {/* Search on the left, filter tabs on the right, on a raised bar. */}
       <div className="applications-table__controls">
+        <div className="applications-table__search">
+          <SearchIcon className="applications-table__search-icon" />
+          <label htmlFor={searchId} className="sr-only">
+            Search company, position and notes
+          </label>
+          <input
+            id={searchId}
+            type="search"
+            className="control applications-table__search-input"
+            placeholder="Search"
+            aria-keyshortcuts={IS_APPLE ? 'Meta+K' : 'Control+K'}
+            value={query}
+            disabled={editing}
+            onChange={(event) => {
+              setQuery(event.target.value);
+              setPage(1);
+              setPinned(null);
+              announceCount(tab, event.target.value, SEARCH_ANNOUNCE_DELAY_MS);
+            }}
+          />
+          {/* Not while a row is being edited: the box (and the shortcut) is off then. */}
+          {!query && !editing && (
+            <kbd className="applications-table__shortcut" aria-hidden="true">
+              {IS_APPLE ? '⌘K' : 'Ctrl K'}
+            </kbd>
+          )}
+        </div>
+
         <div role="tablist" aria-label="Filter applications" className="applications-table__tabs">
           {TABS.map(({ key, label }, index) => {
             const selected = key === tab;
@@ -447,27 +599,6 @@ export function ApplicationsTable({
             );
           })}
         </div>
-
-        <div className="applications-table__search">
-          <SearchIcon className="applications-table__search-icon" />
-          <label htmlFor={searchId} className="sr-only">
-            Search company, position and notes
-          </label>
-          <input
-            id={searchId}
-            type="search"
-            className="control applications-table__search-input"
-            placeholder="Search"
-            value={query}
-            disabled={editing}
-            onChange={(event) => {
-              setQuery(event.target.value);
-              setPage(1);
-              setPinned(null);
-              announceCount(tab, event.target.value, SEARCH_ANNOUNCE_DELAY_MS);
-            }}
-          />
-        </div>
       </div>
 
       {statusError && (
@@ -493,132 +624,177 @@ export function ApplicationsTable({
         {...(pageRows.length === 0 && { tabIndex: 0 })}
       >
         {pageRows.length === 0 ? (
-          <p className="applications-table__empty">{emptyMessage}</p>
+          <div className="applications-table__empty">
+            <p>{emptyMessage}</p>
+            {onAddForSearch && query.trim() && (
+              <button type="button" className="btn" onClick={() => onAddForSearch(query.trim())}>
+                Add application for “{query.trim()}”
+              </button>
+            )}
+          </div>
         ) : (
           <>
-            {/* Focusable so keyboard users can scroll the table sideways on narrow screens. */}
-            <div
-              id={regionId}
-              className="applications-table__scroll"
-              role="region"
-              aria-label="Applications"
-              // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
-              tabIndex={0}
-            >
-              <table className="applications-table__table">
-                <thead>
-                  <tr>
-                    {sortHeader('date', 'Date')}
-                    {sortHeader('company', 'Company / Position', {
-                      buttonLabel: 'Sort by company',
-                    })}
-                    {sortHeader('status', 'Status')}
-                    {sortHeader('age', 'Age', {
-                      className: 'applications-table__cell applications-table__cell--numeric',
-                    })}
-                    <th scope="col">Followed Up</th>
-                    <th scope="col">Notes</th>
-                    <th scope="col">
-                      <span className="sr-only">Actions</span>
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
+            {cards ? (
+              <>
+                {/* The table's column headers sort it; the cards get this instead. */}
+                <div className="applications-table__sort-by">
+                  <label htmlFor={sortSelectId} className="applications-table__sort-label">
+                    Sort by
+                  </label>
+                  <Select
+                    id={sortSelectId}
+                    className="applications-table__sort-select"
+                    value={`${sort.key} ${sort.direction}`}
+                    disabled={editing}
+                    onChange={(event) => chooseSort(event.target.value)}
+                  >
+                    {/* A table sort with no card equivalent (e.g. status, descending) shows as the closest. */}
+                    {!SORT_OPTIONS.some(
+                      (o) => o.key === sort.key && o.direction === sort.direction,
+                    ) && (
+                      <option value={`${sort.key} ${sort.direction}`} hidden>
+                        {SORT_OPTIONS.find((o) => o.key === sort.key)?.label}
+                      </option>
+                    )}
+                    {SORT_OPTIONS.map((o) => (
+                      <option key={`${o.key} ${o.direction}`} value={`${o.key} ${o.direction}`}>
+                        {o.label}
+                      </option>
+                    ))}
+                  </Select>
+                </div>
+                {/* Narrow screens: one card per application, in the order of the columns.
+                  Focusable from script only, as the fallback when the focused card goes away. */}
+                <ul
+                  id={regionId}
+                  tabIndex={-1}
+                  className="applications-table__cards"
+                  aria-label="Applications"
+                >
                   {pageRows.map(({ app, due, age }) => {
-                    const ageCell =
-                      age === null ? notApplicable('Not applicable') : pluralize(age, 'day');
                     if (app.id === editingId) {
-                      return (
-                        <EditRow
-                          key={app.id}
-                          app={app}
-                          positions={positions}
-                          today={today}
-                          age={ageCell}
-                          onSave={(patch) => saveEdit(app.id, patch)}
-                          onCancel={() => {
-                            closeEdit(app.id);
-                            announce('Edit cancelled');
-                          }}
-                        />
+                      return editRow(
+                        app,
+                        age === null ? notApplicable('Not applicable') : age,
+                        'card',
                       );
                     }
                     return (
-                      <tr key={app.id} className="applications-table__row">
-                        <td className="no-wrap">
-                          {app.dateApplied ? (
-                            <DateText iso={app.dateApplied} />
-                          ) : (
-                            (app.unparsed?.dateApplied ?? notApplicable('No date'))
-                          )}
-                        </td>
-                        <td>
-                          <span className="applications-table__company">{app.company}</span>
-                          <span className="applications-table__position">{app.position}</span>
-                        </td>
-                        <td>
-                          <div className="applications-table__status">
-                            <Select
-                              aria-label={`Status, ${app.company}, ${app.position}`}
-                              value={app.status}
-                              disabled={readOnly}
-                              onChange={(event) =>
-                                void changeStatus(app, event.target.value as Status)
-                              }
-                            >
-                              <StatusOptions app={app} />
-                            </Select>
-                            {due && (
-                              <span className="applications-table__badge applications-table__badge--follow-up-due">
-                                <span
-                                  className="applications-table__badge-dot"
-                                  aria-hidden="true"
-                                />
-                                Follow Up Due
-                              </span>
-                            )}
+                      <li key={app.id} className="applications-table__card">
+                        <div className="applications-table__lines">
+                          <h3 className="applications-table__card-title">{app.company}</h3>
+                          <span className="applications-table__secondary">{app.position}</span>
+                        </div>
+                        {statusControl(app, due)}
+                        <dl className="applications-table__facts">
+                          <div>
+                            <dt>Applied</dt>
+                            <dd>{appliedDate(app)}</dd>
                           </div>
-                        </td>
-                        <td className="applications-table__cell applications-table__cell--numeric">
-                          {ageCell}
-                        </td>
-                        <td className="no-wrap">
-                          {app.followedUpDate ? (
-                            <DateText iso={app.followedUpDate} />
-                          ) : (
-                            (app.unparsed?.followedUpDate ?? notApplicable('Not followed up'))
-                          )}
-                        </td>
-                        <td className="applications-table__notes" title={app.notes}>
-                          {app.notes}
-                        </td>
-                        <td>
-                          <div className="applications-table__row-icons">
-                            <IconButton
-                              id={deleteButtonId(app.id)}
-                              label={`Delete ${app.company} application`}
-                              tooltip="Delete"
-                              icon={<TrashIcon />}
-                              variant="danger"
-                              disabled={editing || readOnly}
-                              onClick={() => setDeleting(app)}
-                            />
-                            <IconButton
-                              id={editButtonId(app.id)}
-                              label={`Edit ${app.company} application`}
-                              tooltip="Edit"
-                              icon={<PencilIcon />}
-                              disabled={editing || readOnly}
-                              onClick={() => startEdit(app.id)}
-                            />
+                          <div>
+                            <dt>Followed up</dt>
+                            <dd>{followedUpDate(app)}</dd>
                           </div>
-                        </td>
-                      </tr>
+                          <div>
+                            <dt>Age</dt>
+                            <dd>
+                              {age === null
+                                ? notApplicable('Not applicable')
+                                : pluralize(age, 'day')}
+                            </dd>
+                          </div>
+                        </dl>
+                        {app.notes && (
+                          <div className="applications-table__card-notes">{app.notes}</div>
+                        )}
+                        {rowActions(app)}
+                      </li>
                     );
                   })}
-                </tbody>
-              </table>
-            </div>
+                </ul>
+              </>
+            ) : (
+              <>
+                {/* Focusable so keyboard users can scroll the table sideways on narrow screens. */}
+                <div
+                  id={regionId}
+                  className="applications-table__scroll"
+                  role="region"
+                  aria-label="Applications"
+                  // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
+                  tabIndex={0}
+                >
+                  <table className="applications-table__table">
+                    <thead>
+                      <tr>
+                        {/* The buttons keep their visible text as their names (WCAG 2.5.3);
+                            aria-sort on the header says which column is sorted, and how.
+                            Dates sort by date applied, Company / Position by company. */}
+                        {sortHeader('date', 'Date Applied / Date Followed Up', {
+                          content: (
+                            <span className="applications-table__lines">
+                              <span>Date Applied</span>
+                              <span className="sr-only"> / </span>
+                              <span>Date Followed Up</span>
+                            </span>
+                          ),
+                        })}
+                        {sortHeader('company', 'Company / Position')}
+                        {sortHeader('status', 'Status')}
+                        {sortHeader('age', 'Age (Days)', {
+                          className: 'applications-table__cell applications-table__cell--numeric',
+                        })}
+                        <th scope="col" className="applications-table__notes-header">
+                          Notes
+                        </th>
+                        <th scope="col">
+                          <span className="sr-only">Actions</span>
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {pageRows.map(({ app, due, age }) => {
+                        const ageCell = age === null ? notApplicable('Not applicable') : age;
+                        if (app.id === editingId) return editRow(app, ageCell, 'row');
+                        return (
+                          <tr key={app.id} className="applications-table__row">
+                            <td className="no-wrap">
+                              {/* Two lines; each says which date it is to screen readers. */}
+                              <span className="applications-table__lines">
+                                <span>
+                                  <span className="sr-only">Applied: </span>
+                                  {appliedDate(app)}
+                                </span>
+                                <span className="applications-table__secondary">
+                                  <span className="sr-only">Followed up: </span>
+                                  {followedUpDate(app)}
+                                </span>
+                              </span>
+                            </td>
+                            <td>
+                              <span className="applications-table__lines">
+                                <span className="applications-table__company">{app.company}</span>
+                                <span className="applications-table__secondary">
+                                  {app.position}
+                                </span>
+                              </span>
+                            </td>
+                            <td>{statusControl(app, due)}</td>
+                            <td className="applications-table__cell applications-table__cell--numeric">
+                              {ageCell}
+                            </td>
+                            <td className="applications-table__notes" title={app.notes}>
+                              {app.notes}
+                            </td>
+                            <td>{rowActions(app)}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </>
+            )}
 
             <nav className="applications-table__pagination" aria-label="Pagination">
               <button
@@ -630,9 +806,29 @@ export function ApplicationsTable({
                 <ArrowLeftIcon />
                 Previous
               </button>
-              <span className="applications-table__page">
-                Page {currentPage} of {pageCount}
-              </span>
+              <ol className="applications-table__pages">
+                {pageItems(currentPage, pageCount).map((item, index) =>
+                  item === 'gap' ? (
+                    // Pages left out; the numbers either side say which.
+                    <li key={`gap-${index}`} className="applications-table__gap" aria-hidden="true">
+                      …
+                    </li>
+                  ) : (
+                    <li key={item}>
+                      <button
+                        type="button"
+                        className="applications-table__page"
+                        aria-label={`Page ${item}`}
+                        {...(item === currentPage && { 'aria-current': 'page' as const })}
+                        disabled={editing}
+                        onClick={() => goToPage(item)}
+                      >
+                        {item}
+                      </button>
+                    </li>
+                  ),
+                )}
+              </ol>
               <button
                 type="button"
                 className="btn applications-table__page-button"

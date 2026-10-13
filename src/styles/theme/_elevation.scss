@@ -1,0 +1,43 @@
+@use 'sass:list';
+@use 'sass:map';
+
+// =============================================================================
+//  Elevation — octet's nine shadow levels, tinted.
+//  ---------------------------------------------------------------------------
+//  The same umbra + penumbra + ambient geometry as octet's elevation() (copied
+//  from octet-scss abstracts/_elevation.scss), but drawn in --shadow-color
+//  (neutral-900) instead of pure black, so no black appears anywhere.
+//  octet's colours aren't configurable, and node_modules isn't ours to edit.
+//  Use shadow($level) in place of octet's elevation($level).
+// =============================================================================
+
+// [umbra, penumbra, ambient] geometry for each level, without the colour.
+$-geometry: (
+  1: (0 0 2px 0, 0 2px 2px 0, 0 1px 3px 0),
+  2: (0 0 4px 0, 0 3px 4px 0, 0 1px 5px 0),
+  3: (0 1px 6px 0, 0 3px 4px 0, 0 1px 7px 0),
+  4: (0 2px 4px 0, 0 4px 5px 0, 0 1px 8px 0),
+  5: (0 4px 6px 0, 0 4px 5px 0, 0 1px 10px 0),
+  6: (0 6px 10px 0, 0 1px 18px 0, 0 3px 5px 0),
+  7: (0 6px 10px 0, 0 2px 18px 1px, 0 3px 8px 0),
+  8: (0 8px 10px 1px, 0 3px 14px 2px, 0 4px 15px 0),
+  9: (0 9px 12px 2px, 0 3px 18px 3px, 0 5px 11px 0),
+);
+
+// octet's opacities for the three layers.
+$-strengths: (14%, 12%, 20%);
+
+@function -tint($strength) {
+  @return color-mix(in srgb, var(--shadow-color) $strength, transparent);
+}
+
+@mixin shadow($level) {
+  @if not map.has-key($-geometry, $level) {
+    @error "shadow: $level must be 1–9 (got #{$level}).";
+  }
+  $layers: map.get($-geometry, $level);
+  box-shadow:
+    list.nth($layers, 1) -tint(list.nth($-strengths, 1)),
+    list.nth($layers, 2) -tint(list.nth($-strengths, 2)),
+    list.nth($layers, 3) -tint(list.nth($-strengths, 3));
+}

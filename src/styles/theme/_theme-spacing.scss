@@ -62,10 +62,9 @@ ol {
   @include scaled-spacing(padding-top padding-bottom, 4, 48px);
 }
 
-// The 48px Add button + 8px above and below: a 64px bar, on the grid. (The
-// 40px logo centers in it.)
+// The 40px logo + 12px above and below: a 64px bar, on the grid.
 .site-header__inner {
-  padding-block: gridx(1);
+  padding-block: gridx(1.5);
 }
 
 // ---- Page rhythm ----------------------------------------------------------------
@@ -75,13 +74,18 @@ ol {
   @include scaled-spacing(margin-bottom, 4, 40px);
 }
 
-.app__section-title,
 .app__section-header {
+  gap: gridx(2);
   margin-bottom: gridx(3);
 }
 
-.app__section-header {
-  gap: gridx(2);
+// Check/Add: the grid's gap does the spacing, so the title block drops its own.
+.app__add {
+  gap: gridx(3) gridx(4);
+
+  > .app__section-header {
+    margin-bottom: 0;
+  }
 }
 
 // The connection banners and page notices sit above the content they're about.
@@ -123,6 +127,12 @@ ol {
 .applications-table__table th,
 .applications-table__table td {
   @include scaled-spacing(padding-top padding-bottom, 3, 16px, 4);
+}
+
+// The toolbar's sides line up with the cells' text.
+.applications-table__controls,
+.applications-table__table th,
+.applications-table__table td {
   @include scaled-spacing(padding-left padding-right, 3, 24px, 4);
 }
 
@@ -144,9 +154,8 @@ ol {
 // (_typography.scss). Inputs, selects, textareas, buttons, tabs, the search
 // box and icon buttons all share it, so their text sits on the same baseline.
 .control,
-.application-form__inline-label,
-.application-form__inline-input,
 .applications-table__tab,
+.applications-table__page,
 .btn,
 .icon-button,
 .position-combobox__toggle {
@@ -155,9 +164,7 @@ ol {
 
 // Fields put the same 12px between their border and their text, on every
 // side. (Buttons and tabs set their own, wider, horizontal padding.)
-.control,
-.application-form__inline-label,
-.application-form__inline-input {
+.control {
   padding-inline: gridx(1.5);
 }
 
@@ -165,7 +172,7 @@ ol {
 // (positioned in _theme-layout.scss), and the text stops 8px short of it:
 // 12 + 24 + 8 = 44px on the icon's side.
 .select__input,
-.position-combobox > .position-combobox__input {
+.position-combobox__field > .position-combobox__input {
   padding-right: gridx(5.5);
 }
 
@@ -173,12 +180,30 @@ ol {
   padding-left: gridx(5.5);
 }
 
+// The select's dot: 12px inset + 8px dot + 8px before the text.
+.select--dot > .select__input {
+  padding-left: gridx(3.5);
+}
+
+// Room on the right for the ⌘K hint while the search box is empty.
+.applications-table__search-input:placeholder-shown {
+  @include from(720px) {
+    padding-right: gridx(9);
+  }
+}
+
+// The company field's clear button is a full 48px target over the field's
+// right end, so the text stops short of it.
+.application-form__company-input {
+  padding-right: gridx(6);
+}
+
 // ---- Message boxes ----------------------------------------------------------------
-// Notices and the form's duplicate warning: the same padding on every side,
+// Notices and the form's match alert: the same padding on every side,
 // 12px stepping to 16px on the widest screens. Multiples of 4, so a box of 24px
 // lines stays on the 8pt grid (one line: 48px, then 56px).
 .notice,
-.application-form__warning {
+.match-alert {
   @include scaled-spacing(padding, 4, 24px, 4);
 }
 

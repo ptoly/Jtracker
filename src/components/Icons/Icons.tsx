@@ -71,6 +71,14 @@ export function XCloseIcon(props: SVGProps<SVGSVGElement>) {
   );
 }
 
+export function PlusIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon {...props}>
+      <path d="M10 4.167v11.666M4.167 10h11.666" />
+    </Icon>
+  );
+}
+
 export function DotsVerticalIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <Icon {...props}>
@@ -91,14 +99,6 @@ export function ArrowRightIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <Icon {...props}>
       <path d="M4.167 10h11.666m0 0L10 4.167M15.833 10L10 15.833" />
-    </Icon>
-  );
-}
-
-export function PlusIcon(props: SVGProps<SVGSVGElement>) {
-  return (
-    <Icon {...props}>
-      <path d="M10 4.167v11.666M4.167 10h11.666" />
     </Icon>
   );
 }

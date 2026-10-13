@@ -9,18 +9,24 @@
 .btn {
   border: 0;
   border-radius: $radius-lg; // octet's is $radius-md
-  box-shadow: inset 0 0 0 1px var(--border-strong);
+  box-shadow: inset 0 0 0 1px var(--border-control);
   @include transition(background-color box-shadow color);
 
   @include hover-only {
     &:hover {
-      box-shadow: inset 0 0 0 1px var(--brand);
+      box-shadow: inset 0 0 0 1px var(--border-control-hover);
     }
   }
 
   @media (forced-colors: active) {
     border: 1px solid;
   }
+}
+
+// Outline buttons sit on the card colour; octet's default is the raised zone
+// colour. (Filled variants keep octet's fills.)
+.btn:not(.btn--primary, .btn--ghost, .btn--danger) {
+  background-color: var(--surface-card);
 }
 
 // Filled buttons have no hairline.

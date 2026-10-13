@@ -19,22 +19,6 @@ export function canonicalPosition(typed: string, positions: string[]): string {
   return positions.find((p) => normalize(p) === normalize(trimmed)) ?? trimmed;
 }
 
-/** Most recent application with the same company and position, if any. */
-export function findDuplicate(
-  applications: Application[],
-  company: string,
-  position: string,
-): Application | undefined {
-  if (!company.trim() || !position.trim()) return undefined;
-  return applications
-    .filter(
-      (app) =>
-        normalize(app.company) === normalize(company) &&
-        normalize(app.position) === normalize(position),
-    )
-    .sort((a, b) => b.dateApplied.localeCompare(a.dateApplied))[0];
-}
-
 export type RequiredField = 'dateApplied' | 'company' | 'position';
 export type FieldErrors = { [K in RequiredField]?: string | undefined };
 

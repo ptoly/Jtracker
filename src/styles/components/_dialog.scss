@@ -1,4 +1,5 @@
 @use 'pkg:octet-scss/abstracts' as *;
+@use '../theme/elevation' as *;
 
 // <dialog class="dialog dialog--small|medium">
 //   <div class="dialog__header">
@@ -15,8 +16,9 @@
 .dialog {
   border: 0;
   border-radius: $radius-xl;
-  background-color: var(--surface-card);
+  background-color: var(--surface-elevated);
   color: var(--text-primary);
+  @include shadow(6);
 
   &--small {
     width: min(100% - #{gridx(4)}, #{gridx(60)});

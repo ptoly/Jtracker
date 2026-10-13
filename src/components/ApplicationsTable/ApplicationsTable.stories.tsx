@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
-import { expect, fn } from 'storybook/test';
+import { expect, fn, waitFor } from 'storybook/test';
 import { StorageError } from '../../storage/errors';
 import { createSampleApplications } from '../../storage/sampleData';
 import type { Application, ApplicationPatch } from '../../types/application';
@@ -74,7 +74,7 @@ const meta = {
   // Rendered inside the section it sits in on the page.
   decorators: [
     (Story) => (
-      <section aria-label="Applications">
+      <section aria-label="Applications History">
         <Story />
       </section>
     ),
@@ -92,14 +92,32 @@ export const NeedsFollowUpTab: Story = {
     const tab = canvas.getByRole('tab', { name: /^Needs Follow Up \d+$/ });
     await userEvent.click(tab);
     await expect(tab).toHaveAttribute('aria-selected', 'true');
+    // Every row here says so in words, read with its status select.
+    for (const select of canvas.getAllByRole('combobox', { name: /^Status, / })) {
+      await expect(select).toHaveAccessibleDescription('Follow Up Due');
+    }
+  },
+};
+
+export const SearchShortcut: Story = {
+  name: 'Search shortcut (⌘K / Ctrl+K)',
+  play: async ({ canvas, userEvent }) => {
+    const apple = /Mac|iPhone|iPad/.test(navigator.userAgent);
+    await userEvent.keyboard(apple ? '{Meta>}k{/Meta}' : '{Control>}k{/Control}');
+    await expect(canvas.getByRole('searchbox')).toHaveFocus();
   },
 };
 
 export const NoSearchResults: Story = {
   name: 'No search results',
-  play: async ({ canvas, userEvent }) => {
-    await userEvent.type(canvas.getByRole('searchbox'), 'zzz-no-match');
+  args: { onAddForSearch: fn() },
+  play: async ({ canvas, userEvent, args }) => {
+    await userEvent.type(canvas.getByRole('searchbox'), 'Acme Robotics');
     await expect(canvas.getByText(/No applications match/)).toBeVisible();
+    await userEvent.click(
+      canvas.getByRole('button', { name: 'Add application for “Acme Robotics”' }),
+    );
+    await expect(args.onAddForSearch).toHaveBeenCalledWith('Acme Robotics');
   },
 };
 
@@ -107,9 +125,34 @@ export const ManyApplications: Story = {
   name: 'Many applications',
   args: { applications: manyApplications(250) },
   play: async ({ canvas, userEvent }) => {
-    await expect(canvas.getByText('Page 1 of 3')).toBeVisible();
+    const nav = canvas.getByRole('navigation', { name: 'Pagination' });
+    await expect(canvas.getByRole('button', { name: 'Page 1' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
+    await expect(nav).toHaveTextContent(/^Previous123Next$/);
     await userEvent.click(canvas.getByRole('button', { name: 'Next' }));
-    await expect(canvas.getByText('Page 2 of 3')).toBeVisible();
+    await expect(canvas.getByRole('button', { name: 'Page 2' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
+    await expect(canvas.getByRole('button', { name: 'Page 1' })).not.toHaveAttribute(
+      'aria-current',
+    );
+  },
+};
+
+export const ManyPages: Story = {
+  name: 'Many pages (ellipsis)',
+  args: { applications: manyApplications(1000) },
+  play: async ({ canvas, userEvent }) => {
+    const nav = canvas.getByRole('navigation', { name: 'Pagination' });
+    await expect(nav).toHaveTextContent(/^Previous12345…10Next$/);
+    await userEvent.click(canvas.getByRole('button', { name: 'Page 5' }));
+    await expect(nav).toHaveTextContent(/^Previous1…456…10Next$/);
+    await userEvent.click(canvas.getByRole('button', { name: 'Page 10' }));
+    await expect(nav).toHaveTextContent(/^Previous1…678910Next$/);
+    await expect(canvas.getByRole('button', { name: 'Next' })).toBeDisabled();
   },
 };
 
@@ -263,5 +306,55 @@ export const ReadOnly: Story = {
     })) {
       await expect(button).toBeDisabled();
     }
+  },
+};
+
+/** Under 720px: one card per application. Shown at a phone width in Storybook. */
+const narrow = { globals: { viewport: { value: 'mobile2', isRotated: false } } };
+
+export const NarrowCards: Story = {
+  name: 'Narrow screen: cards',
+  ...narrow,
+  play: async ({ canvas }) => {
+    const list = canvas.getByRole('list', { name: 'Applications' });
+    await expect(list).toBeVisible();
+    await expect(canvas.queryByRole('table')).toBeNull();
+    await expect(canvas.getByRole('heading', { name: 'Copperwick Labs' })).toBeVisible();
+    // The tabs stay on one row and scroll sideways.
+    const tablist = canvas.getByRole('tablist');
+    await expect(tablist.scrollWidth).toBeGreaterThan(tablist.clientWidth);
+  },
+};
+
+export const NarrowEdit: Story = {
+  name: 'Narrow screen: edit a card',
+  ...narrow,
+  play: async ({ canvas, userEvent, args }) => {
+    const edit = canvas.getByRole('button', { name: 'Edit Copperwick Labs application' });
+    await userEvent.click(edit);
+    const company = canvas.getByRole('textbox', { name: 'Company' });
+    await waitFor(() => expect(company).toHaveFocus());
+    await userEvent.type(company, ' Inc');
+    await userEvent.click(canvas.getByRole('button', { name: 'Save' }));
+    await expect(args.onUpdate).toHaveBeenCalledWith(expect.any(String), {
+      company: 'Copperwick Labs Inc',
+    });
+    await waitFor(() =>
+      expect(
+        canvas.getByRole('button', { name: 'Edit Copperwick Labs Inc application' }),
+      ).toHaveFocus(),
+    );
+  },
+};
+
+export const NarrowSort: Story = {
+  name: 'Narrow screen: sort the cards',
+  ...narrow,
+  play: async ({ canvas, userEvent }) => {
+    const sort = canvas.getByRole('combobox', { name: 'Sort by' });
+    await expect(sort).toHaveDisplayValue('Date applied, newest first');
+    await userEvent.selectOptions(sort, 'Company, A to Z');
+    const [first] = canvas.getAllByRole('heading', { level: 3 });
+    await expect(first).toHaveTextContent('Ashgrove Learning');
   },
 };

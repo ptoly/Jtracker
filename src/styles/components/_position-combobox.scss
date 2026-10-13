@@ -1,9 +1,12 @@
 @use 'pkg:octet-scss/abstracts' as *;
+@use '../theme/elevation' as *;
 
 // <div class="position-combobox [host classes]">
 //   <label>…</label>
-//   <input class="position-combobox__input [host classes]">
-//   <button class="position-combobox__toggle">…</button>
+//   <div class="position-combobox__field">
+//     <input class="position-combobox__input [host classes]">
+//     <button class="position-combobox__toggle">…</button>
+//   </div>
 //   <ul class="position-combobox__menu position-combobox__menu--overlay|inline" [data-open]>
 //     <li class="position-combobox__option" aria-selected="true|false">…</li>
 //   </ul>
@@ -12,6 +15,12 @@
 // toggle and suggestion list.
 .position-combobox {
   position: relative;
+
+  // The toggle is placed in the input's box, so a visible label above the
+  // input doesn't move it.
+  &__field {
+    position: relative;
+  }
 
   // Same control padding as the input it sits in, so the icon sits 12px in
   // from the edge like text and other control icons.
@@ -42,6 +51,7 @@
     border-radius: $radius-lg;
     background-color: var(--surface-elevated);
     list-style: none;
+    @include shadow(3);
 
     &[data-open] {
       display: block;

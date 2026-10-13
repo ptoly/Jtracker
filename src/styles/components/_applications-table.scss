@@ -4,97 +4,137 @@
 // with the page's edges, separated by hairlines.
 // <div class="applications-table">
 //   <div class="applications-table__controls">
+//     <div class="applications-table__search">… <kbd class="applications-table__shortcut">⌘K</kbd></div>
 //     <div role="tablist" class="applications-table__tabs">
 //       <button role="tab" class="applications-table__tab">View all <span class="applications-table__count">12</span></button>
 //     </div>
-//     <div class="applications-table__search">…</div>
 //   </div>
 //   <div role="tabpanel" class="applications-table__panel">
 //     <div class="applications-table__scroll"><table class="applications-table__table">…</table></div>
-//     <nav class="applications-table__pagination">…</nav>
+//     (under 720px, instead of the table:)
+//     <div class="applications-table__sort-by"><label class="applications-table__sort-label">Sort by</label><span class="select applications-table__sort-select">…</span></div>
+//     <ul class="applications-table__cards">
+//       <li class="applications-table__card [data-editing]">
+//         <div class="applications-table__lines"><h3 class="applications-table__card-title">…</h3>…</div>
+//         <div class="applications-table__status">…</div>
+//         <dl class="applications-table__facts"><div><dt>Applied</dt><dd>…</dd></div>…</dl>
+//         <div class="applications-table__card-notes">…</div>
+//         <div class="applications-table__row-icons">…</div>
+//       </li>
+//     </ul>
+//     <nav class="applications-table__pagination">
+//       Previous <ol class="applications-table__pages"><li><button class="applications-table__page" aria-current="page">1</button></li>…</ol> Next
+//     </nav>
 //   </div>
 // </div>
 .applications-table {
+  // The toolbar: a raised bar, search left and tabs right. The tabs run to
+  // its bottom edge, so the selected tab's underline sits on the bar's
+  // hairline. Side padding matches the table cells (_theme-spacing.scss).
   &__controls {
     display: flex;
     flex-wrap: wrap;
-    align-items: center;
+    align-items: stretch;
     justify-content: space-between;
-    gap: gridx(2) gridx(3);
-    padding-bottom: gridx(2);
+    column-gap: gridx(3);
+    border-radius: $radius-lg $radius-lg 0 0;
+    background-color: var(--surface-raised);
+    box-shadow: inset 0 -1px 0 var(--border-default); // the edge used on tinted zones
+
+    @media (forced-colors: active) {
+      border-bottom: 1px solid;
+    }
   }
 
   // A failed status change, between the toolbar and the table.
   &__notice {
-    padding-bottom: gridx(2);
+    padding-block: gridx(2);
   }
 
-  // Tabs: a segmented track -----------------------------------------------------
-  // The selected tab is white with a strong hairline (3:1) and bold text; the
-  // white-on-gray fill alone would be too faint to carry the state.
-  // Hairlines here are inset shadows, so they take no space: a 48px tab in a
-  // track with 4px padding is 56px. Forced-colors mode drops shadows, so real
-  // borders come back there.
+  // Tabs: underlined ---------------------------------------------------------------
+  // The selected tab has brand text (5.7:1 on the bar) and a 2px brand
+  // underline, drawn as an inset shadow so it takes no space. Tabs stretch to
+  // the bar's height, so a tab is at least the 48px control size.
+  // One row that scrolls sideways when it doesn't fit (the selected tab is
+  // focused, so the browser scrolls it into view).
   &__tabs {
-    display: inline-flex;
-    flex-wrap: wrap;
-    gap: gridx(0.5);
-    padding: gridx(0.5);
-    border-radius: $radius-lg;
-    background-color: var(--surface-raised);
-    box-shadow: inset 0 0 0 1px var(--border-subtle);
-
-    @media (forced-colors: active) {
-      border: 1px solid;
-    }
+    display: flex;
+    align-items: stretch;
+    gap: gridx(1);
+    min-width: 0;
+    max-width: 100%;
+    overflow-x: auto;
+    scrollbar-width: thin;
   }
 
   &__tab {
     display: inline-flex;
+    flex: none;
     align-items: center;
     gap: gridx(1);
-    padding-inline: gridx(2);
+    padding-inline: gridx(1);
     border: 0;
-    border-radius: $radius-md;
     background: none;
     color: var(--text-secondary);
     font-weight: 600;
     cursor: pointer;
-    @include transition(color background-color box-shadow, $duration-fast);
+    @include transition(color box-shadow, $duration-fast);
 
     @include hover-only {
-      &:hover {
+      &:hover:not(:disabled) {
         color: var(--text-primary);
       }
     }
 
     &[aria-selected='true'] {
-      background-color: var(--surface-card);
-      color: var(--text-primary);
-      box-shadow: inset 0 0 0 1px var(--border-strong);
+      color: var(--brand);
+      box-shadow: inset 0 -2px 0 var(--brand);
 
       @media (forced-colors: active) {
-        border: 1px solid;
+        border-bottom: 2px solid;
       }
+    }
+
+    &:disabled {
+      cursor: not-allowed;
+    }
+
+    // Drawn inside the tab: the scrolling row would clip a ring outside it.
+    &:focus-visible {
+      outline-offset: gridx(-0.25);
     }
   }
 
-  // How many applications the tab holds (search included). A 20px line inside
-  // the tab's 24px one.
+  // How many applications the tab holds (search included). The card colour
+  // on the raised bar (a raised-colour pill wouldn't show on it); brand-50
+  // with brand-700 text (7:1) on the selected tab. One 24px line, inside the
+  // tab's.
   &__count {
-    padding-inline: gridx(0.75);
+    padding-inline: gridx(1);
     border-radius: $radius-lg;
-    background-color: var(--surface-raised);
-    box-shadow: inset 0 0 0 1px var(--border-subtle);
+    background-color: var(--surface-card);
     color: var(--text-secondary);
-    font-size: rem(14px);
     font-weight: 500;
-    line-height: rem(gridx(2.5));
+
+    [aria-selected='true'] > & {
+      background-color: var(--brand-subtle);
+      color: var(--brand-hover); // primary-700
+    }
   }
 
-  // Search ----------------------------------------------------------------------
+  // Search -------------------------------------------------------------------------
+  // On the raised bar the default control edge is only 2.8:1, so the search
+  // box takes the darker edge (4.3:1). 8px above and below it on the bar.
+  // Its own full-width row on narrow screens, with the tabs below.
   &__search {
     position: relative;
+    align-self: center;
+    max-width: 100%; // the input's 320px gives way on the narrowest screens
+    padding-block: gridx(1);
+
+    @include until(720px) {
+      flex: 1 1 100%;
+    }
   }
 
   // Clicks pass through to the input underneath.
@@ -107,10 +147,37 @@
   &__search-input {
     width: gridx(40);
     max-width: 100%;
+
+    @include until(720px) {
+      width: 100%;
+    }
+
+    &,
+    &:hover:not(:disabled) {
+      box-shadow: inset 0 0 0 1px var(--border-control-hover);
+    }
+  }
+
+  // The ⌘K hint, inside the empty box on screens wide enough to have a keyboard.
+  &__shortcut {
+    padding-inline: gridx(0.75);
+    border-radius: $radius-md;
+    box-shadow: inset 0 0 0 1px var(--border-default);
+    color: var(--text-muted);
+    font-family: inherit;
+    font-size: inherit;
+    pointer-events: none;
+
+    @include until(720px) {
+      display: none;
+    }
   }
 
   // Table -----------------------------------------------------------------------
+  // The positioning context for visually hidden labels in the cells, so they
+  // stay inside the scroller instead of widening the page.
   &__scroll {
+    position: relative;
     overflow-x: auto;
   }
 
@@ -134,7 +201,11 @@
       }
     }
 
+    // The header row is a raised zone, like the toolbar above it, with the
+    // darker edge used on tinted zones. Secondary text is 6.9:1 on it.
     th {
+      background-color: var(--surface-raised);
+      box-shadow: inset 0 -1px 0 var(--border-default);
       color: var(--text-secondary);
       font-weight: 600;
       white-space: nowrap;
@@ -154,24 +225,37 @@
     white-space: nowrap;
   }
 
-  // Company / Position: two lines in one cell.
+  // Two lines in one cell: dates, and company over position.
+  // Company and position stay on one line each; Notes gives way instead.
+  &__lines {
+    display: grid;
+    text-align: left;
+    white-space: nowrap;
+  }
+
   &__company {
-    display: block;
     color: var(--text-primary);
     font-weight: 600;
   }
 
-  &__position {
-    display: block;
+  // The second line: followed-up date, position. Muted is 4.7:1 on the page.
+  &__secondary {
     color: var(--text-muted);
   }
 
-  // Live status: native select, plus the calculated Follow Up Due badge.
+  // Live status: native select (with a dot), and the calculated Follow Up Due
+  // in words under it.
+  // The selects fill the column, so ones with a dot match the rest.
   &__status {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: gridx(1);
+    display: grid;
+    gap: gridx(0.5);
+  }
+
+  // tertiary-700 on the page: 5:1.
+  &__due {
+    color: var(--warning-text);
+    font-weight: 600;
+    white-space: nowrap;
   }
 
   // Row actions: trash then pencil (see _icon-button.scss).
@@ -183,8 +267,15 @@
 
   // Edit mode -------------------------------------------------------------------
   // A row being edited (EditRow sets data-editing).
-  &__row[data-editing] {
+  &__row[data-editing],
+  &__card[data-editing] {
     background-color: var(--brand-subtle);
+
+    // border-control is 2.8:1 on the tint; the hover edge is 4.3:1 (3:1 needed).
+    .control:not([aria-invalid='true']),
+    .btn:not(.btn--primary, .btn--ghost, .btn--danger) {
+      box-shadow: inset 0 0 0 1px var(--border-control-hover);
+    }
 
     td {
       vertical-align: top;
@@ -195,6 +286,12 @@
     display: grid;
     gap: gridx(1);
     min-width: gridx(30);
+  }
+
+  // Position in the edit card: its visible label over the input.
+  &__combobox {
+    display: grid;
+    gap: gridx(1);
   }
 
   // Edit-row fields, mixed with .control, which supplies the look.
@@ -221,8 +318,17 @@
     padding-inline: gridx(2);
   }
 
+  // Notes take whatever width is left: the column claims it all (width 100%)
+  // but sizes from nothing (max-width 0), so long notes truncate instead of
+  // pushing the table wider. Never narrower than 192px.
+  &__notes-header,
   &__notes {
-    max-width: gridx(32);
+    width: 100%;
+    min-width: gridx(24);
+  }
+
+  &__notes {
+    max-width: 0;
     overflow: clip;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -269,43 +375,113 @@
     }
   }
 
-  // Follow Up Due badge: Untitled's outlined badge with a dot -----------------
-  // Calculated, not a stored status, so it sits beside the status select.
-  &__badge {
-    display: inline-flex;
+  // Cards (under 720px) ---------------------------------------------------------------
+  // One per application: company and position, status, dates and age, notes,
+  // then the row's buttons. Hairline edges as inset shadows, like the table's.
+  // "Sort by" and its select, between the toolbar and the cards. The select
+  // takes the rest of the row.
+  &__sort-by {
+    display: flex;
     align-items: center;
-    gap: gridx(1);
-    padding: 0 gridx(1);
-    border-radius: $radius-lg;
-    background-color: var(--warning-surface);
-    box-shadow: inset 0 0 0 1px var(--warning-border); // no added height: one 24px line
-    color: var(--warning-text);
-    font-size: rem(16px);
-    font-weight: 600;
-    line-height: rem(gridx(3));
-    white-space: nowrap;
+    gap: gridx(1.5);
+    padding-top: gridx(2);
   }
 
-  &__badge-dot {
-    width: gridx(1);
-    height: gridx(1);
-    border-radius: 50%;
-    background-color: var(--warning-indicator);
+  &__sort-label {
+    flex: none;
+    color: var(--text-primary);
+    font-weight: 600;
+  }
+
+  &__sort-select {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__cards {
+    display: grid;
+    gap: gridx(2);
+    padding-block: gridx(2);
+    list-style: none;
+  }
+
+  &__card {
+    display: grid;
+    gap: gridx(2);
+    @include scaled-spacing(padding, 4, 24px, 4);
+    border-radius: $radius-lg;
+    background-color: var(--surface-card);
+    color: var(--text-secondary);
+    box-shadow: inset 0 0 0 1px var(--border-subtle);
+
+    @media (forced-colors: active) {
+      border: 1px solid;
+    }
+
+    // The buttons reach 12px into the padding, so their icons line up with
+    // the card's text edge.
+    > .applications-table__row-icons {
+      margin: gridx(-1.5);
+      margin-top: 0;
+    }
+  }
+
+  &__card-title {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: rem(18px);
+    font-weight: 600;
+    line-height: rem(gridx(3));
+  }
+
+  // Applied, Followed up and Age side by side, wrapping when there's no room.
+  &__facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: gridx(1) gridx(3);
+
+    dt {
+      color: var(--text-secondary);
+      font-weight: 600;
+    }
+
+    dd {
+      margin: 0;
+      color: var(--text-primary);
+    }
+  }
+
+  &__card-notes {
+    overflow-wrap: anywhere;
+  }
+
+  &__card-label {
+    color: var(--text-primary);
+    font-weight: 600;
   }
 
   // Empty state & pagination ----------------------------------------------------
+  // The message, and under it (after a search) a button to add the term.
   &__empty {
-    max-width: none; // the theme caps paragraphs at a reading measure
+    display: grid;
+    justify-items: center;
+    gap: gridx(2);
     @include scaled-spacing(padding-top padding-bottom, 3, 48px);
     @include fluid-gutter(padding-inline, 16px, 24px, 360px, 1441px);
     color: var(--text-secondary);
-    font-size: inherit;
     text-align: center;
+
+    > p {
+      max-width: none; // the theme caps paragraphs at a reading measure
+      font-size: inherit;
+    }
   }
 
-  // Previous left, page number centered, Next right.
+  // Previous left, page numbers centered, Next right. On narrow screens the
+  // numbers take their own row above Previous and Next.
   &__pagination {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
     gap: gridx(2);
@@ -317,9 +493,60 @@
     }
   }
 
+  &__pages {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: gridx(0.5);
+    list-style: none;
+
+    @include until(720px) {
+      flex-basis: 100%;
+      order: -1;
+    }
+  }
+
+  // Square 48px page buttons: the shared 12px padding around a 24px line.
+  // The current page: brand-50 fill, brand-700 text (7:1).
   &__page {
+    min-width: gridx(6);
+    padding-inline: gridx(1.5);
+    border: 0;
+    border-radius: $radius-lg;
+    background: none;
     color: var(--text-secondary);
-    font-size: rem(16px);
+    font-weight: 600;
+    cursor: pointer;
+    @include transition(background-color color, $duration-fast);
+
+    @include hover-only {
+      &:hover:not(:disabled, [aria-current]) {
+        background-color: var(--surface-raised);
+        color: var(--text-primary);
+      }
+    }
+
+    &[aria-current='page'] {
+      background-color: var(--brand-subtle);
+      color: var(--brand-hover); // primary-700
+
+      @media (forced-colors: active) {
+        outline: 2px solid;
+        outline-offset: -2px;
+      }
+    }
+
+    &:disabled {
+      cursor: not-allowed;
+    }
+  }
+
+  // Same box as a page button, so the bar keeps its width.
+  &__gap {
+    display: grid;
+    place-items: center;
+    min-width: gridx(6);
+    color: var(--text-secondary);
   }
 
   &__page-button {

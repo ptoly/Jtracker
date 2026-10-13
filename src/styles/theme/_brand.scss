@@ -3,26 +3,31 @@
 //  written as plain hex; no Tailwind).
 //  ---------------------------------------------------------------------------
 //  Loaded after octet base's :root, so everything here wins. Ramps run light
-//  → dark like octet's (100 → 900); neutral adds 25, 50 and 950, and the
-//  colour ramps add 50 for tinted surfaces. Semantic roles are re-pointed for
-//  a light UI, since octet's defaults assume a dark one.
+//  → dark like octet's (100 → 900); neutral adds 25, 50, 450 and 950, primary
+//  adds 25 and 50, and the other colour ramps add 50 for tinted surfaces.
+//  Semantic roles are re-pointed for a light UI, since octet's defaults
+//  assume a dark one. No pure white or black: the lightest surface is
+//  neutral-25.
 //
 //    primary   — indigo, the one accent: brand, links, focus ring
 //    secondary — red: danger
 //    tertiary  — amber: warning
 //    neutral   — gray: surfaces, text, lines
 //
-//  Contrast (WCAG AA) — worst case of white, the page (neutral-50) and the
-//  edit row's tint (primary-50):
-//    text-primary 15.9 · text-secondary 9.2 · text-muted 4.6 (page; white 4.8)
-//    link 5.6 · white on brand 6.3 · white on danger 4.8
-//    danger-text 5.8 · warning-text 4.8 on its surface
-//    border-strong 4.6 and focus ring 5.6 (3:1 needed, WCAG 1.4.11)
-//  Muted text never sits on the tint; muted icons there are 4.3 (3:1 needed).
-//  Four roles sit a step darker than the obvious pick, to pass:
-//    border-strong 500, not 400 (2.4:1) — control edges need 3:1
-//    danger-text red-700, not 600 (4.4:1 on red-50, 4.3:1 on the tint)
-//    warning-text amber-700, not 600 (3.1:1 on amber-50)
+//  Contrast (WCAG AA), on neutral-25 · neutral-100 (raised) · primary-50 (tint):
+//    text-primary 17.3 · 16.1 · 15.9
+//    text-secondary 7.4 · 6.9 · 6.8
+//    text-muted 4.7 on neutral-25 only: it fails on raised (4.4) and the
+//      tint (4.3), so text there uses text-secondary
+//    link / brand-600 text 6.1 · 5.7 · 5.6; brand-700 on brand-50 7.1
+//    text-on-brand on brand 6.1 · on danger 4.7
+//    danger-text 6.3 · 5.9 · 5.8 (5.9 on its surface)
+//    warning-text 4.9 on neutral-25, 4.8 on its surface
+//  Non-text, 3:1 needed (WCAG 1.4.11):
+//    border-control 3.05 on neutral-25 only: 2.84 on raised, 2.80 on the
+//      tint, so controls there use border-control-hover (4.4 · 4.3)
+//    focus ring 6.1 · 5.7 · 5.6 · success dot 3.2
+//    warning dot 2.1: decorative, the "Follow Up Due" text carries the state
 //  border-subtle and border-default separate surfaces; they're decorative.
 //
 //  Full token list: node_modules/octet-scss/abstracts/_colors.scss.
@@ -33,6 +38,7 @@
 
   // ---- Ramps ----------------------------------------------------------------
   // Primary — indigo
+  --primary-25: #f7f9ff;
   --primary-50: #eef2ff;
   --primary-100: #e0e7ff;
   --primary-200: #c7d2fe;
@@ -68,13 +74,14 @@
   --tertiary-800: #92400e;
   --tertiary-900: #78350f;
 
-  // Neutral — gray, 12 steps
+  // Neutral — gray, 13 steps
   --neutral-25: #fcfcfd;
   --neutral-50: #f9fafb;
   --neutral-100: #f3f4f6;
   --neutral-200: #e5e7eb;
   --neutral-300: #d1d5db;
   --neutral-400: #9ca3af;
+  --neutral-450: #8b929f; // between Tailwind's 400 and 500: the lightest 3:1 control edge
   --neutral-500: #6b7280;
   --neutral-600: #4b5563;
   --neutral-700: #374151;
@@ -96,19 +103,21 @@
   --link-hover: var(--primary-700);
   --focus-ring: var(--primary-600);
 
-  --surface-page: var(--neutral-50);
-  --surface-raised: #fff;
-  --surface-card: #fff;
-  --surface-elevated: #fff;
+  --surface-page: var(--neutral-25);
+  --surface-card: var(--neutral-25); // cards stand off the page by border and shadow, not fill
+  --surface-raised: var(--neutral-100); // zones: table header, toolbar
+  --surface-elevated: var(--neutral-25); // dialogs and menus, with a soft shadow
 
   --text-primary: var(--neutral-900);
-  --text-secondary: var(--neutral-700);
-  --text-muted: var(--neutral-500);
-  --text-on-brand: #fff;
+  --text-secondary: var(--neutral-600);
+  --text-muted: var(--neutral-500); // neutral-25 only; see the contrast notes
+  --text-on-brand: var(--neutral-25);
 
-  --border-subtle: var(--neutral-200);
-  --border-default: var(--neutral-300);
-  --border-strong: var(--neutral-500); // control edges: 4.8:1 (400 is 2.5:1)
+  --border-subtle: var(--neutral-200); // surface edges, row dividers
+  --border-default: var(--neutral-300); // edges on tinted zones
+  --border-control: var(--neutral-450); // inputs, selects, outline buttons: 3:1
+  --border-control-hover: var(--neutral-500);
+  --border-strong: var(--border-control); // octet's name for it (octet's .btn)
 
   --danger: var(--secondary-600); // fills and icons; white on it is 4.8:1
 
@@ -125,9 +134,15 @@
   --warning-text: var(--tertiary-700); // 4.8:1 on --warning-surface
   --warning-indicator: var(--tertiary-500);
 
-  // Tooltips: inverted. White on gray-900 is 17.7:1.
+  // Success: the "Followed Up" dot. Tailwind green-600, 3.2:1 on neutral-25.
+  --success-indicator: #16a34a;
+
+  // Tooltips: inverted. neutral-25 on gray-900 is 17.3:1.
   --tooltip-surface: var(--neutral-900);
-  --tooltip-text: #fff;
+  --tooltip-text: var(--neutral-25);
+
+  // Shadows (theme/_elevation.scss): neutral-900 at low opacity, never pure black.
+  --shadow-color: var(--neutral-900);
 
   // Scrim behind modal dialogs.
   --backdrop: rgb(17 24 39 / 0.7); // gray-900 at 70%

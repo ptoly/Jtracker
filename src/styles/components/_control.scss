@@ -11,10 +11,17 @@
 // back there.
 .control {
   border: 0;
-  box-shadow: inset 0 0 0 1px var(--border-strong);
+  box-shadow: inset 0 0 0 1px var(--border-control);
   border-radius: $radius-lg;
   background-color: var(--surface-card);
   color: var(--text-primary);
+  @include transition(box-shadow, $duration-fast);
+
+  @include hover-only {
+    &:hover:not(:disabled, [aria-invalid='true']) {
+      box-shadow: inset 0 0 0 1px var(--border-control-hover);
+    }
+  }
 
   &::placeholder {
     color: var(--text-muted);
@@ -24,11 +31,15 @@
     box-shadow: inset 0 0 0 1px var(--danger);
   }
 
-  // Muted text on the raised surface is 4.6:1, still readable.
+  // Muted text fails on the raised surface (4.4:1), so disabled text is secondary.
   &:disabled {
     background-color: var(--surface-raised);
-    color: var(--text-muted);
+    color: var(--text-secondary);
     cursor: not-allowed;
+
+    &::placeholder {
+      color: var(--text-secondary);
+    }
   }
 
   // Chrome pads the date text 1px top and bottom; without it a date field is

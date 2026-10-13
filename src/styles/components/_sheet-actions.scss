@@ -1,20 +1,19 @@
 @use 'pkg:octet-scss/abstracts' as *;
+@use '../theme/elevation' as *;
 
 // <div class="sheet-actions">
-//   <button class="btn">Reload from sheet</button> <button class="btn">Disconnect</button>
+//   <button class="btn">Reload from sheet</button>
 //   <div class="sheet-actions__menu">
-//     <button class="icon-button" aria-expanded aria-controls="…">⋮</button>
-//     <div class="sheet-actions__panel" hidden>
-//       <button class="sheet-actions__item">Change sheet tab</button>
-//       or
-//       <form class="sheet-actions__form">
-//         <label class="sheet-actions__label">…</label><input class="control">
-//         <div class="sheet-actions__form-buttons">…</div>
-//       </form>
+//     <button class="icon-button sheet-actions__toggle" aria-haspopup="menu" aria-expanded aria-controls="…">⋮</button>
+//     <div class="sheet-actions__list" role="menu" hidden>
+//       <button class="sheet-actions__item" role="menuitem">…</button> …
 //     </div>
 //   </div>
+//   <dialog class="dialog">
+//     <form class="sheet-actions__form"><label class="sheet-actions__label">…</label><input class="control">…</form>
+//   </dialog>
 // </div>
-// The panel drops below the ⋮ button, right-aligned so it stays on screen.
+// The menu drops below the ⋮ button, right-aligned so it stays on screen.
 .sheet-actions {
   display: flex;
   flex-wrap: wrap;
@@ -25,7 +24,18 @@
     position: relative;
   }
 
-  &__panel {
+  // The ⋮ button is link-coloured, like the app's other text actions.
+  &__toggle {
+    color: var(--link);
+
+    @include hover-only {
+      &:hover:not(:disabled) {
+        color: var(--link-hover);
+      }
+    }
+  }
+
+  &__list {
     position: absolute;
     top: calc(100% + #{gridx(0.5)});
     right: 0;
@@ -33,16 +43,23 @@
     width: max-content;
     min-width: gridx(30);
     padding-block: gridx(0.5);
-    border: 1px solid var(--border-default); // no shadow, so a firmer edge than a card's
+    border: 1px solid var(--border-default);
     border-radius: $radius-lg;
     background-color: var(--surface-elevated);
     font-size: rem(16px);
+    @include shadow(3);
+
+    &[hidden] {
+      display: none;
+    }
   }
 
+  // A 48px row: the shared 24px line plus 12px above and below. The focused
+  // item is tinted, so the arrow keys' position shows without the ring too.
   &__item {
     display: block;
     width: 100%;
-    padding: gridx(1) gridx(2);
+    padding: gridx(1.5) gridx(2);
     border: 0;
     background: none;
     color: var(--text-primary);
@@ -50,9 +67,13 @@
     text-align: left;
     cursor: pointer;
 
+    &:focus {
+      background-color: var(--brand-subtle);
+    }
+
     @include hover-only {
       &:hover {
-        background-color: var(--surface-raised);
+        background-color: var(--brand-subtle);
       }
     }
   }
@@ -60,18 +81,14 @@
   &__form {
     display: grid;
     gap: gridx(1);
-    padding: gridx(1.5) gridx(2);
+
+    .dialog__actions {
+      margin-top: gridx(2);
+    }
   }
 
   &__label {
     color: var(--text-primary);
     font-weight: 600;
-  }
-
-  &__form-buttons {
-    display: flex;
-    justify-content: flex-end;
-    gap: gridx(1);
-    margin-top: gridx(1);
   }
 }

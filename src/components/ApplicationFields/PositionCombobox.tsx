@@ -88,25 +88,28 @@ export function PositionCombobox({
       <label className={labelClassName} {...getLabelProps()}>
         {label}
       </label>
-      <input
-        className={`position-combobox__input ${inputClassName}`}
-        required
-        {...getInputProps({
-          ...errorProps,
-          onKeyDown: handleKeyDown,
-          onChange: (event) => onValueChange(event.currentTarget.value),
-        })}
-      />
-      {/* Mouse affordance for browsing; keyboard users open the list with the arrow keys. */}
-      <button
-        type="button"
-        className="position-combobox__toggle"
-        aria-label="Show positions"
-        hidden={positions.length === 0}
-        {...getToggleButtonProps()}
-      >
-        <ChevronDownIcon />
-      </button>
+      {/* The toggle sits inside the input's box, wherever the label puts it. */}
+      <div className="position-combobox__field">
+        <input
+          className={`position-combobox__input ${inputClassName}`}
+          required
+          {...getInputProps({
+            ...errorProps,
+            onKeyDown: handleKeyDown,
+            onChange: (event) => onValueChange(event.currentTarget.value),
+          })}
+        />
+        {/* Mouse affordance for browsing; keyboard users open the list with the arrow keys. */}
+        <button
+          type="button"
+          className="position-combobox__toggle"
+          aria-label="Show positions"
+          hidden={positions.length === 0}
+          {...getToggleButtonProps()}
+        >
+          <ChevronDownIcon />
+        </button>
+      </div>
       <ul
         className={`position-combobox__menu position-combobox__menu--${menu}`}
         data-open={open ? '' : undefined}

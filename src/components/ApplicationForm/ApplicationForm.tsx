@@ -1,15 +1,27 @@
-import { useId, useState, type FormEvent } from 'react';
-import { distinctPositions, findDuplicate } from '../../lib/applicationRules';
+import { useId, useImperativeHandle, useState, type FormEvent, type Ref } from 'react';
+import { distinctPositions } from '../../lib/applicationRules';
+import { companyKey, findCompanyMatches, matchSummary } from '../../lib/companyMatch';
 import { toIsoDate } from '../../lib/dates';
+import { useDebouncedValue } from '../../lib/useDebouncedValue';
 import type { Application, NewApplication } from '../../types/application';
 import { FieldError } from '../ApplicationFields/FieldError';
 import { PositionCombobox } from '../ApplicationFields/PositionCombobox';
 import { emptyDraft, useApplicationDraft } from '../ApplicationFields/useApplicationDraft';
-import { DateText } from '../DateText/DateText';
+import { IconButton } from '../IconButton/IconButton';
+import { PlusIcon, XCloseIcon } from '../Icons/Icons';
 import { SaveError } from '../Notice/Notice';
+import { MatchAlert } from './MatchAlert';
+
+/** How long typing pauses before Company is checked against earlier applications. */
+const MATCH_DELAY_MS = 250;
+
+export interface ApplicationFormHandle {
+  /** Fills Company (e.g. from a table search that found nothing) and focuses Position. */
+  fillCompany: (company: string) => void;
+}
 
 export interface ApplicationFormProps {
-  /** Existing applications, for the duplicate check (and the default position list). */
+  /** Existing applications, for the "applied before" check (and the default position list). */
   applications: Application[];
   /** Position suggestions. Defaults to the positions in `applications`. */
   positions?: string[];
@@ -17,14 +29,9 @@ export interface ApplicationFormProps {
   today: Date;
   /** Persists the new application. The form resets once this resolves. */
   onAdd: (input: NewApplication) => Promise<unknown>;
-  /** Called after a successful add, e.g. to close the dialog the form is in. */
-  onAdded?: (input: NewApplication) => void;
-  /** card: on the page, two columns on wide screens. dialog: one column, with Cancel. */
-  variant?: 'card' | 'dialog';
-  /** The dialog variant's Cancel. */
-  onCancel?: () => void;
-  /** Shows a "Manage positions" button. */
+  /** Shows a "Manage Positions" button under the Position field. */
   onManagePositions?: () => void;
+  ref?: Ref<ApplicationFormHandle>;
 }
 
 export function ApplicationForm({
@@ -32,10 +39,8 @@ export function ApplicationForm({
   positions: suggestions,
   today,
   onAdd,
-  onAdded,
-  variant = 'card',
-  onCancel,
   onManagePositions,
+  ref,
 }: ApplicationFormProps) {
   const baseId = useId();
   const ids = {
@@ -44,6 +49,7 @@ export function ApplicationForm({
     position: `${baseId}-position`,
     notes: `${baseId}-notes`,
   };
+  const dateHelpId = `${baseId}-date-help`;
 
   const todayIso = toIsoDate(today);
   const positions = suggestions ?? distinctPositions(applications);
@@ -54,8 +60,27 @@ export function ApplicationForm({
   const [submitting, setSubmitting] = useState(false);
   // The counter keys the message so a repeat ("Added Acme" twice) is still a DOM change and re-announces.
   const [announcement, setAnnouncement] = useState({ text: '', count: 0 });
+  const [noteOpen, setNoteOpen] = useState(false);
+  // Set by "Add Note", so the textarea takes focus when it appears.
+  const [focusNote, setFocusNote] = useState(false);
+  // The company key the match alert was dismissed for; typing another brings it back.
+  const [dismissedKey, setDismissedKey] = useState<string | null>(null);
 
-  const duplicate = findDuplicate(applications, draft.company, draft.position);
+  const focusField = (id: string) => document.getElementById(id)?.focus();
+
+  useImperativeHandle(ref, () => ({
+    fillCompany(company: string) {
+      setField('company', company);
+      focusField(ids.position);
+    },
+  }));
+
+  // Matches follow the debounced text, but an emptied field (cleared, or
+  // reset after adding) hides them at once.
+  const companyQuery = useDebouncedValue(draft.company, MATCH_DELAY_MS);
+  const matchKey = companyKey(companyQuery);
+  const matches = draft.company.trim() ? findCompanyMatches(applications, companyQuery) : [];
+  const showMatches = matches.length > 0 && dismissedKey !== matchKey;
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -80,9 +105,10 @@ export function ApplicationForm({
 
     setSubmitError(null);
     reset(emptyDraft(todayIso));
+    setNoteOpen(false);
+    setDismissedKey(null);
     setAnnouncement((prev) => ({ text: `Added ${input.company}`, count: prev.count + 1 }));
-    if (onAdded) onAdded(input);
-    else document.getElementById(ids.company)?.focus();
+    focusField(ids.company);
   }
 
   const required = (
@@ -92,42 +118,62 @@ export function ApplicationForm({
   );
 
   const fields = (
-    <>
-      <div className="application-form__field application-form__field--date">
-        <label htmlFor={ids.dateApplied} className="application-form__label">
-          Date{required}
-        </label>
-        <input
-          id={ids.dateApplied}
-          type="date"
-          className="control application-form__input"
-          required
-          value={draft.dateApplied}
-          onChange={(event) => setField('dateApplied', event.target.value)}
-          {...errorProps('dateApplied')}
-        />
-        <FieldError id={errorId('dateApplied')} message={errors.dateApplied} />
-      </div>
+    <div className="application-form__fields">
+      {/* Company and Date Applied share a row while there's room; Date drops below when not. */}
+      <div className="application-form__row">
+        <div className="application-form__field">
+          <label htmlFor={ids.company} className="application-form__label">
+            Company/Search{required}
+          </label>
+          <div className="application-form__company">
+            <input
+              id={ids.company}
+              type="text"
+              className="control application-form__input application-form__company-input"
+              autoComplete="off"
+              required
+              value={draft.company}
+              onChange={(event) => setField('company', event.target.value)}
+              {...errorProps('company')}
+            />
+            {draft.company && (
+              <span className="application-form__clear">
+                <IconButton
+                  label="Clear company"
+                  tooltip="Clear"
+                  icon={<XCloseIcon />}
+                  onClick={() => {
+                    setField('company', '');
+                    focusField(ids.company);
+                  }}
+                />
+              </span>
+            )}
+          </div>
+          <FieldError id={errorId('company')} message={errors.company} />
+        </div>
 
-      <div className="application-form__field">
-        <div className="application-form__inline">
-          <label htmlFor={ids.company} className="application-form__inline-label">
-            Company{required}
+        <div className="application-form__field application-form__field--date">
+          <label htmlFor={ids.dateApplied} className="application-form__label">
+            Date Applied{required}
           </label>
           <input
-            id={ids.company}
-            type="text"
-            className="application-form__inline-input"
-            autoComplete="off"
+            id={ids.dateApplied}
+            type="date"
+            className="control application-form__input"
             required
-            // The date defaults to today, so the dialog starts on Company.
-            data-autofocus={variant === 'dialog' ? '' : undefined}
-            value={draft.company}
-            onChange={(event) => setField('company', event.target.value)}
-            {...errorProps('company')}
+            value={draft.dateApplied}
+            onChange={(event) => setField('dateApplied', event.target.value)}
+            {...errorProps('dateApplied')}
+            aria-describedby={
+              errors.dateApplied ? `${dateHelpId} ${errorId('dateApplied')}` : dateHelpId
+            }
           />
+          <div id={dateHelpId} className="application-form__help">
+            Defaults to today
+          </div>
+          <FieldError id={errorId('dateApplied')} message={errors.dateApplied} />
         </div>
-        <FieldError id={errorId('company')} message={errors.company} />
       </div>
 
       <div className="application-form__field">
@@ -137,47 +183,84 @@ export function ApplicationForm({
           onValueChange={(value) => setField('position', value)}
           positions={positions}
           label={<>Position{required}</>}
-          className="application-form__inline"
-          labelClassName="application-form__inline-label"
-          inputClassName="application-form__inline-input"
+          className="application-form__combobox"
+          labelClassName="application-form__label"
+          inputClassName="control application-form__input"
           errorProps={errorProps('position')}
         />
         <FieldError id={errorId('position')} message={errors.position} />
+        {onManagePositions && (
+          <button
+            type="button"
+            className="btn btn--ghost application-form__link-button application-form__manage"
+            onClick={onManagePositions}
+          >
+            Manage Positions
+          </button>
+        )}
       </div>
 
-      <div className="application-form__field application-form__field--notes">
-        <label htmlFor={ids.notes} className="application-form__label">
-          Notes <span className="application-form__optional">(optional)</span>
-        </label>
-        <textarea
-          id={ids.notes}
-          className="control application-form__input"
-          rows={3}
-          value={draft.notes}
-          onChange={(event) => setField('notes', event.target.value)}
-        />
+      {noteOpen || draft.notes ? (
+        <div className="application-form__field">
+          <label htmlFor={ids.notes} className="application-form__label">
+            Note <span className="application-form__optional">(optional)</span>
+          </label>
+          <textarea
+            id={ids.notes}
+            ref={(element) => {
+              if (element && focusNote) {
+                element.focus();
+                setFocusNote(false);
+              }
+            }}
+            className="control application-form__input"
+            rows={3}
+            value={draft.notes}
+            onChange={(event) => setField('notes', event.target.value)}
+          />
+        </div>
+      ) : (
+        <button
+          type="button"
+          className="btn btn--ghost application-form__link-button application-form__note-toggle"
+          onClick={() => {
+            setNoteOpen(true);
+            setFocusNote(true);
+          }}
+        >
+          <PlusIcon />
+          Add Note (optional)
+        </button>
+      )}
+    </div>
+  );
+
+  return (
+    <form className="application-form" noValidate onSubmit={handleSubmit}>
+      <div className="card">
+        {/* Fields on the left and earlier applications on the right; stacked when narrow. */}
+        <div className="card__body application-form__body">
+          {fields}
+          <div className="application-form__matches">
+            {showMatches && (
+              <MatchAlert
+                matches={matches}
+                today={today}
+                onDismiss={() => {
+                  setDismissedKey(matchKey);
+                  focusField(ids.company);
+                }}
+              />
+            )}
+          </div>
+        </div>
+        <div className="card__footer application-form__actions">
+          <button type="submit" className="btn btn--primary" aria-disabled={submitting}>
+            Add Application
+          </button>
+        </div>
       </div>
-    </>
-  );
 
-  // Always rendered, so Add (and Cancel) stay right-aligned without it.
-  const manageButton = onManagePositions ? (
-    <button type="button" className="btn btn--ghost" onClick={onManagePositions}>
-      Manage positions
-    </button>
-  ) : (
-    <span />
-  );
-
-  const addButton = (
-    <button type="submit" className="btn btn--primary" aria-disabled={submitting}>
-      Add application
-    </button>
-  );
-
-  // A failed add and the duplicate warning: under the card, or above a dialog's buttons.
-  const messages = (
-    <>
       {submitError && (
         <SaveError
           className="application-form__error"
@@ -188,52 +271,10 @@ export function ApplicationForm({
         />
       )}
 
-      <div aria-live="polite" className="application-form__warning-region">
-        {duplicate && (
-          <div className="application-form__warning">
-            You applied to {duplicate.company} for {duplicate.position}
-            {duplicate.dateApplied && (
-              <>
-                {' '}
-                on <DateText iso={duplicate.dateApplied} />
-              </>
-            )}
-            .
-          </div>
-        )}
+      {/* The alert's one-line summary; the alert itself isn't live, so its lines aren't read out on every change. */}
+      <div aria-live="polite" className="sr-only">
+        {showMatches && matches.map(matchSummary).join('. ')}
       </div>
-    </>
-  );
-
-  return (
-    <form
-      className={`application-form application-form--${variant}`}
-      noValidate
-      onSubmit={handleSubmit}
-    >
-      {variant === 'card' ? (
-        <div className="card">
-          <div className="card__body application-form__fields">{fields}</div>
-          <div className="card__footer application-form__actions">
-            {manageButton}
-            {addButton}
-          </div>
-        </div>
-      ) : (
-        <div className="application-form__fields">{fields}</div>
-      )}
-      {messages}
-      {variant === 'dialog' && (
-        <div className="application-form__actions">
-          {manageButton}
-          <div className="dialog__actions">
-            <button type="button" className="btn" onClick={onCancel}>
-              Cancel
-            </button>
-            {addButton}
-          </div>
-        </div>
-      )}
 
       <div role="status" className="sr-only">
         {announcement.text && <span key={announcement.count}>{announcement.text}</span>}
