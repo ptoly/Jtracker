@@ -142,9 +142,10 @@
   }
 
   // Company / Position: long names wrap rather than widen the column, which
-  // left too little room for Status.
+  // left too little room for Status. 260px keeps a cell to two lines (company
+  // over position) for the names in use.
   &__company {
-    min-width: gridx(28);
+    min-width: 260px;
   }
 
   // Live status: native select (with a dot), and the calculated Follow Up Due

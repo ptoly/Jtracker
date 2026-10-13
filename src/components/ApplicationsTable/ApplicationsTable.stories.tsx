@@ -117,7 +117,21 @@ export const NoSearchResults: Story = {
     await userEvent.click(
       canvas.getByRole('button', { name: 'Add application for “Acme Robotics”' }),
     );
-    await expect(args.onAddForSearch).toHaveBeenCalledWith('Acme Robotics');
+    await expect(args.onAddForSearch).toHaveBeenCalledWith({ company: 'Acme Robotics' });
+  },
+};
+
+/** A term that names a known position (any case) is offered as the position, saved spelling. */
+export const NoSearchResultsPosition: Story = {
+  name: 'No search results, known position',
+  args: { onAddForSearch: fn(), positions: ['Frontend Developer', 'Motion Designer'] },
+  play: async ({ canvas, userEvent, args }) => {
+    await userEvent.type(canvas.getByRole('searchbox'), 'motion designer');
+    await expect(canvas.getByText(/No applications match/)).toBeVisible();
+    await userEvent.click(
+      canvas.getByRole('button', { name: 'Add a “Motion Designer” application' }),
+    );
+    await expect(args.onAddForSearch).toHaveBeenCalledWith({ position: 'Motion Designer' });
   },
 };
 

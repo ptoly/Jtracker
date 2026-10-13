@@ -5,6 +5,7 @@ import { ageInDays, DEFAULT_FOLLOW_UP_DAYS, isFollowUpDue } from '../../lib/deri
 import { pageItems } from '../../lib/pagination';
 import { useMediaQuery } from '../../lib/useMediaQuery';
 import type { Application, ApplicationPatch, Status } from '../../types/application';
+import type { ApplicationPrefill } from '../ApplicationForm/ApplicationForm';
 import { StatusOptions } from '../ApplicationFields/StatusOptions';
 import { ConfirmDialog } from '../ConfirmDialog/ConfirmDialog';
 import { DateText } from '../DateText/DateText';
@@ -93,8 +94,12 @@ export interface ApplicationsTableProps {
   onEditingChange?: (editing: boolean) => void;
   /** Position suggestions for the edit row. Defaults to the positions in `applications`. */
   positions?: string[];
-  /** Offered when a search finds nothing: starts a new application for the search term. */
-  onAddForSearch?: (term: string) => void;
+  /**
+   * Offered when a search finds nothing: starts a new application for the
+   * search term, as its position when it names a known one (any case; the
+   * saved spelling is passed), otherwise as its company.
+   */
+  onAddForSearch?: (fill: ApplicationPrefill) => void;
 }
 
 function pluralize(count: number, noun: string): string {
@@ -269,6 +274,16 @@ export function ApplicationsTable({
   });
 
   const positions = suggestions ?? distinctPositions(applications);
+
+  // A search that finds nothing offers to add it: as a position when it names
+  // a known one, otherwise as a company.
+  const term = query.trim();
+  const knownPosition = positions.find((p) => p.toLowerCase() === term.toLowerCase());
+  const searchPrefill: ApplicationPrefill | null = !term
+    ? null
+    : knownPosition
+      ? { position: knownPosition }
+      : { company: term };
   const rows = filterRows(applications, followUpDays, today, tab, query).sort((a, b) =>
     compareRows(a, b, sort.key, sort.direction),
   );
@@ -628,9 +643,11 @@ export function ApplicationsTable({
         {pageRows.length === 0 ? (
           <div className="applications-table__empty">
             <p>{emptyMessage}</p>
-            {onAddForSearch && query.trim() && (
-              <button type="button" className="btn" onClick={() => onAddForSearch(query.trim())}>
-                Add application for “{query.trim()}”
+            {onAddForSearch && searchPrefill && (
+              <button type="button" className="btn" onClick={() => onAddForSearch(searchPrefill)}>
+                {'position' in searchPrefill
+                  ? `Add a “${searchPrefill.position}” application`
+                  : `Add application for “${searchPrefill.company}”`}
               </button>
             )}
           </div>

@@ -131,7 +131,7 @@ export const FillFromSearch: Story = {
           <button
             type="button"
             className="btn"
-            onClick={() => ref.current?.fillCompany('Acme Robotics')}
+            onClick={() => ref.current?.prefill({ company: 'Acme Robotics' })}
           >
             Add application for “Acme Robotics”
           </button>
@@ -146,6 +146,35 @@ export const FillFromSearch: Story = {
       'Acme Robotics',
     );
     await expect(canvas.getByRole('combobox', { name: 'Position' })).toHaveFocus();
+  },
+};
+
+/** A search that named a known position fills Position and moves on to Company. */
+export const FillPositionFromSearch: Story = {
+  name: 'Position filled from a table search',
+  render: function Render(args) {
+    const ref = useRef<ApplicationFormHandle>(null);
+    return (
+      <>
+        <p>
+          <button
+            type="button"
+            className="btn"
+            onClick={() => ref.current?.prefill({ position: 'Frontend Developer' })}
+          >
+            Add a “Frontend Developer” application
+          </button>
+        </p>
+        <ApplicationForm {...args} ref={ref} />
+      </>
+    );
+  },
+  play: async ({ canvas, userEvent }) => {
+    await userEvent.click(canvas.getByRole('button', { name: /^Add a / }));
+    await expect(canvas.getByRole('combobox', { name: 'Position' })).toHaveValue(
+      'Frontend Developer',
+    );
+    await expect(canvas.getByRole('textbox', { name: 'Company/Search' })).toHaveFocus();
   },
 };
 

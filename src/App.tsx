@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import {
   ApplicationForm,
   type ApplicationFormHandle,
+  type ApplicationPrefill,
 } from './components/ApplicationForm/ApplicationForm';
 import { ApplicationsTable } from './components/ApplicationsTable/ApplicationsTable';
 import { ConfirmDialog } from './components/ConfirmDialog/ConfirmDialog';
@@ -194,7 +195,7 @@ export function App() {
                 onEditingChange={data.setTableBusy}
                 positions={positions}
                 {...(!data.readOnly && {
-                  onAddForSearch: (term: string) => formRef.current?.fillCompany(term),
+                  onAddForSearch: (fill: ApplicationPrefill) => formRef.current?.prefill(fill),
                 })}
               />
             </section>

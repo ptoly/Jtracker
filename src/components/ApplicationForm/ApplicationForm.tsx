@@ -15,9 +15,12 @@ import { MatchAlert } from './MatchAlert';
 /** How long typing pauses before Company is checked against earlier applications. */
 const MATCH_DELAY_MS = 250;
 
+/** What a table search that found nothing hands the form: a company, or a known position. */
+export type ApplicationPrefill = { company: string } | { position: string };
+
 export interface ApplicationFormHandle {
-  /** Fills Company (e.g. from a table search that found nothing) and focuses Position. */
-  fillCompany: (company: string) => void;
+  /** Fills Company or Position, then focuses the other one. */
+  prefill: (fill: ApplicationPrefill) => void;
 }
 
 export interface ApplicationFormProps {
@@ -69,9 +72,14 @@ export function ApplicationForm({
   const focusField = (id: string) => document.getElementById(id)?.focus();
 
   useImperativeHandle(ref, () => ({
-    fillCompany(company: string) {
-      setField('company', company);
-      focusField(ids.position);
+    prefill(fill: ApplicationPrefill) {
+      if ('company' in fill) {
+        setField('company', fill.company);
+        focusField(ids.position);
+      } else {
+        setField('position', fill.position);
+        focusField(ids.company);
+      }
     },
   }));
 
