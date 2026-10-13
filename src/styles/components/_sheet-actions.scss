@@ -3,17 +3,17 @@
 // <div class="sheet-actions">
 //   <button class="btn">Reload from sheet</button>
 //   <div class="sheet-actions__menu">
-//     <button class="icon-button sheet-actions__toggle" aria-haspopup="menu" aria-expanded aria-controls="…">⋮</button>
+//     <button class="quiet-button icon-button sheet-actions__toggle" aria-haspopup="menu" aria-expanded aria-controls="…">⋮</button>
 //     <div class="menu sheet-actions__list" role="menu" hidden>
 //       <button class="menu__item" role="menuitem">…</button> …
 //     </div>
 //   </div>
 //   <dialog class="dialog">
-//     <form class="sheet-actions__form"><div class="field"><label>…</label><input class="control"></div>…</form>
+//     <form class="dialog__form"><div class="field"><label>…</label><input class="control"></div>…</form>
 //   </dialog>
 // </div>
 // The menu drops below the ⋮ button, right-aligned so it stays on screen.
-// Spacing between the buttons and in the settings form: _theme-spacing.scss.
+// Spacing between the buttons: _theme-spacing.scss.
 .sheet-actions {
   display: flex;
   flex-wrap: wrap;
@@ -42,9 +42,5 @@
     z-index: $z-overlay;
     width: max-content;
     min-width: gridx(30);
-  }
-
-  &__form {
-    display: grid;
   }
 }

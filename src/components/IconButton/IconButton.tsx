@@ -57,7 +57,7 @@ export function IconButton({
     >
       <button
         type="button"
-        className={`icon-button${variant === 'danger' ? ' icon-button--danger' : ''} ${className}`}
+        className={`quiet-button icon-button${variant === 'danger' ? ' icon-button--danger' : ''} ${className}`}
         aria-label={label}
         disabled={disabled}
         onFocus={(event) => {

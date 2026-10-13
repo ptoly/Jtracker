@@ -1,0 +1,22 @@
+@use 'pkg:octet-scss/abstracts' as *;
+
+// <button type="button" class="note-tip">The whole note…</button>
+// <span class="tooltip__bubble tooltip__bubble--popover" popover="manual" aria-hidden="true">The whole note…</span>
+// One line of text that ends in an ellipsis when it doesn't fit; NoteTip
+// shows the whole text in the bubble. A span when the text fits, a button
+// (hover, tap or focus opens the bubble) when it's cut off; both look the same.
+.note-tip {
+  display: block;
+  width: 100%;
+  padding: 0;
+  overflow: hidden;
+  font: inherit;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  // Drawn inside: the cell would clip a ring outside it.
+  &:focus-visible {
+    outline-offset: gridx(-0.25);
+  }
+}

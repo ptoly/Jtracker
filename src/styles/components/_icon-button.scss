@@ -1,26 +1,20 @@
 @use 'pkg:octet-scss/abstracts' as *;
 
-// <button class="icon-button [icon-button--danger]" aria-label="Delete Acme application">
+// <button class="quiet-button icon-button [icon-button--danger]" aria-label="Delete Acme application">
 //   <svg aria-hidden="true">…</svg>
 // </button>
 // Square, borderless icon control. The aria-label names it; the icon is
 // decorative. Size comes from the shared control padding around a 24px icon
 // box (48px target; WCAG 2.5.8 asks for at least 24px). Never smaller: a
 // squeezed table column or flex row makes room or scrolls instead.
+// Hover and current states come from .quiet-button.
 .icon-button {
   display: inline-grid;
   flex: none;
   place-items: center;
-  border-radius: $radius-lg;
   color: var(--text-muted); // 5:1 on white, above the 3:1 icons need
-  @include transition(color background-color, $duration-fast);
 
   @include hover-only {
-    &:hover:not(:disabled) {
-      background-color: var(--surface-raised);
-      color: var(--text-primary);
-    }
-
     &--danger:hover:not(:disabled) {
       color: var(--danger);
     }

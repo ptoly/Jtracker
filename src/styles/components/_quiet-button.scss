@@ -1,0 +1,34 @@
+@use 'pkg:octet-scss/abstracts' as *;
+
+// <button class="quiet-button icon-button" aria-label="Edit">…</button>
+// <button class="quiet-button applications-table__page" aria-current="page">1</button>
+// The one look for buttons that sit quietly in a row until used: no fill or
+// edge, secondary text; a raised fill on hover, and the brand tint when it's
+// the current one (aria-current or aria-pressed). The host sets size and
+// padding, and may set a quieter text colour (icon buttons).
+.quiet-button {
+  border-radius: $radius-lg;
+  color: var(--text-secondary);
+  @include transition(background-color color, $duration-fast);
+
+  @include hover-only {
+    &:hover:not(:disabled, [aria-current='page'], [aria-current='true'], [aria-pressed='true']) {
+      background-color: var(--surface-raised);
+      color: var(--text-primary);
+    }
+  }
+
+  // brand-700 on brand-50: 7:1. Forced-colors mode drops the fill, so an
+  // edge marks it there.
+  &[aria-current='page'],
+  &[aria-current='true'],
+  &[aria-pressed='true'] {
+    background-color: var(--brand-subtle);
+    color: var(--brand-hover);
+
+    @media (forced-colors: active) {
+      outline: 2px solid;
+      outline-offset: -2px;
+    }
+  }
+}

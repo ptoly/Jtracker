@@ -1,6 +1,6 @@
 @use 'pkg:octet-scss/abstracts' as *;
 
-// <span class="select [select--dot]">
+// <span class="select [select--dot] [select--fit]">
 //   <span class="select__dot select__dot--warning|success" aria-hidden="true"></span>
 //   <select class="control select__input">…</select>
 //   <svg class="select__icon" aria-hidden="true">…</svg>
@@ -9,6 +9,8 @@
 // it gets the same inset as text and other control icons. The icon's position
 // and the select's room for it are shared with other controls (theme files).
 // The optional dot sits where the text would start; the text moves over for it.
+// select--fit: never narrower than its longest option. A table squeezes a
+// select below that (Chrome lets it shrink), cutting off the chosen value.
 .select {
   position: relative;
   display: inline-grid;
@@ -16,6 +18,10 @@
   &__input {
     appearance: none;
     cursor: pointer;
+  }
+
+  &--fit > &__input {
+    min-width: max-content;
   }
 
   // Clicks pass through to the select underneath.

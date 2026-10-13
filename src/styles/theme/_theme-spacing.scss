@@ -163,10 +163,21 @@ ol {
   @include scaled-spacing(padding-left padding-right, 3, 24px, 4);
 }
 
+// Cells are top-aligned. A cell of plain text starts 12px lower, the same
+// inset as the text inside a control or around an icon button, so the first
+// lines across a row share a baseline: 20 → 28px instead of 8 → 16px.
+.applications-table__table td:not(:has(.control, .icon-button)) {
+  @include scaled-spacing(padding-top, 3, 28px, 4);
+}
+
 // A row being edited: its fields are already 48px tall, so cells keep a
-// fixed 8px top and bottom at every width.
+// fixed 8px top and bottom at every width (20px above plain text, as above).
 .applications-table__row[data-editing] td {
   padding-block: gridx(1);
+
+  &:not(:has(.control, .icon-button)) {
+    padding-top: gridx(2.5);
+  }
 }
 
 // ---- Bars ---------------------------------------------------------------------
@@ -347,13 +358,9 @@ ol {
   gap: gridx(1);
 }
 
-// Sheet settings dialog: the tab name field, then the buttons.
-.sheet-actions__form > .field {
-  @include scaled-spacing(margin-bottom, 4, 24px, 4);
-}
-
 // ---- Applications table --------------------------------------------------------
-// Side by side: search and tabs; a header's label and caret; row buttons; Sort by and its select; page numbers.
+// Side by side: search and tabs; a header's label and caret; row buttons; a
+// note and its pencil; Sort by and its select; page numbers.
 .applications-table__controls {
   column-gap: gridx(3);
 
@@ -361,7 +368,8 @@ ol {
 }
 
 .applications-table__sort,
-.applications-table__row-actions {
+.applications-table__row-actions,
+.applications-table__notes-edit {
   column-gap: gridx(1);
 }
 
@@ -487,6 +495,11 @@ th:not([aria-sort]) .applications-table__sort-icon::before {
 
 .dialog__error {
   @include scaled-spacing(margin-bottom, 3, 16px, 4);
+}
+
+// A form in a dialog: its fields, then the buttons.
+.dialog__form > .field {
+  @include scaled-spacing(margin-bottom, 4, 24px, 4);
 }
 
 .dialog__actions {

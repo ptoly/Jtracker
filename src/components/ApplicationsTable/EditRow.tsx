@@ -1,4 +1,11 @@
-import { useEffect, useId, useState, type KeyboardEvent, type ReactNode } from 'react';
+import {
+  useEffect,
+  useId,
+  useState,
+  type FormEvent,
+  type KeyboardEvent,
+  type ReactNode,
+} from 'react';
 import { toIsoDate } from '../../lib/dates';
 import type { Application, ApplicationPatch, Status } from '../../types/application';
 import { FieldError } from '../ApplicationFields/FieldError';
@@ -9,6 +16,10 @@ import {
   useApplicationDraft,
   type DraftApplication,
 } from '../ApplicationFields/useApplicationDraft';
+import { Dialog } from '../Dialog/Dialog';
+import { IconButton } from '../IconButton/IconButton';
+import { PencilIcon } from '../Icons/Icons';
+import { NoteTip } from '../NoteTip/NoteTip';
 import { SaveError } from '../Notice/Notice';
 import { Select } from '../Select/Select';
 
@@ -43,7 +54,9 @@ export interface EditRowProps {
 
 /**
  * A table row (or, on narrow screens, a card) turned into fields. Enter saves
- * (except in Notes); Escape cancels.
+ * (except in Notes); Escape cancels. In the table, Notes is the note's first
+ * line and a pencil that opens it in a dialog; Done there updates the row,
+ * and the row's Save saves it.
  */
 export function EditRow({
   app,
@@ -67,6 +80,8 @@ export function EditRow({
     useApplicationDraft(draftFromApplication(app), { ids, errorIdPrefix: baseId, positions });
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<{ error: unknown } | null>(null);
+  const [notesOpen, setNotesOpen] = useState(false);
+  const [notesDraft, setNotesDraft] = useState('');
 
   // Focus the first field when the row opens: the first column, or the
   // card's first field.
@@ -93,8 +108,21 @@ export function EditRow({
     }
   }
 
+  function openNotes() {
+    setNotesDraft(draft.notes);
+    setNotesOpen(true);
+  }
+
+  function applyNotes(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setField('notes', notesDraft);
+    setNotesOpen(false);
+  }
+
   function handleKeyDown(event: KeyboardEvent<HTMLElement>) {
     const target = event.target as HTMLElement;
+    // The notes dialog handles its own keys: Escape closes only the dialog.
+    if (target.closest('dialog')) return;
     if (event.key === 'Escape') {
       event.preventDefault();
       onCancel();
@@ -206,6 +234,47 @@ export function EditRow({
     </div>
   );
 
+  const notesButton = (
+    <div className="applications-table__notes-edit">
+      {draft.notes && <NoteTip text={draft.notes} />}
+      <IconButton
+        label="Edit notes"
+        tooltip="Edit notes"
+        icon={<PencilIcon />}
+        onClick={openNotes}
+      />
+      <Dialog
+        open={notesOpen}
+        title={`Notes for ${draft.company || app.company}`}
+        onClose={() => setNotesOpen(false)}
+      >
+        <form className="dialog__form" onSubmit={applyNotes}>
+          <div className="field">
+            <label htmlFor={ids.notes} className="sr-only">
+              Notes
+            </label>
+            <textarea
+              id={ids.notes}
+              className="control"
+              rows={8}
+              data-autofocus=""
+              value={notesDraft}
+              onChange={(event) => setNotesDraft(event.target.value)}
+            />
+          </div>
+          <div className="dialog__actions">
+            <button type="button" className="btn" onClick={() => setNotesOpen(false)}>
+              Cancel
+            </button>
+            <button type="submit" className="btn btn--primary">
+              Done
+            </button>
+          </div>
+        </form>
+      </Dialog>
+    </div>
+  );
+
   const actions = (
     <>
       <div className="applications-table__row-actions">
@@ -251,16 +320,14 @@ export function EditRow({
     // Keyboard shortcuts are delegated from the fields to the row.
     <tr className="applications-table__row" data-editing onKeyDown={handleKeyDown}>
       <td>
-        <div className="applications-table__stack applications-table__stack--dates">
-          {dateFields}
-        </div>
+        <div className="applications-table__stack">{dateFields}</div>
       </td>
       <td>
         <div className="applications-table__stack">{companyFields}</div>
       </td>
       <td>{statusField}</td>
       <td className="applications-table__cell applications-table__cell--numeric">{age}</td>
-      <td>{notesField}</td>
+      <td>{notesButton}</td>
       <td>{actions}</td>
     </tr>
   );

@@ -10,15 +10,16 @@
 // padding (_theme-spacing.scss). Font comes from octet's reset (font: inherit
 // on form elements); don't repeat the shorthand here, it would also reset
 // the shared line-height.
-// The edge is a hairline (theme/_hairline.scss): it takes no space, so
-// 24px line + 12px padding = 48px, and gives way to the focus ring.
+// The edge is a hairline (theme/_hairline.scss) just outside the box: it
+// takes no space, so 24px line + 12px padding = 48px, and gives way to the
+// focus ring.
 .control {
   border: 0;
   border-radius: $radius-lg;
   background-color: white;
   color: var(--text-primary);
   @include transition(outline-color, $duration-fast);
-  @include hairline(all, var(--border-control));
+  @include hairline(all, var(--border-control), $offset: 0);
 
   &:not(:focus-visible) {
     @include hover-only {

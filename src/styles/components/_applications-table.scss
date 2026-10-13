@@ -22,7 +22,7 @@
 //       </li>
 //     </ul>
 //     <nav class="applications-table__pagination">
-//       Previous <ol class="applications-table__pages"><li><button class="applications-table__page" aria-current="page">1</button></li>…</ol> Next
+//       Previous <ol class="applications-table__pages"><li><button class="quiet-button applications-table__page" aria-current="page">1</button></li>…</ol> Next
 //     </nav>
 //   </div>
 // </div>
@@ -99,16 +99,19 @@
     // Cell padding lives in theme/_theme-spacing.scss; row height follows
     // from it plus the content. The row divider is an inset shadow, so it
     // takes no space and rows stay on the grid.
+    // Headers sit on the row's bottom edge; cell contents start at the top,
+    // so rows of different heights line up from the first line.
     th,
     td {
       @include hairline(bottom);
       text-align: left;
-      vertical-align: middle;
+      vertical-align: top;
     }
 
     // The header row is a raised zone, like the toolbar above it, with the
     // darker edge used on tinted zones. Secondary text is 6.9:1 on it.
     th {
+      vertical-align: bottom;
       background-color: var(--surface-raised);
       @include hairline(bottom, var(--border-default));
       color: var(--text-secondary);
@@ -130,12 +133,18 @@
     white-space: nowrap;
   }
 
-  // Two lines in one cell: dates, and company over position.
-  // Company and position stay on one line each; Notes gives way instead.
+  // Two lines in one cell: dates, company over position, and the Age (Days)
+  // header. The date cell and headers keep to one line per part (no-wrap,
+  // th); company and position wrap.
   &__lines {
     display: grid;
     text-align: left;
-    white-space: nowrap;
+  }
+
+  // Company / Position: long names wrap rather than widen the column, which
+  // left too little room for Status.
+  &__company {
+    min-width: gridx(28);
   }
 
   // Live status: native select (with a dot), and the calculated Follow Up Due
@@ -168,15 +177,13 @@
     --border-control: var(--neutral-500);
     --border-control-hover: var(--neutral-600);
     background-color: var(--brand-subtle);
-
-    td {
-      vertical-align: top;
-    }
   }
 
+  // Fields stacked in one cell. No width of their own: the columns' minimums
+  // size them, so a row keeps its column widths when it opens for editing
+  // (a 240px minimum here pushed Save / Cancel out of view at 1440px).
   &__stack {
     display: grid;
-    min-width: gridx(30);
   }
 
   // The edit row's Notes box keeps a usable width in a squeezed table.
@@ -189,8 +196,10 @@
   }
 
   // Notes take whatever width is left: the column claims it all (width 100%)
-  // but sizes from nothing (max-width 0), so long notes truncate instead of
-  // pushing the table wider. Never narrower than 192px.
+  // but sizes from nothing (max-width 0), so long notes truncate (NoteTip,
+  // which shows the whole note) instead of pushing the table wider. Never
+  // narrower than 192px. The edit row's cell has the pencil that opens the
+  // notes dialog, after the note's first line.
   &__notes-header,
   &__notes {
     width: 100%;
@@ -200,8 +209,17 @@
   &__notes {
     max-width: 0;
     overflow: clip;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+  }
+
+  &__notes-edit {
+    display: flex;
+    align-items: center;
+
+    > .note-tip {
+      flex: 1;
+      width: 0; // sizes from nothing, like the column
+      color: var(--text-secondary);
+    }
   }
 
   // Sortable header button ------------------------------------------------------
@@ -331,31 +349,11 @@
   }
 
   // Square 48px page buttons: the shared 12px padding around a 24px line.
-  // The current page: brand-50 fill, brand-700 text (7:1).
+  // Hover and the current page come from .quiet-button.
   &__page {
     min-width: gridx(6);
     padding-inline: gridx(1.5);
-    border-radius: $radius-lg;
-    color: var(--text-secondary);
     font-weight: 600;
-    @include transition(background-color color, $duration-fast);
-
-    @include hover-only {
-      &:hover:not(:disabled, [aria-current]) {
-        background-color: var(--surface-raised);
-        color: var(--text-primary);
-      }
-    }
-
-    &[aria-current='page'] {
-      background-color: var(--brand-subtle);
-      color: var(--brand-hover); // primary-700
-
-      @media (forced-colors: active) {
-        outline: 2px solid;
-        outline-offset: -2px;
-      }
-    }
   }
 
   // Same box as a page button, so the bar keeps its width.

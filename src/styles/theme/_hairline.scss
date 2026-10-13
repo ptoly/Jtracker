@@ -3,7 +3,8 @@
 // =============================================================================
 //  hairline — the app's edges and dividers, drawn so they never add height.
 //  ---------------------------------------------------------------------------
-//  all (the default): an outline just inside the box, following its radius.
+//  all (the default): an outline, just inside the box unless $offset moves
+//    it, following its radius.
 //    Outlines take no space, sit alongside any box-shadow (cards keep their
 //    elevation), and survive forced-colors mode on their own, where even a
 //    transparent one is drawn. The edge stands down while the element has
@@ -17,20 +18,33 @@
 //    $side   all (default) | top | right | bottom | left
 //    $color  the line colour (default var(--border-subtle)); any colour value
 //    $width  the line's thickness (default 1px)
+//    $offset outlines only: where the line sits. Default -$width, just inside
+//            the edge; 0 sits just outside; a positive value leaves a gap.
+//            Outside the box it still adds no height, but it overlaps
+//            whatever is next to it.
 //
 //    @include hairline;                                  subtle edge all round
 //    @include hairline($color: var(--danger-border));    all round, own colour
 //    @include hairline(all, var(--border-control));
 //    @include hairline(bottom, var(--border-default));
 //    @include hairline(bottom, var(--brand), 2px);      a selected tab's underline
+//    @include hairline(all, var(--border-control), $offset: 0);   just outside
 // =============================================================================
-@mixin hairline($side: all, $color: var(--border-subtle), $width: 1px) {
+@mixin hairline($side: all, $color: var(--border-subtle), $width: 1px, $offset: null) {
   @if $side == all {
+    @if $offset == null {
+      $offset: -$width;
+    }
+
     &:not(:focus-visible) {
       outline: $width solid $color;
-      outline-offset: (-$width);
+      outline-offset: $offset;
     }
   } @else {
+    @if $offset != null {
+      @error "hairline: $offset only applies to all (a divider is an inset shadow).";
+    }
+
     $offsets: (
       top: 0 $width,
       right: (-$width) 0,

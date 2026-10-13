@@ -252,9 +252,14 @@ export const EditSendsOnlyChanges: Story = {
     const [firstEdit] = canvas.getAllByRole('button', { name: /^Edit .+ application$/ });
     if (!firstEdit) throw new Error('No Edit button');
     await userEvent.click(firstEdit);
+    await userEvent.click(canvas.getByRole('button', { name: 'Edit notes' }));
+    const dialog = await canvas.findByRole('dialog', { name: /^Notes for / });
     const notes = canvas.getByRole('textbox', { name: 'Notes' });
+    await expect(notes).toHaveFocus();
     await userEvent.clear(notes);
     await userEvent.type(notes, 'Recruiter called');
+    await userEvent.click(canvas.getByRole('button', { name: 'Done' }));
+    await expect(dialog).not.toBeVisible();
     await userEvent.click(canvas.getByRole('button', { name: 'Save' }));
     await expect(args.onUpdate).toHaveBeenCalledWith(expect.any(String), {
       notes: 'Recruiter called',

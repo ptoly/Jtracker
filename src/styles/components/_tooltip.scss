@@ -7,6 +7,8 @@
 // Shown/hidden by IconButton (hover, focus, Escape) via [data-open]. The bubble
 // sits above the trigger, right-aligned so it stays inside clipping
 // containers at a row's end.
+// --popover: the same bubble for longer text (NoteTip). It opens in the top
+// layer, so nothing clips it; the script places it beside its trigger.
 .tooltip {
   position: relative;
   display: inline-flex;
@@ -27,6 +29,20 @@
     @include transition(opacity visibility, $duration-fast);
 
     &[data-open] {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    &--popover {
+      position: fixed;
+      right: auto;
+      bottom: auto;
+      max-width: min(#{gridx(50)}, 100vw - #{gridx(2)});
+      margin: 0;
+      border: 0;
+      font-weight: 400;
+      white-space: pre-wrap; // keeps the note's own line breaks
+      overflow-wrap: anywhere;
       opacity: 1;
       visibility: visible;
     }

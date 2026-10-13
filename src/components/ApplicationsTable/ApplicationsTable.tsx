@@ -10,6 +10,7 @@ import { ConfirmDialog } from '../ConfirmDialog/ConfirmDialog';
 import { DateText } from '../DateText/DateText';
 import { IconButton } from '../IconButton/IconButton';
 import { ArrowLeftIcon, ArrowRightIcon, PencilIcon, SearchIcon, TrashIcon } from '../Icons/Icons';
+import { NoteTip } from '../NoteTip/NoteTip';
 import { SaveError } from '../Notice/Notice';
 import { Select } from '../Select/Select';
 import { EditRow } from './EditRow';
@@ -471,6 +472,7 @@ export function ApplicationsTable({
     return (
       <div className="applications-table__status">
         <Select
+          className="select--fit"
           aria-label={`Status, ${app.company}, ${app.position}`}
           {...(due && { 'aria-describedby': dueId(app.id) })}
           dot={due ? 'warning' : app.status === 'Followed Up' ? 'success' : undefined}
@@ -739,10 +741,19 @@ export function ApplicationsTable({
                             </span>
                           ),
                         })}
-                        {sortHeader('company', 'Company / Position')}
+                        {sortHeader('company', 'Company / Position', {
+                          className: 'applications-table__company',
+                        })}
                         {sortHeader('status', 'Status')}
                         {sortHeader('age', 'Age (Days)', {
                           className: 'applications-table__cell applications-table__cell--numeric',
+                          content: (
+                            <span className="applications-table__lines">
+                              <span>Age</span>
+                              <span className="sr-only"> </span>
+                              <span>(Days)</span>
+                            </span>
+                          ),
                         })}
                         <th scope="col" className="applications-table__notes-header">
                           Notes
@@ -771,7 +782,7 @@ export function ApplicationsTable({
                                 </span>
                               </span>
                             </td>
-                            <td>
+                            <td className="applications-table__company">
                               <span className="applications-table__lines">
                                 <span className="item-name">{app.company}</span>
                                 <span className="item-meta">{app.position}</span>
@@ -781,8 +792,8 @@ export function ApplicationsTable({
                             <td className="applications-table__cell applications-table__cell--numeric">
                               {ageCell}
                             </td>
-                            <td className="applications-table__notes" title={app.notes}>
-                              {app.notes}
+                            <td className="applications-table__notes">
+                              {app.notes && <NoteTip text={app.notes} />}
                             </td>
                             <td>{rowActions(app)}</td>
                           </tr>
@@ -815,7 +826,7 @@ export function ApplicationsTable({
                     <li key={item}>
                       <button
                         type="button"
-                        className="applications-table__page"
+                        className="quiet-button applications-table__page"
                         aria-label={`Page ${item}`}
                         {...(item === currentPage && { 'aria-current': 'page' as const })}
                         disabled={editing}

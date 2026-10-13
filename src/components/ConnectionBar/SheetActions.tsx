@@ -185,7 +185,7 @@ export function SheetActions({ tab, onReload, onDisconnect, onTabChange }: Sheet
         size="small"
         onClose={() => setSettingsOpen(false)}
       >
-        <form className="sheet-actions__form" onSubmit={saveSettings}>
+        <form className="dialog__form" onSubmit={saveSettings}>
           <div className="field">
             <label htmlFor={inputId}>Sheet tab name</label>
             <input

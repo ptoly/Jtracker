@@ -10,6 +10,8 @@
 //   <div class="dialog__error field-error">…</div>     (only on failure)
 //   <div class="dialog__actions">…</div>
 // </dialog>
+// A form in a dialog: <form class="dialog__form"> holding .field(s), then
+// .dialog__actions (sheet settings, the edit row's notes).
 // ConfirmDialog uses a bare title (dialog__title--alone) instead of the header
 // row. Padding is shared with cards (_theme-spacing.scss). The browser caps the
 // dialog's height to the viewport and scrolls it when content is taller.
@@ -42,6 +44,10 @@
 
   &__description {
     color: var(--text-secondary);
+  }
+
+  &__form {
+    display: grid;
   }
 
   &__actions {
