@@ -79,7 +79,7 @@ export function ConfirmDialog({
         cancel();
       }}
     >
-      <h2 id={titleId} className="dialog__title dialog__title--alone size-h5">
+      <h2 id={titleId} className="dialog__title dialog__title--alone">
         {title}
       </h2>
       <div id={descriptionId} className="dialog__description">

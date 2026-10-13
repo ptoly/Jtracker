@@ -12,6 +12,20 @@
 //  items side by side (grid columns, a row of buttons). A component partial
 //  keeps only the padding inside its own boxes.
 //
+//  Bottom margins are responsive: half size on small screens, in 4px steps
+//  up to the full value from 1280px:
+//    16px:  8 → 12 (900) → 16 (1280)
+//    24px: 12 → 16 (720) → 20 (900) → 24 (1280)
+//    32px: 16 → 20 (540) → 24 (720) → 28 (900) → 32 (1280)
+//  They're written out with from(): scaled-spacing only steps at the widest
+//  breakpoints, so it would reach the full value at 1441 instead. The block
+//  rhythm below (sections, text, headings, list items) and the paddings do
+//  the same, also reaching their full values at 1280; fluid gutters end at
+//  1280 too.
+//  8px and less (a label over its field, text over a note) stays fixed:
+//  halved, it would drop below the 8pt grid. So do rules that only apply
+//  under 720px, where the ramps never step.
+//
 //  Vertical values step on the 8pt grid (gridx / scaled-spacing); horizontal
 //  values are fluid (fluid-gutter). Blocks are spaced with margin-bottom,
 //  mostly: each block pushes the next one down. Heights are never set:
@@ -23,25 +37,85 @@
 // Space between stacked sections.
 section,
 .app__page-header {
-  @include scaled-spacing(margin-bottom, 5, 64px);   // tight, app-like rhythm (starter: 5, 88px)
+  margin-bottom: gridx(4); // tight, app-like rhythm: 32 → 64px (the starter went to 88px)
+
+  @include from(540px) {
+    margin-bottom: gridx(5);
+  }
+
+  @include from(720px) {
+    margin-bottom: gridx(6);
+  }
+
+  @include from(900px) {
+    margin-bottom: gridx(7);
+  }
+
+  @include from(1280px) {
+    margin-bottom: gridx(8);
+  }
 
   &.has-divider {
-    @include scaled-spacing(padding-bottom, 4, 32px);
+    padding-bottom: gridx(1);
+
+    @include from(720px) {
+      padding-bottom: gridx(2);
+    }
+
+    @include from(900px) {
+      padding-bottom: gridx(3);
+    }
+
+    @include from(1280px) {
+      padding-bottom: gridx(4);
+    }
   }
 }
 
 // Flow spacing — bottom margin on stacked text blocks.
 p:not(:last-child), blockquote, .rtf p, .bullet-list {
-  @include scaled-spacing(margin-bottom, 3, 32px);
+  margin-bottom: gridx(2);
+
+  @include from(900px) {
+    margin-bottom: gridx(3);
+  }
+
+  @include from(1280px) {
+    margin-bottom: gridx(4);
+  }
 }
 
 // Headings: h1 gets generous space below, h2–h6 tighter.
 h1 {
-  @include scaled-spacing(margin-bottom, 4, 64px);
+  margin-bottom: gridx(5);
+
+  @include from(720px) {
+    margin-bottom: gridx(6);
+  }
+
+  @include from(900px) {
+    margin-bottom: gridx(7);
+  }
+
+  @include from(1280px) {
+    margin-bottom: gridx(8);
+  }
 }
 
 h2, h3, h4, h5, h6 {
-  @include scaled-spacing(margin-bottom, 4, 40px);
+  margin-bottom: gridx(2);
+
+  @include from(720px) {
+    margin-bottom: gridx(3);
+  }
+
+  @include from(900px) {
+    margin-bottom: gridx(4);
+  }
+
+  @include from(1280px) {
+    margin-bottom: gridx(5);
+  }
 }
 
 // A caption sits just under the figure it describes.
@@ -53,7 +127,11 @@ figcaption {
 .bullet-list,
 ol {
   li:not(:last-child) {
-    @include scaled-spacing(margin-bottom, 2, 16px);
+    margin-bottom: gridx(1);
+
+    @include from(1280px) {
+      margin-bottom: gridx(2);
+    }
   }
 }
 
@@ -63,11 +141,27 @@ ol {
 .app,
 .site-header__inner {
   margin-inline: auto;
-  @include fluid-gutter(padding-inline, 8px, 32px, 360px, 1441px);
+  @include fluid-gutter(padding-inline, 8px, 32px, 360px, 1280px);
 }
 
 .app {
-  @include scaled-spacing(padding-top padding-bottom, 4, 48px);
+  padding-top: gridx(3);
+  padding-bottom: gridx(3);
+
+  @include from(720px) {
+    padding-top: gridx(4);
+    padding-bottom: gridx(4);
+  }
+
+  @include from(900px) {
+    padding-top: gridx(5);
+    padding-bottom: gridx(5);
+  }
+
+  @include from(1280px) {
+    padding-top: gridx(6);
+    padding-bottom: gridx(6);
+  }
 }
 
 // The 40px logo + 12px above and below: a 64px bar, on the grid.
@@ -81,7 +175,19 @@ ol {
 
 .app__section-header {
   gap: gridx(2);
-  margin-bottom: gridx(3);
+  margin-bottom: gridx(1.5);
+
+  @include from(720px) {
+    margin-bottom: gridx(2);
+  }
+
+  @include from(900px) {
+    margin-bottom: gridx(2.5);
+  }
+
+  @include from(1280px) {
+    margin-bottom: gridx(3);
+  }
 }
 
 // Check/Add: the title block over the form card when stacked; side by side
@@ -99,7 +205,19 @@ ol {
 // The connection banners and page notices sit above the content they're about.
 .connection-bar,
 .app__notice {
-  margin-bottom: gridx(3);
+  margin-bottom: gridx(1.5);
+
+  @include from(720px) {
+    margin-bottom: gridx(2);
+  }
+
+  @include from(900px) {
+    margin-bottom: gridx(2.5);
+  }
+
+  @include from(1280px) {
+    margin-bottom: gridx(3);
+  }
 }
 
 // Headings that group with a subtitle or a bar drop their flow margin.
@@ -112,36 +230,58 @@ ol {
 // A subtitle sits close under its heading.
 .app__page-header > h1,
 .app__section-header h2 {
-  & + .app__subtitle {
-    margin-top: gridx(0.5);
+  &:has(+ .app__subtitle) {
+    margin-bottom: gridx(0.5);
   }
 }
 
 // ---- Shared gutter --------------------------------------------------------------
 // One horizontal inset for card and dialog content. 16px at 360px, growing to
-// 24px at 1441px. (Table cells step 16 → 24px on their own; see Table cells
+// 24px at 1280px. (Table cells step 16 → 24px on their own; see Table cells
 // below. The table's toolbar and footer run flush with the page edge.)
 .card__header,
 .card__body,
 .card__footer,
 .dialog {
-  @include fluid-gutter(padding-inline, 16px, 24px, 360px, 1441px);
+  @include fluid-gutter(padding-inline, 16px, 24px, 360px, 1280px);
 }
 
 // ---- Table cells -------------------------------------------------------------
-// Untitled UI cell padding: 16px 24px on wide screens, scaling down in 4px
-// steps to 8px 16px on narrow ones (steps at 1366 and 1441px). Row height
+// Untitled UI cell padding: 16px 24px from 1280px, scaling down in 4px
+// steps to 8px 16px on narrow ones (steps at 900 and 1280px). Row height
 // follows from padding plus content, so rows stay on the 8pt grid.
 .applications-table__table th,
 .applications-table__table td {
-  @include scaled-spacing(padding-top padding-bottom, 3, 16px, 4);
+  padding-top: gridx(1);
+  padding-bottom: gridx(1);
+
+  @include from(900px) {
+    padding-top: gridx(1.5);
+    padding-bottom: gridx(1.5);
+  }
+
+  @include from(1280px) {
+    padding-top: gridx(2);
+    padding-bottom: gridx(2);
+  }
 }
 
 // The toolbar's sides line up with the cells' text.
 .applications-table__controls,
 .applications-table__table th,
 .applications-table__table td {
-  @include scaled-spacing(padding-left padding-right, 3, 24px, 4);
+  padding-left: gridx(2);
+  padding-right: gridx(2);
+
+  @include from(900px) {
+    padding-left: gridx(2.5);
+    padding-right: gridx(2.5);
+  }
+
+  @include from(1280px) {
+    padding-left: gridx(3);
+    padding-right: gridx(3);
+  }
 }
 
 // A row being edited: its fields are already 48px tall, so cells keep a
@@ -151,9 +291,11 @@ ol {
 }
 
 // ---- Bars ---------------------------------------------------------------------
-// Vertical inset for card header and footer bars.
+// Vertical inset for card header and footer bars, and 16px between what's
+// side by side in them.
 .card__header,
 .card__footer {
+  gap: gridx(2);
   padding-block: gridx(2);
 }
 
@@ -208,25 +350,63 @@ ol {
 
 // ---- Message boxes ----------------------------------------------------------------
 // Notices and the form's match alert: the same padding on every side,
-// 12px stepping to 16px on the widest screens. Multiples of 4, so a box of 24px
-// lines stays on the 8pt grid (one line: 48px, then 56px).
+// 12px stepping by 4 to 24px from 1280px. A box of 24px lines stays on the
+// 4pt grid (one line: 48px, rising to 72px).
 .notice,
 .match-alert {
-  @include scaled-spacing(padding, 4, 24px, 4);
+  padding: gridx(1.5);
+
+  @include from(720px) {
+    padding: gridx(2);
+  }
+
+  @include from(900px) {
+    padding: gridx(2.5);
+  }
+
+  @include from(1280px) {
+    padding: gridx(3);
+  }
 }
 
-// The match alert: its list beside the ✕, and one group per company.
+// A notice's icon, text, buttons and ✕ sit in a row that wraps on narrow
+// screens; the match alert's list sits beside its ✕.
+.notice {
+  gap: gridx(1) gridx(2);
+}
+
+.notice__actions {
+  gap: gridx(1);
+}
+
 .match-alert {
   column-gap: gridx(2);
 }
 
-.match-alert__group:not(:last-child) {
-  margin-bottom: gridx(2);
+// Expanded sheet problems: the intro, then the list.
+.notice__intro {
+  margin-bottom: gridx(1);
 }
 
-// The 48px ✕ reaches 12px into the padding on three sides (as .notice's
-// does), so it takes one 24px line.
-.match-alert__dismiss {
+// One group per company in the match alert.
+.match-alert__group:not(:last-child) {
+  margin-bottom: gridx(1);
+
+  @include from(900px) {
+    margin-bottom: gridx(1.5);
+  }
+
+  @include from(1280px) {
+    margin-bottom: gridx(2);
+  }
+}
+
+// The 48px ✕ pulls out by its own 12px of padding around the 24px icon, so
+// it takes one 24px line and its icon sits exactly at the box's text inset,
+// whatever that inset is at the current width. (Dialogs do the same.)
+.notice__dismiss,
+.match-alert__dismiss,
+.dialog__close {
   margin-block: gridx(-1.5);
   margin-inline-end: gridx(-1.5);
 }
@@ -235,7 +415,13 @@ ol {
 // Vertical inset for card bodies and dialogs.
 .card__body,
 .dialog {
-  @include scaled-spacing(padding-top padding-bottom, 2, 24px);
+  padding-top: gridx(2);
+  padding-bottom: gridx(2);
+
+  @include from(1280px) {
+    padding-top: gridx(3);
+    padding-bottom: gridx(3);
+  }
 }
 
 // Icon buttons are square: the same 12px on every side of the 24px icon box.
@@ -246,11 +432,19 @@ ol {
 // ---- Add form -------------------------------------------------------------------
 // The card, then a failed-add message when there is one.
 .application-form > .card:has(+ .application-form__error) {
-  margin-bottom: gridx(2);
+  margin-bottom: gridx(1);
+
+  @include from(900px) {
+    margin-bottom: gridx(1.5);
+  }
+
+  @include from(1280px) {
+    margin-bottom: gridx(2);
+  }
 }
 
 // Fields beside the match alert from 720px; above it when stacked (only when
-// there's an alert).
+// there's an alert; fixed, since it only applies under 720px).
 .application-form__body {
   @include from(720px) {
     column-gap: gridx(3);
@@ -259,18 +453,26 @@ ol {
 
 .application-form__fields:has(+ .application-form__matches:not(:empty)) {
   @include until(720px) {
-    margin-bottom: gridx(3);
+    margin-bottom: gridx(2);
   }
 }
 
-// 24px between fields.
+// Form rows: 16px apart on wide screens, 8px on small ones.
 .application-form__fields > :not(:last-child) {
-  margin-bottom: gridx(3);
+  margin-bottom: gridx(1);
+
+  @include from(900px) {
+    margin-bottom: gridx(1.5);
+  }
+
+  @include from(1280px) {
+    margin-bottom: gridx(2);
+  }
 }
 
-// Company and Date Applied: 16px apart side by side. Each keeps 24px below,
-// so the space is the same whether Date sits beside Company or wraps under it;
-// the row itself adds none.
+// Company and Date Applied: 16px apart side by side. Each keeps the row
+// spacing below, so it's the same whether Date sits beside Company or wraps
+// under it; the row itself adds none.
 .application-form__row {
   column-gap: gridx(2);
 
@@ -279,7 +481,15 @@ ol {
   }
 
   > .application-form__field {
-    margin-bottom: gridx(3);
+    margin-bottom: gridx(1);
+
+    @include from(900px) {
+      margin-bottom: gridx(1.5);
+    }
+
+    @include from(1280px) {
+      margin-bottom: gridx(2);
+    }
   }
 }
 
@@ -305,13 +515,25 @@ ol {
   gap: gridx(1);
 }
 
-// Sheet settings dialog: label, field, then the buttons 24px below.
+// Sheet settings dialog: label, field, then the buttons.
 .sheet-actions__label {
   margin-bottom: gridx(1);
 }
 
 .sheet-actions__form > .control {
-  margin-bottom: gridx(3);
+  margin-bottom: gridx(1.5);
+
+  @include from(720px) {
+    margin-bottom: gridx(2);
+  }
+
+  @include from(900px) {
+    margin-bottom: gridx(2.5);
+  }
+
+  @include from(1280px) {
+    margin-bottom: gridx(3);
+  }
 }
 
 // ---- Applications table --------------------------------------------------------
@@ -366,10 +588,19 @@ th:not([aria-sort]) .applications-table__sort-icon::before {
 
 // Empty state: the message, then the "Add application for …" button.
 .applications-table__empty > p:not(:last-child) {
-  margin-bottom: gridx(2);
+  margin-bottom: gridx(1);
+
+  @include from(900px) {
+    margin-bottom: gridx(1.5);
+  }
+
+  @include from(1280px) {
+    margin-bottom: gridx(2);
+  }
 }
 
-// Cards (under 720px): Sort by, then the cards, 16px apart, then pagination.
+// Cards (under 720px, so fixed values: the ramps never step there): Sort by,
+// then the cards, 16px apart, then pagination.
 .applications-table__sort-by {
   padding-top: gridx(2);
   margin-bottom: gridx(2);
@@ -417,7 +648,7 @@ th:not([aria-sort]) .applications-table__sort-icon::before {
 }
 
 // Pagination: Previous, pages, Next 16px apart; under 720px the pages take
-// their own row above the buttons.
+// their own row above the buttons (fixed: under 720px only).
 .applications-table__pagination {
   column-gap: gridx(2);
 }
@@ -426,4 +657,135 @@ th:not([aria-sort]) .applications-table__sort-icon::before {
   @include until(720px) {
     margin-bottom: gridx(2);
   }
+}
+
+// ---- Dialogs --------------------------------------------------------------------
+// Header: title and ✕ side by side, then the content.
+.dialog__header {
+  gap: gridx(2);
+  margin-bottom: gridx(1.5);
+
+  @include from(720px) {
+    margin-bottom: gridx(2);
+  }
+
+  @include from(900px) {
+    margin-bottom: gridx(2.5);
+  }
+
+  @include from(1280px) {
+    margin-bottom: gridx(3);
+  }
+}
+
+.dialog__title {
+  margin-bottom: 0;
+}
+
+// A confirmation: title, description, then the buttons (an error between
+// them when a confirm fails).
+.dialog__title--alone {
+  margin-bottom: gridx(1);
+}
+
+.dialog__description {
+  margin-bottom: gridx(2);
+
+  @include from(540px) {
+    margin-bottom: gridx(2.5);
+  }
+
+  @include from(720px) {
+    margin-bottom: gridx(3);
+  }
+
+  @include from(900px) {
+    margin-bottom: gridx(3.5);
+  }
+
+  @include from(1280px) {
+    margin-bottom: gridx(4);
+  }
+}
+
+.dialog__error {
+  margin-bottom: gridx(1);
+
+  @include from(900px) {
+    margin-bottom: gridx(1.5);
+  }
+
+  @include from(1280px) {
+    margin-bottom: gridx(2);
+  }
+}
+
+.dialog__actions {
+  gap: gridx(1.5);
+}
+
+// Positions dialog: intro, the add form, then the list (or the empty
+// message), removed positions, and Done. (Qualified, so the intro and empty
+// message outrank the generic p rule above.)
+.positions-dialog > .positions-dialog__intro,
+.positions-dialog > .positions-dialog__list,
+.positions-dialog > .positions-dialog__empty,
+.positions-dialog__removed {
+  margin-bottom: gridx(1.5);
+
+  @include from(720px) {
+    margin-bottom: gridx(2);
+  }
+
+  @include from(900px) {
+    margin-bottom: gridx(2.5);
+  }
+
+  @include from(1280px) {
+    margin-bottom: gridx(3);
+  }
+}
+
+.positions-dialog__find,
+.positions-dialog__error {
+  margin-bottom: gridx(1);
+
+  @include from(900px) {
+    margin-bottom: gridx(1.5);
+  }
+
+  @include from(1280px) {
+    margin-bottom: gridx(2);
+  }
+}
+
+.positions-dialog__label {
+  margin-bottom: gridx(1);
+}
+
+// Side by side: the add field and its button; the rename field and its
+// buttons; a row's name, count and buttons.
+.positions-dialog__find-row,
+.positions-dialog__rename,
+.positions-dialog__rename-buttons {
+  column-gap: gridx(1);
+}
+
+.positions-dialog__item {
+  column-gap: gridx(2);
+}
+
+.positions-dialog__buttons {
+  gap: gridx(0.5);
+}
+
+// While renaming, a hint can wrap below the field and buttons.
+.positions-dialog__rename:has(> .positions-dialog__hint) > :not(.positions-dialog__hint) {
+  margin-bottom: gridx(1);
+}
+
+// ---- Position combobox -----------------------------------------------------------
+// An inline suggestion list (in the edit row) sits 4px under the input.
+.position-combobox__field:has(+ .position-combobox__menu--inline[data-open]) {
+  margin-bottom: gridx(0.5);
 }

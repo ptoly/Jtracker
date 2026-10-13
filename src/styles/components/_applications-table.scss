@@ -379,7 +379,7 @@
 
   &__card {
     display: grid;
-    @include scaled-spacing(padding, 4, 24px, 4);
+    padding: gridx(1.5); // cards only show under 720px
     border-radius: $radius-lg;
     background-color: var(--surface-card);
     color: var(--text-secondary);
@@ -426,8 +426,19 @@
   &__empty {
     display: grid;
     justify-items: center;
-    @include scaled-spacing(padding-top padding-bottom, 3, 48px);
-    @include fluid-gutter(padding-inline, 16px, 24px, 360px, 1441px);
+    padding-top: gridx(4);
+    padding-bottom: gridx(4);
+
+    @include from(900px) {
+      padding-top: gridx(5);
+      padding-bottom: gridx(5);
+    }
+
+    @include from(1280px) {
+      padding-top: gridx(6);
+      padding-bottom: gridx(6);
+    }
+    @include fluid-gutter(padding-inline, 16px, 24px, 360px, 1280px);
     color: var(--text-secondary);
     text-align: center;
 

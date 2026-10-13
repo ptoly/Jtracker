@@ -79,6 +79,11 @@ address {
 //      WITHOUT changing the level. This is how we get visual
 //      freedom while keeping a clean, accessible outline.
 //
+//  The .size-hN (and .size-hero) classes are optional utility classes
+//  from octet. Jtracker's headings are sized to fit as they are, so
+//  the markup doesn't use them; they're kept for the rare heading
+//  that needs to look bigger or smaller than its level.
+//
 //  Rule of thumb:
 //    - Default: let hN render at its own size (95% of cases).
 //    - Hero / emphasis: add a LARGER .size-hN (the deliberate

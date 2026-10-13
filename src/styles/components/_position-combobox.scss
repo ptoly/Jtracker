@@ -57,20 +57,17 @@
       display: block;
     }
 
-    // Floats over the content below.
+    // Floats over the content below, 8px under the input.
     &--overlay {
       position: absolute;
-      top: 100%;
+      top: calc(100% + #{gridx(1)});
       right: 0;
       left: 0;
       z-index: $z-overlay;
-      margin-top: gridx(1);
     }
 
-    // Pushes the content below down; for containers that clip overflow.
-    &--inline {
-      margin-top: gridx(0.5);
-    }
+    // Pushes the content below down; for containers that clip overflow. The
+    // space above it is in _theme-spacing.scss.
   }
 
   &__option {

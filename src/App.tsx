@@ -95,9 +95,7 @@ export function App() {
             <section className="app__add" aria-labelledby="add-application-heading">
               <div className="app__section-header">
                 <div>
-                  <h2 id="add-application-heading" className="size-h5">
-                    Check/Add Job Application Record
-                  </h2>
+                  <h2 id="add-application-heading">Check/Add Job Application Record</h2>
                   <p className="app__subtitle">
                     Fill in the company field to check if you’ve applied to them before.
                   </p>
@@ -122,9 +120,7 @@ export function App() {
             <section aria-labelledby="applications-heading">
               <div className="app__section-header">
                 <div>
-                  <h2 id="applications-heading" className="size-h5">
-                    Applications History
-                  </h2>
+                  <h2 id="applications-heading">Applications History</h2>
                   <p className="app__subtitle">
                     {connection ? (
                       <>

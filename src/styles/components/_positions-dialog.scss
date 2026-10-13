@@ -17,7 +17,8 @@
 // <details class="positions-dialog__removed"><summary class="positions-dialog__summary">…</summary><ul>…</ul></details>
 // <div class="dialog__actions positions-dialog__done">…</div>
 // A row is a 48px icon button plus 8px above and below: 64px. Row dividers
-// are inset shadows, so they add no height.
+// are inset shadows, so they add no height. Spacing between the parts is in
+// _theme-spacing.scss (Dialogs); padding inside them stays here.
 .positions-dialog {
   &__intro,
   &__empty {
@@ -27,18 +28,12 @@
     line-height: rem(gridx(3));
   }
 
-  &__intro {
-    margin-bottom: gridx(3);
-  }
-
   &__empty {
     padding-block: gridx(2);
   }
 
   &__find {
     display: grid;
-    gap: gridx(1);
-    margin-bottom: gridx(2);
   }
 
   &__label {
@@ -49,7 +44,6 @@
 
   &__find-row {
     display: flex;
-    gap: gridx(1);
   }
 
   &__query {
@@ -58,15 +52,10 @@
     min-width: 0;
   }
 
-  &__error {
-    margin-bottom: gridx(2);
-  }
-
   &__item {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 0 gridx(2);
     padding-block: gridx(1);
     font-size: rem(16px);
     line-height: rem(gridx(3));
@@ -89,29 +78,22 @@
 
   &__buttons {
     display: flex;
-    gap: gridx(0.5);
   }
 
   // Input and buttons on one row; the hint wraps below, full width.
   &__rename {
     display: flex;
     flex-wrap: wrap;
-    gap: gridx(1);
     width: 100%;
   }
 
   &__rename-buttons {
     display: flex;
-    gap: gridx(1);
   }
 
   &__hint {
     flex-basis: 100%;
     color: var(--text-secondary);
-  }
-
-  &__removed {
-    margin-top: gridx(3);
   }
 
   &__summary {
@@ -121,9 +103,5 @@
     font-weight: 600;
     line-height: rem(gridx(3));
     cursor: pointer;
-  }
-
-  &__done {
-    margin-top: gridx(3);
   }
 }

@@ -13,6 +13,7 @@
 // ConfirmDialog uses a bare title (dialog__title--alone) instead of the header
 // row. Padding is shared with cards (_theme-spacing.scss). The browser caps the
 // dialog's height to the viewport and scrolls it when content is taller.
+// Spacing between its parts is in _theme-spacing.scss (Dialogs).
 .dialog {
   border: 0;
   border-radius: $radius-xl;
@@ -32,42 +33,20 @@
     background-color: var(--backdrop);
   }
 
-  // Title left, close button right. The 48px close button reaches 12px into
-  // the padding, so it takes one 24px line and its icon lines up with the inset.
+  // Title left, close button right.
   &__header {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
-    gap: gridx(2);
-    margin-bottom: gridx(3);
-  }
-
-  &__title {
-    margin-bottom: 0;
-
-    &--alone {
-      margin-bottom: gridx(1);
-    }
-  }
-
-  &__close {
-    margin-block: gridx(-1.5);
-    margin-inline-end: gridx(-1.5);
   }
 
   &__description {
-    margin-bottom: gridx(4);
     color: var(--text-secondary);
-  }
-
-  &__error {
-    margin-bottom: gridx(2);
   }
 
   &__actions {
     display: flex;
     flex-wrap: wrap;
     justify-content: flex-end;
-    gap: gridx(1.5);
   }
 }

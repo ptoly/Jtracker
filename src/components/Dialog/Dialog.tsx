@@ -45,7 +45,7 @@ export function Dialog({ open, title, onClose, children, size = 'medium' }: Dial
       }}
     >
       <div className="dialog__header">
-        <h2 id={titleId} className="dialog__title size-h5">
+        <h2 id={titleId} className="dialog__title">
           {title}
         </h2>
         <div className="dialog__close">
