@@ -11,6 +11,7 @@ import {
 import { ConfirmDialog } from './components/ConfirmDialog/ConfirmDialog';
 import { ConnectionBar } from './components/ConnectionBar/ConnectionBar';
 import { SheetActions } from './components/ConnectionBar/SheetActions';
+import { MoreActions } from './components/MoreActions/MoreActions';
 import { Notice, SaveError } from './components/Notice/Notice';
 import { PositionsDialog } from './components/PositionsDialog/PositionsDialog';
 import { ScrollTop } from './components/ScrollTop/ScrollTop';
@@ -211,13 +212,15 @@ export function App() {
                   </p>
                 </div>
                 {data.mode === 'csv' && (
+                  // The file reloads by itself when the window regains focus, and
+                  // every save reads it first, so there's no Reload button.
                   <div className="sheet-actions">
-                    <button type="button" className="btn" onClick={() => void data.reload()}>
-                      Reload from file
-                    </button>
-                    <button type="button" className="btn" onClick={data.closeCsv}>
-                      Close file
-                    </button>
+                    <MoreActions
+                      items={[
+                        { label: 'Open another CSV file…', onSelect: () => void data.openCsv() },
+                        { label: 'New CSV file…', onSelect: () => void data.newCsv() },
+                      ]}
+                    />
                   </div>
                 )}
                 {data.mode === 'sheet' && (

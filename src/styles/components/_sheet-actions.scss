@@ -2,45 +2,16 @@
 
 // <div class="sheet-actions">
 //   <button class="btn">Reload from sheet</button>
-//   <div class="sheet-actions__menu">
-//     <button class="quiet-button icon-button sheet-actions__toggle" aria-haspopup="menu" aria-expanded aria-controls="…">⋮</button>
-//     <div class="menu sheet-actions__list" role="menu" hidden>
-//       <button class="menu__item" role="menuitem">…</button> …
-//     </div>
-//   </div>
+//   <div class="more-actions">…</div>      (the shared ⋮ menu, _more-actions.scss)
 //   <dialog class="dialog">
 //     <form class="dialog__form"><div class="field"><label>…</label><input class="control"></div>…</form>
 //   </dialog>
 // </div>
-// The menu drops below the ⋮ button, right-aligned so it stays on screen.
-// Spacing between the buttons: _theme-spacing.scss.
+// The data source's controls beside the Applications History title (a
+// connected sheet's, or the CSV file's ⋮ alone). Spacing between them:
+// _theme-spacing.scss.
 .sheet-actions {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-
-  &__menu {
-    position: relative;
-  }
-
-  // The ⋮ button is link-coloured, like the app's other text actions.
-  &__toggle {
-    color: var(--link);
-
-    @include hover-only {
-      &:hover:not(:disabled) {
-        color: var(--link-hover);
-      }
-    }
-  }
-
-  // Its look is .menu; here only where it drops.
-  &__list {
-    position: absolute;
-    top: calc(100% + #{gridx(0.5)});
-    right: 0;
-    z-index: $z-overlay;
-    width: max-content;
-    min-width: gridx(30);
-  }
 }

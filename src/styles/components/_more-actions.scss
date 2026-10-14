@@ -1,0 +1,34 @@
+@use 'pkg:octet-scss/abstracts' as *;
+
+// <div class="more-actions">
+//   <span class="tooltip"><button class="quiet-button icon-button more-actions__toggle" aria-haspopup="menu" aria-expanded aria-controls="…">⋮</button>…</span>
+//   <div class="menu more-actions__list" role="menu" hidden>
+//     <button class="menu__item" role="menuitem">…</button> …
+//   </div>
+// </div>
+// A ⋮ button and the menu it opens (the connected sheet's and the CSV file's
+// actions). The menu drops below the button, right-aligned so it stays on
+// screen; its look is .menu.
+.more-actions {
+  position: relative;
+
+  // The ⋮ button is link-coloured, like the app's other text actions.
+  &__toggle {
+    color: var(--link);
+
+    @include hover-only {
+      &:hover:not(:disabled) {
+        color: var(--link-hover);
+      }
+    }
+  }
+
+  &__list {
+    position: absolute;
+    top: calc(100% + #{gridx(0.5)});
+    right: 0;
+    z-index: $z-overlay;
+    width: max-content;
+    min-width: gridx(30);
+  }
+}

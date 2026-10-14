@@ -12,8 +12,9 @@
 // cover its label).
 // --start: left-aligned with the trigger, for one at a row's start (the
 // table's first column header).
-// --popover: the same bubble for longer text (NoteTip). It opens in the top
-// layer, so nothing clips it; the script places it beside its trigger.
+// --popover: the same bubble for longer text (NoteTip), with 16px around it
+// so a long note reads comfortably. It opens in the top layer, so nothing
+// clips it; the script places it beside its trigger.
 .tooltip {
   position: relative;
   display: inline-flex;
@@ -50,6 +51,7 @@
 
     &--popover {
       position: fixed;
+      padding: gridx(2);
       right: auto;
       bottom: auto;
       max-width: min(#{gridx(50)}, 100vw - #{gridx(2)});

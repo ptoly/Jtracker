@@ -18,6 +18,13 @@ interface OpenFilePickerOptions {
   id?: string;
 }
 
+interface SaveFilePickerOptions {
+  types?: OpenFilePickerOptions['types'];
+  suggestedName?: string;
+  id?: string;
+}
+
 interface Window {
   showOpenFilePicker?: (options?: OpenFilePickerOptions) => Promise<FileSystemFileHandle[]>;
+  showSaveFilePicker?: (options?: SaveFilePickerOptions) => Promise<FileSystemFileHandle>;
 }

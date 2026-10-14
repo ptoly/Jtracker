@@ -23,6 +23,7 @@ import {
   allowCsvEdits,
   canOpenCsvFiles,
   clearCsvHandle,
+  createCsvFile,
   loadCsvHandle,
   pickCsvFile,
   saveCsvHandle,
@@ -316,11 +317,14 @@ export function useApplications(today: Date) {
     setConnection(null);
   }
 
-  /** Picks a CSV file and asks to edit it; it replaces sample data or a sheet. */
-  async function openCsv() {
+  /** Switches to a CSV file once the browser allows edits; it replaces sample data, a sheet or another file. */
+  async function switchToCsv(
+    choose: () => Promise<FileSystemFileHandle | null>,
+    retry: () => void,
+  ) {
     setCsvError(null);
     try {
-      const handle = await pickCsvFile();
+      const handle = await choose();
       if (!handle) return;
       const allowed = await allowCsvEdits(handle);
       await saveCsvHandle(handle);
@@ -328,8 +332,18 @@ export function useApplications(today: Date) {
       setCsvFile(handle);
       setCsvAllowed(allowed);
     } catch (error) {
-      setCsvError({ error, retry: () => void openCsv() });
+      setCsvError({ error, retry });
     }
+  }
+
+  /** Picks an existing CSV file. */
+  function openCsv() {
+    return switchToCsv(pickCsvFile, () => void openCsv());
+  }
+
+  /** Saves a new CSV file with just the header row, and uses it. */
+  function newCsv() {
+    return switchToCsv(createCsvFile, () => void newCsv());
   }
 
   /** On a later visit: the browser asks once more before Jtracker edits the file. */
@@ -370,6 +384,7 @@ export function useApplications(today: Date) {
     canOpenCsv: canOpenCsvFiles,
     csvError,
     openCsv,
+    newCsv,
     allowCsv,
     closeCsv,
     tab,
