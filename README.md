@@ -1,3 +1,5 @@
+<img src="design/JtrackerLogo.svg" alt="Jtracker logo" width="120">
+
 # Jtracker
 
 A job-application tracker for people who apply a lot. Type a company, see
