@@ -1,4 +1,5 @@
 @use 'pkg:octet-scss/abstracts' as *;
+@use '../theme/hairline' as *;
 
 // <div class="position-combobox [host classes]">
 //   <label>…</label>
@@ -8,6 +9,7 @@
 //   </div>
 //   <ul class="menu position-combobox__menu position-combobox__menu--overlay|inline" [data-open]>
 //     <li class="menu__item" aria-selected="true|false">…</li>
+//     <li class="menu__item position-combobox__manage">Manage positions…</li>   (optional)
 //   </ul>
 // </div>
 // The host (form or edit row) styles the label and input; this block owns the
@@ -59,5 +61,16 @@
 
     // Pushes the content below down; for containers that clip overflow. The
     // space above it is in _theme-spacing.scss.
+  }
+
+  // "Manage positions…": an action, so link-coloured, under a divider, and
+  // stuck to the list's bottom so a long list doesn't scroll it away.
+  &__manage {
+    position: sticky;
+    bottom: 0;
+    background-color: var(--surface-elevated);
+    color: var(--brand);
+    font-weight: 600;
+    @include hairline(top, var(--border-default));
   }
 }

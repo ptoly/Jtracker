@@ -3,6 +3,9 @@ import type { KeyboardEvent, ReactNode } from 'react';
 import { normalize } from '../../lib/applicationRules';
 import { ChevronDownIcon } from '../Icons/Icons';
 
+/** The list's last item when `onManage` is given: an action, not a position. */
+const MANAGE = '\u0000manage';
+
 export interface PositionComboboxProps {
   /** id of the input; label and menu ids derive from it. */
   id: string;
@@ -22,6 +25,11 @@ export interface PositionComboboxProps {
    * for containers that clip overflow (like the scrolling table).
    */
   menu?: 'overlay' | 'inline';
+  /**
+   * Adds "Manage positions…" as the list's last item, always there (even when
+   * typing matches nothing). Choosing it calls this and leaves the text as it is.
+   */
+  onManage?: () => void;
 }
 
 /** Free-text position input with suggestions from positions already used. */
@@ -36,8 +44,12 @@ export function PositionCombobox({
   inputClassName = '',
   errorProps = {},
   menu = 'overlay',
+  onManage,
 }: PositionComboboxProps) {
   const matches = positions.filter((p) => normalize(p).includes(normalize(value)));
+  // The action is an option like the rest (a listbox holds only options), so
+  // the arrow keys reach it while focus stays in the input.
+  const items = onManage ? [...matches, MANAGE] : matches;
 
   const {
     isOpen,
@@ -48,8 +60,11 @@ export function PositionCombobox({
     getMenuProps,
     getItemProps,
   } = useCombobox({
-    items: matches,
+    items,
     inputValue: value,
+    // Never kept: each pick is reported once (as text, or as the action), so
+    // choosing "Manage positions…" twice in a row opens it twice.
+    selectedItem: null,
     inputId: id,
     labelId: `${id}-label`,
     menuId: `${id}-menu`,
@@ -59,6 +74,17 @@ export function PositionCombobox({
     // a newer keystroke and overwrite it. It still reports picked suggestions.
     onInputValueChange: ({ inputValue, type }) => {
       if (type !== useCombobox.stateChangeTypes.InputChange) onValueChange(inputValue);
+    },
+    onSelectedItemChange: ({ selectedItem }) => {
+      if (selectedItem === MANAGE) onManage?.();
+    },
+    // The action leaves the text alone, and isn't picked by tabbing away from it.
+    stateReducer: (state, { type, changes }) => {
+      if (changes.selectedItem !== MANAGE) return changes;
+      if (type === useCombobox.stateChangeTypes.InputBlur) {
+        return { ...changes, selectedItem: state.selectedItem, inputValue: state.inputValue };
+      }
+      return { ...changes, inputValue: state.inputValue };
     },
   });
 
@@ -80,7 +106,7 @@ export function PositionCombobox({
     }
   }
 
-  const open = isOpen && matches.length > 0;
+  const open = isOpen && items.length > 0;
 
   return (
     <div className={`position-combobox ${className}`}>
@@ -104,7 +130,7 @@ export function PositionCombobox({
           type="button"
           className="position-combobox__toggle"
           aria-label="Show positions"
-          hidden={positions.length === 0}
+          hidden={positions.length === 0 && !onManage}
           {...getToggleButtonProps()}
         >
           <ChevronDownIcon />
@@ -121,6 +147,14 @@ export function PositionCombobox({
               {item}
             </li>
           ))}
+        {isOpen && onManage && (
+          <li
+            className="menu__item position-combobox__manage"
+            {...getItemProps({ item: MANAGE, index: matches.length })}
+          >
+            Manage positions…
+          </li>
+        )}
       </ul>
     </div>
   );

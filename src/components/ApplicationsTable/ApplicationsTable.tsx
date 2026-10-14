@@ -13,6 +13,7 @@ import { toIsoDate } from '../../lib/dates';
 import { ageInDays, DEFAULT_FOLLOW_UP_DAYS, isFollowUpDue } from '../../lib/derive';
 import { pageItems } from '../../lib/pagination';
 import { useMediaQuery } from '../../lib/useMediaQuery';
+import { useTooltip } from '../Tooltip/useTooltip';
 import type { Application, ApplicationPatch, Status } from '../../types/application';
 import type { ApplicationPrefill } from '../ApplicationForm/ApplicationForm';
 import { StatusOptions } from '../ApplicationFields/StatusOptions';
@@ -229,8 +230,9 @@ export function ApplicationsTable({
   const deleteButtonId = (id: string) => `${baseId}-delete-${id}`;
   const dueId = (id: string) => `${baseId}-due-${id}`;
   const tabRefs = useRef(new Map<TabKey, HTMLButtonElement>());
-  // Below the 720px breakpoint the table becomes a list of cards.
-  const cards = useMediaQuery('(width < 720px)');
+  // Up to 1032px (phones and tablets, 13" iPad upright) the table becomes a
+  // list of cards: its columns need about 1150px.
+  const cards = useMediaQuery('(width < 1033px)');
 
   const [tab, setTab] = useState<TabKey>('all');
   const [query, setQuery] = useState('');
@@ -264,6 +266,8 @@ export function ApplicationsTable({
 
   // A row deleted elsewhere (e.g. in the sheet, then reloaded) is no longer being edited.
   const editing = editingId !== null && applications.some((app) => app.id === editingId);
+  // The date column's "Sorts by date applied" tip; off while a row is edited.
+  const sortTip = useTooltip(editing);
   const busy = editing || deleting !== null;
 
   useImperativeHandle(ref, () => ({
@@ -469,20 +473,46 @@ export function ApplicationsTable({
   function sortHeader(
     key: SortKey,
     label: string,
-    { className, content = label }: { className?: string; content?: ReactNode } = {},
+    {
+      className,
+      content = label,
+      tip,
+    }: { className?: string; content?: ReactNode; tip?: { id: string; text: string } } = {},
   ) {
     const active = sort.key === key;
+    const button = (
+      <button
+        type="button"
+        className="applications-table__sort"
+        disabled={editing}
+        onClick={() => handleSort(key)}
+        {...(tip && {
+          'aria-describedby': tip.id,
+          onFocus: sortTip.onFocus,
+          onBlur: sortTip.onBlur,
+        })}
+      >
+        {content}
+        <span className="applications-table__sort-icon" aria-hidden="true" />
+      </button>
+    );
     return (
       <th scope="col" className={className} {...(active && { 'aria-sort': sort.direction })}>
-        <button
-          type="button"
-          className="applications-table__sort"
-          disabled={editing}
-          onClick={() => handleSort(key)}
-        >
-          {content}
-          <span className="applications-table__sort-icon" aria-hidden="true" />
-        </button>
+        {tip ? (
+          // The tip is the button's description too, so screen readers get it.
+          <span className="tooltip" {...sortTip.hoverProps}>
+            {button}
+            <span
+              id={tip.id}
+              className="tooltip__bubble tooltip__bubble--below tooltip__bubble--start"
+              data-open={sortTip.open ? '' : undefined}
+            >
+              {tip.text}
+            </span>
+          </span>
+        ) : (
+          button
+        )}
       </th>
     );
   }
@@ -814,12 +844,14 @@ export function ApplicationsTable({
                         {/* The buttons keep their visible text as their names (WCAG 2.5.3);
                             aria-sort on the header says which column is sorted, and how.
                             Dates sort by date applied, Company / Position by company. */}
-                        {sortHeader('date', 'Date Applied / Date Followed Up', {
+                        {sortHeader('date', 'Date Applied / Date Follow Up', {
+                          // Two dates, one sort: say which.
+                          tip: { id: `${baseId}-date-sort-tip`, text: 'Sorts by date applied' },
                           content: (
                             <span className="applications-table__lines">
                               <span>Date Applied</span>
                               <span className="sr-only"> / </span>
-                              <span>Date Followed Up</span>
+                              <span>Date Follow Up</span>
                             </span>
                           ),
                         })}

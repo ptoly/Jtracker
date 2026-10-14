@@ -7,7 +7,7 @@
 //   <div class="applications-table__controls">
 //     <div class="applications-table__search">… <div class="clearable"><input …>✕</div></div>
 //     <div role="tablist" class="tabs">…</div>      (the shared tabs block, _tabs.scss)
-//     (under 720px, instead of the tabs:)
+//     (up to 1032px, instead of the tabs:)
 //     <div class="applications-table__pickers">
 //       <div class="applications-table__picker"><label>Show</label><span class="select">…</span></div>
 //       <div class="applications-table__picker"><label>Sort by</label><span class="select">…</span></div>
@@ -15,7 +15,7 @@
 //   </div>
 //   <div role="tabpanel" class="applications-table__panel">
 //     <div class="applications-table__scroll"><table class="applications-table__table">…</table></div>
-//     (under 720px, instead of the table:)
+//     (up to 1032px, instead of the table:)
 //     <ul class="applications-table__cards">
 //       <li class="applications-table__card [data-editing]">
 //         <div class="applications-table__lines"><h3 class="applications-table__card-title">…</h3>…</div>
@@ -247,9 +247,11 @@
     }
   }
 
-  // Cards (under 720px) ---------------------------------------------------------------
+  // Cards (up to 1032px) -------------------------------------------------------------
   // One per application: company and position, status, dates and age, notes,
   // then the row's buttons. Hairline edges as inset shadows, like the table's.
+  // One column on phones, two side by side from 720px (tablets), the same
+  // height across a row.
   // Above them, in the toolbar under the search box, "Show" (for the tabs)
   // and "Sort by" (for the column headers): labels in one column and selects
   // in the other, so the two selects line up and take the rest of the row.
@@ -268,11 +270,16 @@
 
   &__cards {
     list-style: none;
+
+    @include from(720px) {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
   }
 
   &__card {
     display: grid;
-    padding: gridx(1.5); // cards only show under 720px
+    padding: gridx(2); // cards only show up to 1032px
     border-radius: $radius-lg;
     background-color: var(--surface-card);
     color: var(--text-secondary);
@@ -286,9 +293,16 @@
   }
 
   // Applied, Followed up and Age side by side, wrapping when there's no room.
+  // Applied, Followed up and Age in a row. On a phone they spread across the
+  // card (48px apart at the least) so they're easier to tell apart; on wider
+  // cards they stay together at the left.
   &__facts {
     display: flex;
     flex-wrap: wrap;
+
+    @include until(580px) {
+      justify-content: space-between;
+    }
 
     dt {
       color: var(--text-secondary);

@@ -10,6 +10,8 @@
 // it stays inside clipping containers at a row's end.
 // --below: under the trigger instead (a field's hint, where above would
 // cover its label).
+// --start: left-aligned with the trigger, for one at a row's start (the
+// table's first column header).
 // --popover: the same bubble for longer text (NoteTip). It opens in the top
 // layer, so nothing clips it; the script places it beside its trigger.
 .tooltip {
@@ -39,6 +41,11 @@
     &--below {
       top: calc(100% + #{gridx(0.5)});
       bottom: auto;
+    }
+
+    &--start {
+      right: auto;
+      left: 0;
     }
 
     &--popover {

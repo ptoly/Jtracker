@@ -3,7 +3,7 @@
 // <div class="card match-alert">
 //   <div class="match-alert__group">
 //     <div class="match-alert__title">Applied to Acme before:</div>
-//     <ul class="bullets"><li>Position · date · status · N days</li>…</ul>
+//     <ul class="bullets"><li><span class="match-alert__role">Position</span> date · status · N days</li>…</ul>
 //   </div>
 //   (or, with no matches: <div class="match-alert__title">No matches</div><p>…</p>)
 // </div>
@@ -20,6 +20,11 @@
 
   @starting-style {
     opacity: 0;
+  }
+
+  // Each earlier application's role on its own line, its facts under it.
+  &__role {
+    display: block;
   }
 
   &__title {

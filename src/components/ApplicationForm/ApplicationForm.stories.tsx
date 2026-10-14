@@ -187,10 +187,27 @@ export const FillPositionFromSearch: Story = {
   },
 };
 
+/** "Manage positions…" is the last item in Position's list; it leaves the text as typed. */
 export const ManagePositions: Story = {
+  name: 'Manage positions (from the list)',
   play: async ({ canvas, userEvent, args }) => {
-    await userEvent.click(canvas.getByRole('button', { name: 'Manage Positions' }));
-    await expect(args.onManagePositions).toHaveBeenCalled();
+    const position = canvas.getByRole('combobox', { name: 'Position' });
+    await userEvent.type(position, 'Zzz');
+    // Typing matches nothing, but the action is still there.
+    await userEvent.click(await canvas.findByRole('option', { name: 'Manage positions…' }));
+    await expect(args.onManagePositions).toHaveBeenCalledTimes(1);
+    await expect(position).toHaveValue('Zzz');
+
+    // From the keyboard: ↑ from the field reaches the last item.
+    await userEvent.clear(position);
+    await userEvent.keyboard('{ArrowUp}');
+    await expect(canvas.getByRole('option', { name: 'Manage positions…' })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    );
+    await userEvent.keyboard('{Enter}');
+    await expect(args.onManagePositions).toHaveBeenCalledTimes(2);
+    await expect(position).toHaveValue('');
   },
 };
 

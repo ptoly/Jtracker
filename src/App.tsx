@@ -13,6 +13,7 @@ import { ConnectionBar } from './components/ConnectionBar/ConnectionBar';
 import { SheetActions } from './components/ConnectionBar/SheetActions';
 import { Notice, SaveError } from './components/Notice/Notice';
 import { PositionsDialog } from './components/PositionsDialog/PositionsDialog';
+import { ScrollTop } from './components/ScrollTop/ScrollTop';
 import { isFollowUpDue } from './lib/derive';
 import { suggestedPositions } from './lib/positions';
 import type { Application } from './types/application';
@@ -52,10 +53,11 @@ export function App() {
   const addHeader = (
     <div className="app__section-header">
       <div>
-        <h2 id="add-application-heading" className="size-h4">Check/Add Job Application</h2>
+        <h2 id="add-application-heading" className="size-h4">
+          Check/Add Job Application
+        </h2>
         <p className="app__subtitle">
-          Enter the company name. If you’ve applied there before, your past application(s)
-          appear.
+          Enter the company name. If you’ve applied there before, your past application(s) appear.
         </p>
       </div>
     </div>
@@ -81,7 +83,10 @@ export function App() {
         {/* The page title on the left, the add form on the right; stacked when narrow. */}
         <div className="app__intro">
           <div className="app__page-header has-divider">
-            <h1>Your job search</h1>
+            {/* Focusable from script: "Back to top" lands here. */}
+            <h1 id="page-top" tabIndex={-1}>
+              Your job search
+            </h1>
             {applications && (
               <p className="app__subtitle">
                 {searchSummary(applications, today).map((part, index) => (
@@ -293,6 +298,8 @@ export function App() {
           )}
         </ConfirmDialog>
       </main>
+
+      <ScrollTop targetId="page-top" />
     </>
   );
 }

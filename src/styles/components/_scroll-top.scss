@@ -1,0 +1,29 @@
+@use 'pkg:octet-scss/abstracts' as *;
+@use '../theme/hairline' as *;
+@use '../theme/elevation' as *;
+
+// <div class="scroll-top">
+//   <span class="tooltip"><button class="quiet-button icon-button scroll-top__button">↑</button>…</span>
+// </div>
+// "Back to top": a 48px icon button floating in the window's bottom right
+// corner once the page is scrolled down (ScrollTop). Raised like a menu, so
+// it reads over whatever scrolls under it; hover and focus come from
+// .quiet-button and .icon-button. It fades in; the global reduced-motion
+// reset turns the fade off.
+.scroll-top {
+  position: fixed;
+  right: gridx(2);
+  bottom: gridx(2);
+  z-index: $z-sticky;
+  @include transition(opacity);
+
+  @starting-style {
+    opacity: 0;
+  }
+
+  &__button {
+    background-color: var(--surface-elevated);
+    @include shadow(3);
+    @include hairline(all, var(--border-default));
+  }
+}

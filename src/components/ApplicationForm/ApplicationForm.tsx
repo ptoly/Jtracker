@@ -46,7 +46,7 @@ export interface ApplicationFormProps {
   today: Date;
   /** Persists the new application. The form resets once this resolves. */
   onAdd: (input: NewApplication) => Promise<unknown>;
-  /** Shows a "Manage Positions" button on the line after the fields (with Add Note). */
+  /** Adds "Manage positions…" as the last item in Position's list. */
   onManagePositions?: () => void;
   /** The form's title (and description), at the top of the card over both columns. */
   header?: ReactNode;
@@ -199,6 +199,7 @@ export function ApplicationForm({
             label={<>Position{required}</>}
             inputClassName="control"
             errorProps={errorProps('position')}
+            {...(onManagePositions && { onManage: onManagePositions })}
           />
           <FieldError id={errorId('position')} message={errors.position} />
         </div>
@@ -253,32 +254,19 @@ export function ApplicationForm({
         </div>
       )}
 
-      {/* The form's text buttons, after the fields:
-          Add Note on the left, Manage Positions on the right. */}
-      {(!showNote || onManagePositions) && (
+      {!showNote && (
         <div className="application-form__links">
-          {!showNote && (
-            <button
-              type="button"
-              className="btn btn--link"
-              onClick={() => {
-                setNoteOpen(true);
-                setFocusNote(true);
-              }}
-            >
-              <PlusIcon />
-              Add Note
-            </button>
-          )}
-          {onManagePositions && (
-            <button
-              type="button"
-              className="btn btn--link application-form__manage"
-              onClick={onManagePositions}
-            >
-              Manage Positions
-            </button>
-          )}
+          <button
+            type="button"
+            className="btn btn--link"
+            onClick={() => {
+              setNoteOpen(true);
+              setFocusNote(true);
+            }}
+          >
+            <PlusIcon />
+            Add Note
+          </button>
         </div>
       )}
 

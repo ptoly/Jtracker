@@ -14,13 +14,13 @@
 //
 //  Responsive spacing uses octet's scaled-spacing(). global.scss sets
 //  $breakpoints to end at 1280px, so ramps reach their full value there
-//  instead of 1441px. Bottom margins are half size on small screens:
-//    16px: scaled-spacing(…, 3, 16px, 4)   8 → 12 (900) → 16 (1280)
-//    24px: scaled-spacing(…, 4, 24px, 4)  12 → 16 (720) → 20 (900) → 24 (1280)
+//  instead of 1441px. Space between blocks never drops below 16px, so
+//  mobile doesn't get snug:
+//    16px: gridx(2), fixed
+//    24px: scaled-spacing(…, 3, 24px, 4)  16 → 20 (900) → 24 (1280)
 //    32px: scaled-spacing(…, 5, 32px, 4)  16 → 20 (540) → … → 32 (1280)
-//  8px and less (a label over its field, text over a note) stays fixed:
-//  halved, it would drop below the 8pt grid. So do rules that only apply
-//  under 720px, where the ramps never step.
+//  8px and less (a label over its field, text over a note) stays fixed.
+//  So do rules that only apply under 720px, where the ramps never step.
 //
 //  Vertical values step on the 8pt grid (gridx / scaled-spacing); horizontal
 //  values are fluid (fluid-gutter). Blocks are spaced with margin-bottom,
@@ -100,7 +100,7 @@ ol {
 
 .app__section-header {
   gap: gridx(2);
-  @include scaled-spacing(margin-bottom, 4, 24px, 4);
+  @include scaled-spacing(margin-bottom, 3, 24px, 4);
 
   &.has-divider {
     @include scaled-spacing(padding-bottom, 4, 24px, 4);
@@ -108,7 +108,7 @@ ol {
 }
 
 // Intro row: the page title over the add form when stacked; side by side
-// from 900px, with a column gap instead. The row as a whole is spaced like a
+// wider than 1032px, with a column gap instead. The row as a whole is spaced like a
 // section (above).
 .app__intro {
   > .app__page-header {
@@ -119,7 +119,7 @@ ol {
     margin-bottom: 0;
   }
 
-  @include from(900px) {
+  @include from(1033px) {
     column-gap: gridx(4);
 
     > .app__page-header {
@@ -138,13 +138,13 @@ ol {
 // The add form's title, inside its card: the card's padding is the space
 // above it.
 .application-form__header > .app__section-header {
-  @include scaled-spacing(margin-bottom, 3, 16px, 4);
+  margin-bottom: gridx(2);
 }
 
 // The connection banners and page notices sit above the content they're about.
 .connection-bar,
 .app__notice {
-  @include scaled-spacing(margin-bottom, 4, 24px, 4);
+  @include scaled-spacing(margin-bottom, 3, 24px, 4);
 }
 
 // Headings that group with a subtitle or a bar drop their flow margin.
@@ -189,10 +189,10 @@ ol {
   @include scaled-spacing(padding-left padding-right, 3, 24px, 4);
 }
 
-// Over the cards (under 720px) there are no cells: the search box and the
+// Over the cards (up to 1032px) there are no cells: the search box and the
 // Show / Sort by selects line up with the cards' edges instead.
 .applications-table__controls {
-  @include until(720px) {
+  @include until(1033px) {
     padding-inline: 0;
   }
 }
@@ -299,7 +299,7 @@ ol {
 
 // One group per company in the match alert.
 .match-alert__group:not(:last-child) {
-  @include scaled-spacing(margin-bottom, 3, 16px, 4);
+  margin-bottom: gridx(2);
 }
 
 // The 48px ✕ pulls out by its own 12px of padding around the 24px icon, so
@@ -361,7 +361,7 @@ ol {
 // ---- Add form -------------------------------------------------------------------
 // The card, then a failed-add message when there is one.
 .application-form > .card:has(+ .application-form__error) {
-  @include scaled-spacing(margin-bottom, 3, 16px, 4);
+  margin-bottom: gridx(2);
 }
 
 // Fields beside the match alert from 720px. Stacked, the alert sits between
@@ -375,18 +375,13 @@ ol {
 
 .application-form__matches {
   @include until(720px) {
-    margin-bottom: gridx(1);
+    margin-bottom: gridx(2);
   }
 }
 
-// Form rows: 16px apart on wide screens, 8px on small ones.
+// Form rows: 16px apart.
 .application-form__fields > :not(:last-child) {
-  @include scaled-spacing(margin-bottom, 3, 16px, 4);
-}
-
-// Add Note and Manage Positions: 16px apart if they ever share a tight line.
-.application-form__links {
-  column-gap: gridx(2);
+  margin-bottom: gridx(2);
 }
 
 // Position and Date Applied: 16px apart side by side. Each keeps the row
@@ -400,7 +395,7 @@ ol {
   }
 
   > .field {
-    @include scaled-spacing(margin-bottom, 3, 16px, 4);
+    margin-bottom: gridx(2);
   }
 }
 
@@ -416,7 +411,7 @@ ol {
 .applications-table__controls {
   column-gap: gridx(3);
 
-  @include scaled-spacing(margin-bottom, 4, 24px, 4);
+  @include scaled-spacing(margin-bottom, 3, 24px, 4);
 }
 
 .applications-table__sort,
@@ -461,18 +456,19 @@ th:not([aria-sort]) .applications-table__sort-icon::before {
 
 // Empty state: the message, then the "Add application for …" button.
 .applications-table__empty > p:not(:last-child) {
-  @include scaled-spacing(margin-bottom, 3, 16px, 4);
+  margin-bottom: gridx(2);
 }
 
-// Cards (under 720px, so fixed values: the ramps never step there): under
-// the search box (8px below it already), Show and Sort by, 8px apart and
-// 8px more below; then the cards, 16px apart, then pagination.
+// Cards (up to 1032px; fixed values): under
+// the search box (8px below it already, plus 8px here), Show and Sort by,
+// 16px apart; the toolbar's own margin below them; then the cards, 16px
+// apart, then pagination.
 .applications-table__picker:not(:last-child) {
-  margin-bottom: gridx(1);
+  margin-bottom: gridx(2);
 }
 
 .applications-table__pickers {
-  padding-bottom: gridx(1);
+  padding-top: gridx(1);
 }
 
 .applications-table__cards {
@@ -481,6 +477,18 @@ th:not([aria-sort]) .applications-table__sort-icon::before {
 
 .applications-table__card:not(:last-child) {
   margin-bottom: gridx(2);
+}
+
+// Two cards side by side from 720px: 16px between them and between rows (a
+// grid's gap, since its rows and columns both sit side by side).
+.applications-table__cards {
+  @include from(720px) {
+    gap: gridx(2);
+
+    > .applications-table__card {
+      margin-bottom: 0;
+    }
+  }
 }
 
 // Inside a card: 16px between its parts.
@@ -492,17 +500,18 @@ th:not([aria-sort]) .applications-table__sort-icon::before {
   margin-bottom: 0;
 }
 
-// Applied, Followed up and Age: 24px apart in a row; 8px under each, so a
-// wrapped row is spaced too. The facts block makes up the rest of the 16px.
+// Applied, Followed up and Age: at least 48px apart in a row, and 16px
+// under each, so a wrapped row is spaced the same; that's also the space
+// under the block.
 .applications-table__facts {
-  column-gap: gridx(3);
+  column-gap: gridx(6);
 
   > div {
-    margin-bottom: gridx(1);
+    margin-bottom: gridx(2);
   }
 
   .applications-table__card > & {
-    margin-bottom: gridx(1);
+    margin-bottom: 0;
   }
 
   dd {
@@ -532,7 +541,7 @@ th:not([aria-sort]) .applications-table__sort-icon::before {
 // Header: title and ✕ side by side, then the content.
 .dialog__header {
   gap: gridx(2);
-  @include scaled-spacing(margin-bottom, 4, 24px, 4);
+  @include scaled-spacing(margin-bottom, 3, 24px, 4);
 }
 
 .dialog__title {
@@ -550,12 +559,12 @@ th:not([aria-sort]) .applications-table__sort-icon::before {
 }
 
 .dialog__error {
-  @include scaled-spacing(margin-bottom, 3, 16px, 4);
+  margin-bottom: gridx(2);
 }
 
 // A form in a dialog: its fields, then the buttons.
 .dialog__form > .field {
-  @include scaled-spacing(margin-bottom, 4, 24px, 4);
+  @include scaled-spacing(margin-bottom, 3, 24px, 4);
 }
 
 .dialog__actions {
@@ -569,12 +578,12 @@ th:not([aria-sort]) .applications-table__sort-icon::before {
 .positions-dialog > .positions-dialog__list,
 .positions-dialog > .positions-dialog__empty,
 .positions-dialog__removed {
-  @include scaled-spacing(margin-bottom, 4, 24px, 4);
+  @include scaled-spacing(margin-bottom, 3, 24px, 4);
 }
 
 .positions-dialog__find,
 .positions-dialog__error {
-  @include scaled-spacing(margin-bottom, 3, 16px, 4);
+  margin-bottom: gridx(2);
 }
 
 // Side by side: the add field and its button; the rename field and its

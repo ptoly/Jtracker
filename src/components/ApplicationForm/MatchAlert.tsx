@@ -25,8 +25,9 @@ function MatchLine({ app, today }: { app: Application; today: Date }) {
   const age = app.status === 'Applied' ? ageInDays(app, today) : null;
   return (
     <li>
-      {app.position}
-      <Separator />
+      {/* The role on its own line, the facts under it; a comma pause for screen readers. */}
+      <span className="match-alert__role">{app.position}</span>
+      <span className="sr-only">, </span>
       {app.dateApplied ? <DateText iso={app.dateApplied} /> : 'No date'}
       <Separator />
       {app.status || 'No status'}
@@ -41,8 +42,8 @@ function MatchLine({ app, today }: { app: Application; today: Date }) {
 }
 
 /**
- * Earlier applications to the company being typed, one line each:
- * "<Position> · <date> · <status>" (plus "<N> days" while Applied).
+ * Earlier applications to the company being typed, one item each: the
+ * position, then "<date> · <status>" (plus "<N> days" while Applied) under it.
  * Always there: "No applications found" before a company is typed (the
  * instructions are in the form's title, where the eye starts), and "No
  * matches" when nothing matches. It has no ✕: the Company field's clears.

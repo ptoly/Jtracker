@@ -22,13 +22,14 @@
 }
 
 // ---- Intro row ---------------------------------------------------------------------
-// The page title on the left, the add form's card on the right from 900px;
-// stacked below that.
+// The page title on the left, the add form's card on the right wider than
+// 1032px; stacked up to there, which keeps a 13" iPad (1032px wide upright)
+// stacked too.
 .app__intro {
   display: grid;
   grid-template-columns: minmax(0, 1fr); // lets the card shrink to the screen
 
-  @include from(900px) {
+  @include from(1033px) {
     grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
     align-items: start;
   }
