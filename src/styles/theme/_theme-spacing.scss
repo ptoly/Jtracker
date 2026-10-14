@@ -315,6 +315,22 @@ ol {
   margin-bottom: gridx(1);
 }
 
+// Inset labels (.field--inset): the label sits 8px from the box's top and
+// 12px in, like the text. The control's 24px label line plus 8px above and
+// below: 8 + 24 + 24 + 8 = 64px. Buttons inside the box (the combobox toggle,
+// the company ✕) take the same padding, so their icons sit on the text line
+// and their targets fill the box's height.
+.field.field--inset > label,
+.field--inset .position-combobox > label {
+  margin-bottom: 0;
+  padding: gridx(1) gridx(1.5) 0;
+}
+
+.field--inset :is(.control, .position-combobox__toggle, .icon-button) {
+  padding-top: gridx(4);
+  padding-bottom: gridx(1);
+}
+
 // The required mark, just after its label text.
 .field__required {
   margin-left: gridx(0.25);
@@ -327,14 +343,14 @@ ol {
 }
 
 // Fields beside the match alert from 720px; above it when stacked (only when
-// there's an alert; fixed, since it only applies under 720px).
+// it's showing; fixed, since it only applies under 720px).
 .application-form__body {
   @include from(720px) {
     column-gap: gridx(3);
   }
 }
 
-.application-form__fields:has(+ .application-form__matches:not(:empty)) {
+.application-form__fields:has(+ .application-form__matches:not(:has(> [data-idle]))) {
   @include until(720px) {
     margin-bottom: gridx(2);
   }

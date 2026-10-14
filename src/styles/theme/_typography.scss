@@ -64,7 +64,7 @@ address {
 // layout and spacing.
 label {
   color: var(--text-secondary);
-  font-weight: 600;
+  font-weight: 500;
 }
 
 // =============================================================
@@ -121,30 +121,32 @@ h2, h3, h4, h5, h6 {
 //  Tune these pairs by eye; they only need to stay ordered.
 // -------------------------------------------------------------
 
+$high-resolution: 1920px;
+
 h1, .size-h1 {
   font-weight: 600;
 
-  @include fluid-font-size(28px, 44px, 360px, 1440px, 1.1);   // display: minimized leading, on-grid
+  @include fluid-font-size(28px, 44px, 360px, $high-resolution, 1.1);   // display: minimized leading, on-grid
 }
 
 h2, .size-h2 {
-  @include fluid-font-size(24px, 32px, 360px, 1440px, 1.1);
+  @include fluid-font-size(24px, 32px, 360px, $high-resolution, 1.1);
 }
 
 h3, .size-h3 {
-  @include fluid-font-size(20px, 24px, 360px, 1440px, 1.1);
+  @include fluid-font-size(20px, 24px, 360px, $high-resolution, 1.1);
 }
 
 h4, .size-h4 {
-  @include fluid-font-size(18px, 22px, 360px, 1440px, 1.1);
+  @include fluid-font-size(18px, 22px, 360px, $high-resolution, 1.1);
 }
 
 h5, .size-h5 {
-  @include fluid-font-size(16px, 20px, 360px, 1440px, 1.5);   // body-like leading (readability)
+  @include fluid-font-size(16px, 20px, 360px, $high-resolution, 1.5);   // body-like leading (readability)
 }
 
 h6, .size-h6, .smallest-heading {
-  @include fluid-font-size(14px, 18px, 360px, 1440px, 1.5);   // body-like leading (readability)
+  @include fluid-font-size(14px, 18px, 360px, $high-resolution, 1.5);   // body-like leading (readability)
 }
 
 // -------------------------------------------------------------

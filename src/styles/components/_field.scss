@@ -8,7 +8,8 @@
 //   <span class="field-error" id="…">…</span>
 // </div>
 // One form field, for every form: the label over its control, then help
-// text and an error when there are any. Labels themselves are styled
+// text and an error when there are any. .field--inset puts the label inside
+// the control's box, at its top (the add form), to save a line. Labels themselves are styled
 // site-wide (_typography.scss), controls by .control, and the spacing
 // between the parts is in _theme-spacing.scss (Form fields).
 .field {
@@ -29,5 +30,25 @@
 
   &__help {
     color: var(--text-secondary);
+  }
+
+  // Inset label: the label and the control (or its wrapper) share one cell,
+  // the label over the box's top line. Clicks pass through it to the control,
+  // so the whole box focuses the field. The control's padding makes room for
+  // the label (_theme-spacing.scss, Form fields). A position combobox nests
+  // its own label, so it gets the same.
+  &--inset,
+  &--inset .position-combobox {
+    > label {
+      z-index: 1;
+      grid-area: 1 / 1;
+      align-self: start;
+      justify-self: start;
+      pointer-events: none;
+    }
+
+    > label + * {
+      grid-area: 1 / 1;
+    }
   }
 }

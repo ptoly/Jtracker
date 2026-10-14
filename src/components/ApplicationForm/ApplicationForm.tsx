@@ -1,6 +1,11 @@
 import { useId, useImperativeHandle, useState, type FormEvent, type Ref } from 'react';
 import { distinctPositions } from '../../lib/applicationRules';
-import { findCompanyMatches, matchSummary } from '../../lib/companyMatch';
+import {
+  MIN_COMPANY_QUERY,
+  companyKey,
+  findCompanyMatches,
+  matchSummary,
+} from '../../lib/companyMatch';
 import { toIsoDate } from '../../lib/dates';
 import { useDebouncedValue } from '../../lib/useDebouncedValue';
 import type { Application, NewApplication } from '../../types/application';
@@ -89,6 +94,11 @@ export function ApplicationForm({
   const companyQuery = useDebouncedValue(draft.company, MATCH_DELAY_MS);
   const matches = draft.company.trim() ? findCompanyMatches(applications, companyQuery) : [];
   const showMatches = matches.length > 0;
+  // What the alert reports on: the debounced text, once it's long enough to check.
+  const checkedQuery =
+    draft.company.trim() && companyKey(companyQuery).length >= MIN_COMPANY_QUERY
+      ? companyQuery.trim()
+      : '';
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -128,7 +138,7 @@ export function ApplicationForm({
 
   const fields = (
     <div className="application-form__fields">
-      <div className="field">
+      <div className="field field--inset">
         <label htmlFor={ids.company}>Company/Search{required}</label>
         <div className="application-form__company">
           <input
@@ -170,7 +180,7 @@ export function ApplicationForm({
       {/* Position and Date Applied share a row while there's room; Date drops below when not.
           Tab follows the reading order: Company, Position, Date. */}
       <div className="application-form__row">
-        <div className="field">
+        <div className="field field--inset">
           <PositionCombobox
             id={ids.position}
             value={draft.position}
@@ -183,7 +193,7 @@ export function ApplicationForm({
           <FieldError id={errorId('position')} message={errors.position} />
         </div>
 
-        <div className="field application-form__date">
+        <div className="field field--inset application-form__date">
           <label htmlFor={ids.dateApplied}>Date Applied{required}</label>
           {/* The hint is a tip under the field (hover or focus), to save a line.
               Screen readers still get it as the field's description. */}
@@ -213,7 +223,7 @@ export function ApplicationForm({
       </div>
 
       {showNote && (
-        <div className="field">
+        <div className="field field--inset">
           <label htmlFor={ids.notes}>
             Note <span className="field__optional">(optional)</span>
           </label>
@@ -233,7 +243,7 @@ export function ApplicationForm({
         </div>
       )}
 
-      {/* The form's text buttons, after the fields so Tab reaches them last:
+      {/* The form's text buttons, after the fields:
           Add Note on the left, Manage Positions on the right. */}
       {(!showNote || onManagePositions) && (
         <div className="application-form__links">
@@ -247,7 +257,7 @@ export function ApplicationForm({
               }}
             >
               <PlusIcon />
-              Add Note (optional)
+              Add Note
             </button>
           )}
           {onManagePositions && (
@@ -261,6 +271,13 @@ export function ApplicationForm({
           )}
         </div>
       )}
+
+      {/* Under the fields, at the left, so the alert beside them has the card's full height. */}
+      <div className="application-form__actions">
+        <button type="submit" className="btn btn--primary" aria-disabled={submitting}>
+          Add Application
+        </button>
+      </div>
     </div>
   );
 
@@ -271,23 +288,17 @@ export function ApplicationForm({
         <div className="card__body application-form__body">
           {fields}
           <div className="application-form__matches">
-            {showMatches && (
-              <MatchAlert
-                matches={matches}
-                today={today}
-                // Dismissing clears Company too, so the next search starts fresh.
-                onDismiss={() => {
-                  setField('company', '');
-                  focusField(ids.company);
-                }}
-              />
-            )}
+            <MatchAlert
+              query={checkedQuery}
+              matches={matches}
+              today={today}
+              // Dismissing clears Company too, so the next search starts fresh.
+              onDismiss={() => {
+                setField('company', '');
+                focusField(ids.company);
+              }}
+            />
           </div>
-        </div>
-        <div className="card__footer application-form__actions">
-          <button type="submit" className="btn btn--primary" aria-disabled={submitting}>
-            Add Application
-          </button>
         </div>
       </div>
 

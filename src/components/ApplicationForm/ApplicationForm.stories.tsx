@@ -94,6 +94,21 @@ export const PartialMatch: Story = {
   },
 };
 
+export const NoMatches: Story = {
+  name: 'No matches',
+  play: async ({ canvas, userEvent }) => {
+    await expect(canvas.getByText('Earlier applications')).toBeVisible();
+    await expect(canvas.queryByRole('button', { name: 'Dismiss and clear company' })).toBeNull();
+    const company = canvas.getByRole('textbox', { name: 'Company/Search' });
+    await userEvent.type(company, 'Zzyzx Works');
+    await expect(await canvas.findByText('No matches')).toBeVisible();
+    await expect(canvas.getByText('You haven’t applied to “Zzyzx Works” before.')).toBeVisible();
+    await userEvent.click(canvas.getByRole('button', { name: 'Dismiss and clear company' }));
+    await expect(company).toHaveValue('');
+    await expect(canvas.getByText('Earlier applications')).toBeVisible();
+  },
+};
+
 export const ClearCompany: Story = {
   name: 'Clear the company',
   play: async ({ canvas, userEvent }) => {
@@ -114,7 +129,7 @@ export const AddNote: Story = {
     const date = canvas.getByLabelText('Date Applied');
     await expect(date).toHaveValue('2026-10-10');
     await expect(date).toHaveAccessibleDescription('Defaults to today');
-    await userEvent.click(canvas.getByRole('button', { name: 'Add Note (optional)' }));
+    await userEvent.click(canvas.getByRole('button', { name: 'Add Note' }));
     await waitFor(() =>
       expect(canvas.getByRole('textbox', { name: 'Note (optional)' })).toHaveFocus(),
     );

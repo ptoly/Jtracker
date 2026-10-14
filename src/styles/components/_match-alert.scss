@@ -6,10 +6,12 @@
 //       <div class="match-alert__title">Applied to Acme before:</div>
 //       <ul class="bullets"><li>Position · date · status · N days</li>…</ul>
 //     </div>
+//     (or, with no matches: <div class="match-alert__title">No matches</div><p>…</p>)
 //   </div>
 //   <span class="tooltip"><button class="icon-button match-alert__dismiss">✕</button></span>
 // </div>
-// Earlier applications to the company being typed, in the add form: a
+// Earlier applications to the company being typed, in the add form (always
+// there; data-idle before a company is typed, when it has no ✕): a
 // small card (_card.scss), a bold title and a bulleted list in secondary
 // text. Padding is shared with .notice (_theme-spacing.scss). Spacing between
 // its parts, and the ✕ reaching into the padding, are in _theme-spacing.scss
@@ -19,6 +21,7 @@
   display: flex;
   align-items: flex-start;
   color: var(--text-secondary);
+  box-shadow: none;
   @include transition(opacity);
 
   @starting-style {

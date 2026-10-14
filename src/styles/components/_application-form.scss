@@ -4,7 +4,7 @@
 //   <div class="card">
 //     <div class="card__body application-form__body">
 //       <div class="application-form__fields">
-//         <div class="field">                         (the shared field block, _field.scss)
+//         <div class="field field--inset">            (the shared field block, label inside the box; _field.scss)
 //           <label>Company/Search<span class="field__required">*</span></label>
 //           <div class="application-form__company">
 //             <input class="control application-form__company-input">
@@ -17,18 +17,18 @@
 //         </div>
 //         <div class="field">Note</div>                (once opened)
 //         <div class="application-form__links">
-//           <button class="btn btn--link">+ Add Note (optional)</button>   (until opened)
+//           <button class="btn btn--link">+ Add Note</button>   (until opened)
 //           <button class="btn btn--link application-form__manage">Manage Positions</button>
 //         </div>
+//         <div class="application-form__actions"><button class="btn btn--primary">Add Application</button></div>
 //       </div>
 //       <div class="application-form__matches"><div class="match-alert">…</div></div>
 //     </div>
-//     <div class="card__footer application-form__actions">…</div>
 //   </div>
 // </form>
-// From 720px the fields take three fifths of the card and earlier
-// applications the rest. That column is kept even while it's empty,
-// so the fields never change width when the alert comes and goes.
+// From 720px the fields take three fifths of the card and the match alert
+// the rest, beside them for the card's full height (no footer). The alert
+// is always there; stacked, it's hidden until a company is typed.
 // Spacing between the parts is in _theme-spacing.scss (Add form).
 .application-form {
   display: grid;
@@ -51,8 +51,8 @@
     grid-template-columns: minmax(0, 1fr);
   }
 
-  // Below the fields when stacked; nothing there means nothing at all.
-  &__matches:empty {
+  // Below the fields when stacked, and only once there's a company to check.
+  &__matches:has(> [data-idle]) {
     @include until(720px) {
       display: none;
     }
@@ -70,9 +70,9 @@
       min-width: 0;
     }
 
-    // A date field's natural width: 168px.
+    // A date field keeps its natural width (the date plus room for its icon).
     > .application-form__date {
-      flex: 0 1 gridx(21);
+      flex: 0 0 auto;
     }
   }
 
@@ -99,9 +99,8 @@
     margin-left: auto; // stays right when Add Note has gone (the note is open)
   }
 
-  // Footer, errors ------------------------------------------------------------
-  // Add Application on its own, at the right.
+  // Add Application, last, at the fields' left edge.
   &__actions {
-    justify-content: flex-end;
+    display: flex;
   }
 }

@@ -65,6 +65,12 @@
   left: gridx(1.5);
 }
 
+// In an inset-label field the text line sits 12px below the box's middle
+// (32px above it, 8px below), so the icon follows it down.
+.field--inset .date-input__icon {
+  top: calc(50% + #{gridx(1.5)});
+}
+
 // ---- Reading measure --------------------------------------------------------------
 // Body copy and captions stop at a comfortable line length.
 p,
