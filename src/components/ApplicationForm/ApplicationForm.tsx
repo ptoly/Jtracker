@@ -187,7 +187,6 @@ export function ApplicationForm({
           <label htmlFor={ids.dateApplied}>Date Applied{required}</label>
           {/* The hint is a tip under the field (hover or focus), to save a line.
               Screen readers still get it as the field's description. */}
-          {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
           <span className="tooltip" {...dateTip.hoverProps}>
             <DateInput
               id={ids.dateApplied}

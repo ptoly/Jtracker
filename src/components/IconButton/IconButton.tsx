@@ -32,7 +32,6 @@ export function IconButton({
 
   return (
     // Hover only toggles the tooltip; the keyboard equivalent is the button's focus.
-    // eslint-disable-next-line jsx-a11y/no-static-element-interactions
     <span className="tooltip" {...tip.hoverProps}>
       <button
         type="button"
