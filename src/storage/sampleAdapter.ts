@@ -4,7 +4,11 @@ import type { Application, NewApplication } from '../types/application';
 import type { PositionList, StorageAdapter } from './StorageAdapter';
 import { createSampleApplications } from './sampleData';
 
-/** In-memory adapter seeded with fictional data. State resets on reload. */
+/**
+ * In-memory adapter seeded with fictional data; state resets on reload.
+ * The app's demo keeps its data in the browser instead (demoAdapter); this
+ * one is for an empty list (no demo in the build) and for tests.
+ */
 export function createSampleAdapter(
   seed: NewApplication[] = createSampleApplications(),
 ): StorageAdapter {
@@ -58,5 +62,3 @@ export function createSampleAdapter(
     },
   };
 }
-
-export const sampleAdapter: StorageAdapter = createSampleAdapter();

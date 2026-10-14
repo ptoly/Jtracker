@@ -1,10 +1,11 @@
+import { useId, type ReactNode } from 'react';
 import { Notice } from '../Notice/Notice';
 
 export type ConnectionMode = 'sample' | 'reconnect' | 'sheet' | 'csv' | 'csv-reconnect';
 
 export interface ConnectionBarProps {
   /**
-   * sample: no sheet or file chosen. reconnect: a sheet is remembered but there's no
+   * sample: no sheet or file chosen (the demo, when the build offers it). reconnect: a sheet is remembered but there's no
    * sign-in yet. csv-reconnect: a CSV file is remembered, but the browser asks again
    * before Jtracker can edit it.
    */
@@ -15,13 +16,25 @@ export interface ConnectionBarProps {
   onOpenCsv?: () => void;
   onAllowCsv?: () => void;
   onCloseCsv?: () => void;
+  /**
+   * The demo's data, kept in this browser: whether it can keep changes, and
+   * the imported file's name (null: the sample data). Absent: no demo.
+   */
+  demo?: { persistent: boolean; source: string | null } | null;
+  /** Shows "Reset sample data" (the owner confirms first). */
+  onResetDemo?: () => void;
+  /** Shows "Import CSV" (browsers that can't save to a file) with the file chosen. */
+  onImportCsv?: (file: File) => void;
+  /** Shows "Export CSV". */
+  onExportCsv?: () => void;
   /** Renewing the Google sign-in failed; saving needs Reconnect. */
   sessionExpired?: boolean;
   /** The hour-long sign-in ran out while away, so changes in the sheet weren't loaded. */
   syncPaused?: boolean;
   /** Sign-in or the Picker is open. */
   busy?: boolean;
-  onConnect: () => void;
+  /** Shows "Connect Google Sheet" (builds that offer Google). */
+  onConnect?: () => void;
   onReconnect: () => void;
   onDisconnect: () => void;
   onReload: () => void;
@@ -42,6 +55,10 @@ export function ConnectionBar({
   onOpenCsv,
   onAllowCsv,
   onCloseCsv,
+  demo,
+  onResetDemo,
+  onImportCsv,
+  onExportCsv,
   sessionExpired = false,
   syncPaused = false,
   busy = false,
@@ -52,6 +69,7 @@ export function ConnectionBar({
   onPreload,
 }: ConnectionBarProps) {
   const preload = onPreload && { onPointerEnter: onPreload, onFocus: onPreload };
+  const fileInputId = `${useId()}-import`;
 
   function primary(label: string, onClick: () => void) {
     return (
@@ -70,26 +88,73 @@ export function ConnectionBar({
   }
 
   if (mode === 'sample') {
+    // The choices this build and browser offer, in order; the first is the primary button.
+    const actions: { label: string; onClick: () => void; google?: boolean }[] = [
+      ...(onOpenCsv ? [{ label: 'Open CSV file', onClick: onOpenCsv }] : []),
+      ...(onImportCsv
+        ? [{ label: 'Import CSV', onClick: () => document.getElementById(fileInputId)?.click() }]
+        : []),
+      ...(onExportCsv ? [{ label: 'Export CSV', onClick: onExportCsv }] : []),
+      ...(onConnect ? [{ label: 'Connect Google Sheet', onClick: onConnect, google: true }] : []),
+      ...(onResetDemo ? [{ label: 'Reset sample data', onClick: onResetDemo }] : []),
+    ];
+    const [first, ...rest] = actions;
+
+    let message: ReactNode;
+    if (!demo) {
+      message = onOpenCsv
+        ? 'Open your CSV file to get started.'
+        : 'Import a CSV file to get started.';
+    } else {
+      const kept = demo.persistent
+        ? 'Your changes stay in this browser.'
+        : 'This browser won’t let Jtracker keep data, so changes last until you reload.';
+      message = demo.source ? (
+        <>
+          Your applications from <strong>{demo.source}</strong>. {kept}
+          {onExportCsv && ' Export CSV to save a copy.'}
+        </>
+      ) : (
+        `Demo with sample data. ${kept}`
+      );
+    }
+
     return (
       <Notice
         tone="warning"
         className="connection-bar"
         actions={
-          onOpenCsv ? (
-            <>
-              {primary('Open CSV file', onOpenCsv)}
-              <button type="button" className="btn" onClick={onConnect} {...preload}>
-                Connect Google Sheet
+          <>
+            {first && primary(first.label, first.onClick)}
+            {rest.map((action) => (
+              <button
+                key={action.label}
+                type="button"
+                className="btn"
+                onClick={action.onClick}
+                {...(action.google && preload)}
+              >
+                {action.label}
               </button>
-            </>
-          ) : (
-            primary('Connect Google Sheet', onConnect)
-          )
+            ))}
+            {onImportCsv && (
+              // Opened by Import CSV; not a tab stop of its own.
+              <input
+                id={fileInputId}
+                type="file"
+                accept=".csv,text/csv"
+                hidden
+                onChange={(event) => {
+                  const file = event.target.files?.[0];
+                  event.target.value = '';
+                  if (file) onImportCsv(file);
+                }}
+              />
+            )}
+          </>
         }
       >
-        {onOpenCsv
-          ? 'Sample data. Open your CSV file or connect a Google Sheet to use your own.'
-          : 'Sample data. Connect your Google Sheet to use your own.'}
+        {message}
       </Notice>
     );
   }

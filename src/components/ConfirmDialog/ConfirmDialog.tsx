@@ -7,6 +7,8 @@ export interface ConfirmDialogProps {
   /** What will happen, in plain words. */
   children: ReactNode;
   confirmLabel: string;
+  /** The other choice's label, when it's more than Cancel (e.g. "Keep current file"). */
+  cancelLabel?: string;
   /** danger for destructive actions (the default); primary for safe ones. */
   confirmTone?: 'danger' | 'primary';
   /** Performs the action. Rejecting keeps the dialog open with the error and a Retry. */
@@ -23,6 +25,7 @@ export function ConfirmDialog({
   title,
   children,
   confirmLabel,
+  cancelLabel = 'Cancel',
   confirmTone = 'danger',
   onConfirm,
   onCancel,
@@ -92,7 +95,7 @@ export function ConfirmDialog({
       )}
       <div className="dialog__actions">
         <button id={cancelId} type="button" className="btn" onClick={cancel}>
-          {retryable ? 'Cancel' : 'Close'}
+          {retryable ? cancelLabel : 'Close'}
         </button>
         {retryable && (
           <button

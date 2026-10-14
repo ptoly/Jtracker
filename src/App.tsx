@@ -25,6 +25,10 @@ function pluralizeRows(count: number): string {
   return `${count} row${count === 1 ? '' : 's'}`;
 }
 
+function pluralizeApplications(count: number): string {
+  return `${count} application${count === 1 ? '' : 's'}`;
+}
+
 /**
  * The page title's summary, e.g. "296 applications", "155 need follow-up",
  * "1 interview". Counted the same way as the table's tabs.
@@ -45,6 +49,7 @@ export function App() {
   const data = useApplications(today);
   const { applications, connection, tab, idSetup } = data;
   const [positionsOpen, setPositionsOpen] = useState(false);
+  const [resetOpen, setResetOpen] = useState(false);
   const formRef = useRef<ApplicationFormHandle>(null);
   const tableRef = useRef<ApplicationsTableHandle>(null);
 
@@ -141,14 +146,22 @@ export function App() {
           {...(data.canOpenCsv && { onOpenCsv: () => void data.openCsv() })}
           onAllowCsv={() => void data.allowCsv()}
           onCloseCsv={data.closeCsv}
+          demo={data.demo}
+          {...(data.demo && { onResetDemo: () => setResetOpen(true) })}
+          {...(data.canImportCsv && {
+            onExportCsv: data.exportCsv,
+            ...(data.demo && { onImportCsv: (file: File) => void data.importCsv(file) }),
+          })}
           sessionExpired={data.sessionExpired}
           syncPaused={data.syncPaused}
           busy={data.connecting}
-          onConnect={() => void data.connect()}
+          {...(data.google && {
+            onConnect: () => void data.connect(),
+            onPreload: data.preloadGoogle,
+          })}
           onReconnect={() => void data.reconnect()}
           onDisconnect={data.disconnect}
           onReload={() => void data.reload()}
-          onPreload={data.preloadGoogle}
         />
 
         {data.connectError && (
@@ -206,6 +219,10 @@ export function App() {
                         <span className="sr-only">, tab </span>
                         {tab}
                       </>
+                    ) : data.demo?.source ? (
+                      <>
+                        From <strong className="app__sheet-name">{data.demo.source}</strong>
+                      </>
                     ) : (
                       'Sample data'
                     )}
@@ -243,7 +260,8 @@ export function App() {
                   {/* Collapsed, so a long list doesn't push the page down. */}
                   <details className="notice__details">
                     <summary>
-                      {pluralizeRows(data.issues.length)} in {tab}{' '}
+                      {pluralizeRows(data.issues.length)} in{' '}
+                      {data.mode === 'csv' ? data.csvName : (data.demo?.source ?? tab)}{' '}
                       {data.issues.length === 1 ? 'needs' : 'need'} a look
                     </summary>
                     <div className="notice__intro">
@@ -306,6 +324,56 @@ export function App() {
             readOnly={data.readOnly}
           />
         )}
+
+        {data.demo && (
+          <ConfirmDialog
+            open={resetOpen}
+            title="Reset sample data?"
+            confirmLabel="Reset"
+            onConfirm={async () => {
+              await data.resetDemo();
+              setResetOpen(false);
+            }}
+            onCancel={() => setResetOpen(false)}
+          >
+            <p>
+              {data.demo.source
+                ? `The applications from ${data.demo.source} in this browser are replaced with fresh sample data.`
+                : 'Your changes in this browser are replaced with fresh sample data.'}
+            </p>
+          </ConfirmDialog>
+        )}
+
+        {/* Import CSV: the file's applications replace what's in this browser. */}
+        <ConfirmDialog
+          open={data.pendingImport !== null}
+          title={`Import ${data.pendingImport?.name ?? 'the file'}?`}
+          confirmLabel="Import"
+          onConfirm={data.confirmImport}
+          onCancel={data.cancelImport}
+        >
+          <p>
+            Its {pluralizeApplications(data.pendingImport?.count ?? 0)} replace the{' '}
+            {pluralizeApplications(applications?.length ?? 0)} in this browser.
+            {data.demo?.source && ' Export CSV first to keep a copy of them.'}
+          </p>
+        </ConfirmDialog>
+
+        {/* A new file made while another is open: switch, or carry on. */}
+        <ConfirmDialog
+          open={data.newCsvName !== null}
+          title="Use the new file?"
+          confirmLabel="Use new file"
+          cancelLabel="Keep current file"
+          confirmTone="primary"
+          onConfirm={data.switchToNewCsv}
+          onCancel={data.keepCurrentCsv}
+        >
+          <p>
+            Created <strong>{data.newCsvName}</strong>. Switch to it, or keep working in{' '}
+            <strong>{data.csvName}</strong>? Both files stay on your computer either way.
+          </p>
+        </ConfirmDialog>
 
         <ConfirmDialog
           open={data.setupDialogOpen}

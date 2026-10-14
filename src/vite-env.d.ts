@@ -1,6 +1,8 @@
 /// <reference types="vite/client" />
 
 interface ImportMetaEnv {
+  /** Comma list of storage choices to offer: demo, csv, google. All when unset (src/storageOptions.ts). */
+  readonly VITE_STORAGE_OPTIONS?: string;
   /** OAuth client ID (Google Identity Services). */
   readonly VITE_GOOGLE_CLIENT_ID: string;
   /** API key restricted to the Picker API. Never sent to the Sheets API. */

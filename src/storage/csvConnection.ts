@@ -5,18 +5,7 @@
  */
 
 import { toCsv } from './csv';
-import { HEADERS } from './sheetRows';
-
-/** A new file's columns, in the Sheet's order (no Age: Jtracker calculates it). */
-const NEW_FILE_HEADER = [
-  HEADERS.dateApplied,
-  HEADERS.company,
-  HEADERS.position,
-  HEADERS.status,
-  HEADERS.followedUpDate,
-  HEADERS.notes,
-  HEADERS.id,
-];
+import { NEW_FILE_HEADER } from './csvRows';
 
 const DB_NAME = 'jtracker';
 const STORE = 'files';

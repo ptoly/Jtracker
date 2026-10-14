@@ -2,6 +2,7 @@ import { normalize } from '../lib/applicationRules';
 import { EMPTY_POSITION_LIST, renameInList } from '../lib/positions';
 import type { Application, ApplicationPatch, NewApplication } from '../types/application';
 import { parseCsv, toCsv } from './csv';
+import { csvDate } from './csvRows';
 import { StorageError } from './errors';
 import {
   cellText,
@@ -27,12 +28,6 @@ interface CsvTable {
   sheet: ParsedSheet;
   eol: string;
   bom: string;
-}
-
-/** 2026-10-02 → 10/2/2026, the way Google Sheets writes US dates. */
-function csvDate(iso: string): string {
-  const [year, month, day] = iso.split('-').map(Number);
-  return `${month}/${day}/${year}`;
 }
 
 function cellValue(key: ColumnKey, value: string | undefined): string {

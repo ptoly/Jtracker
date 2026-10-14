@@ -4,8 +4,8 @@ import { pickSpreadsheet, preloadPicker } from './google/picker';
 import {
   createCsvFileAdapter,
   createGoogleSheetsAdapter,
+  createSampleAdapter,
   PartialAddError,
-  sampleAdapter,
   StorageError,
   type IdSetup,
   type PositionList,
@@ -28,9 +28,18 @@ import {
   pickCsvFile,
   saveCsvHandle,
 } from './storage/csvConnection';
+import { applicationsToCsv, csvToApplications, type CsvImport } from './storage/csvRows';
+import { createDemoAdapter } from './storage/demoAdapter';
+import { toIsoDate } from './lib/dates';
+import { storageOptions } from './storageOptions';
 import type { Application, ApplicationPatch, NewApplication } from './types/application';
 import type { ConnectionMode } from './components/ConnectionBar/ConnectionBar';
 import { EMPTY_POSITION_LIST } from './lib/positions';
+
+const google = storageOptions.has('google');
+// Open CSV file needs a browser that can save to a file; elsewhere it's Import / Export.
+const canOpenCsv = storageOptions.has('csv') && canOpenCsvFiles;
+const canImportCsv = storageOptions.has('csv') && !canOpenCsvFiles;
 
 /** Focus can fire several times in a row; one reload is enough. */
 const MIN_RELOAD_INTERVAL_MS = 5000;
@@ -52,13 +61,26 @@ function preloadGoogle() {
  * regains focus. An open CSV file takes the place of a sheet.
  */
 export function useApplications(today: Date) {
-  const [connection, setConnection] = useState(loadConnection);
+  // With no sheet or file chosen: the demo (sample data kept in this browser), or an
+  // empty list when this build doesn't offer the demo.
+  const demo = useMemo(
+    () => (storageOptions.has('demo') ? createDemoAdapter({ today }) : null),
+    [today],
+  );
+  const emptyAdapter = useMemo(() => createSampleAdapter([]), []);
+  // The imported file's name; null while the demo shows sample data.
+  const [demoSource, setDemoSource] = useState(() => demo?.source() ?? null);
+  const [pendingImport, setPendingImport] = useState<(CsvImport & { name: string }) | null>(null);
+  // A remembered sheet only counts when this build offers Google.
+  const [connection, setConnection] = useState(() => (google ? loadConnection() : null));
   // The CSV file from last time is looked up before anything loads.
-  const [csvChecked, setCsvChecked] = useState(!canOpenCsvFiles);
+  const [csvChecked, setCsvChecked] = useState(!canOpenCsv);
   const [csvFile, setCsvFile] = useState<FileSystemFileHandle | null>(null);
   // The browser asks again on a later visit before Jtracker can use the file.
   const [csvAllowed, setCsvAllowed] = useState(false);
   const [csvError, setCsvError] = useState<{ error: unknown; retry: () => void } | null>(null);
+  // A new file made while another is open: the user chooses which to keep using.
+  const [newCsvFile, setNewCsvFile] = useState<FileSystemFileHandle | null>(null);
   const [signedIn, setSignedIn] = useState(false);
   // Renewing failed (popup blocked or refused): saving needs Reconnect.
   const [sessionExpired, setSessionExpired] = useState(false);
@@ -111,12 +133,12 @@ export function useApplications(today: Date) {
   const adapter: StorageAdapter | null = !csvChecked
     ? null
     : mode === 'sample'
-      ? sampleAdapter
+      ? (demo ?? emptyAdapter)
       : (csvAdapter ?? sheetAdapter);
 
   // A CSV file opened last time: use it again if the browser still allows it.
   useEffect(() => {
-    if (!canOpenCsvFiles) return;
+    if (!canOpenCsv) return;
     let current = true;
     void (async () => {
       const handle = await loadCsvHandle();
@@ -142,6 +164,7 @@ export function useApplications(today: Date) {
       const result = await adapter.list();
       if (seq !== loadSeq.current) return;
       setApplications(result.applications);
+      if (adapter === demo) setDemoSource(demo.source());
       setIssues(result.issues);
       setPositions(result.positions);
       setIdSetup(result.idSetup ?? null);
@@ -153,7 +176,7 @@ export function useApplications(today: Date) {
       if (isAuthError(error)) setSessionExpired(true);
       setLoadError({ error });
     }
-  }, [adapter]);
+  }, [adapter, demo]);
 
   useEffect(() => {
     void reload();
@@ -341,9 +364,29 @@ export function useApplications(today: Date) {
     return switchToCsv(pickCsvFile, () => void openCsv());
   }
 
-  /** Saves a new CSV file with just the header row, and uses it. */
-  function newCsv() {
-    return switchToCsv(createCsvFile, () => void newCsv());
+  /**
+   * Saves a new CSV file with just the header row. With no file open it's
+   * used straight away; with one open, the user picks which to keep using.
+   */
+  async function newCsv() {
+    if (!csvFile) return switchToCsv(createCsvFile, () => void newCsv());
+    setCsvError(null);
+    try {
+      setNewCsvFile(await createCsvFile());
+    } catch (error) {
+      setCsvError({ error, retry: () => void newCsv() });
+    }
+  }
+
+  /** Switches to the file just created (the old one stays on disk as it is). */
+  async function switchToNewCsv() {
+    const handle = newCsvFile;
+    setNewCsvFile(null);
+    if (handle)
+      await switchToCsv(
+        async () => handle,
+        () => void switchToNewCsv(),
+      );
   }
 
   /** On a later visit: the browser asks once more before Jtracker edits the file. */
@@ -366,6 +409,46 @@ export function useApplications(today: Date) {
     setCsvError(null);
   }
 
+  /** Fresh sample data in place of everything in the demo (after the user confirms). */
+  async function resetDemo() {
+    if (!demo) return;
+    await demo.reset();
+    setDismissedIssues('');
+    await reload();
+  }
+
+  /** Reads a CSV file the user chose (Import CSV); the import waits for them to confirm. */
+  async function importCsv(file: File) {
+    setCsvError(null);
+    try {
+      const result = csvToApplications(await file.text(), today);
+      if ('error' in result) throw new StorageError('sheet', result.error);
+      setPendingImport({ name: file.name, ...result });
+    } catch (error) {
+      setCsvError({ error, retry: () => void importCsv(file) });
+    }
+  }
+
+  /** The confirmed import: the file's applications replace the demo's. */
+  async function confirmImport() {
+    if (!demo || !pendingImport) return;
+    await demo.replaceWith(pendingImport);
+    setPendingImport(null);
+    await reload();
+  }
+
+  /** Downloads the applications as a CSV file in the new-file columns (Export CSV). */
+  function exportCsv() {
+    if (!applications) return;
+    const blob = new Blob([applicationsToCsv(applications)], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `jtracker-applications-${toIsoDate(today)}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+  }
+
   function changeTab(nextTab: string) {
     if (!connection) return;
     const next = { ...connection, tab: nextTab };
@@ -381,10 +464,28 @@ export function useApplications(today: Date) {
     connection,
     /** The open CSV file's name, e.g. "Job hunt.csv". */
     csvName: csvFile?.name ?? null,
-    canOpenCsv: canOpenCsvFiles,
+    canOpenCsv,
+    canImportCsv,
+    google,
+    /** The demo: whether it can keep changes, and what it holds (null: sample data). */
+    demo: demo && { persistent: demo.persistent, source: demoSource },
+    resetDemo,
+    importCsv,
+    /** Set while the user confirms an import. */
+    pendingImport: pendingImport && {
+      name: pendingImport.name,
+      count: pendingImport.applications.length,
+    },
+    confirmImport,
+    cancelImport: () => setPendingImport(null),
+    exportCsv,
     csvError,
     openCsv,
     newCsv,
+    /** Set while the user chooses between a new file and the open one. */
+    newCsvName: newCsvFile?.name ?? null,
+    switchToNewCsv,
+    keepCurrentCsv: () => setNewCsvFile(null),
     allowCsv,
     closeCsv,
     tab,

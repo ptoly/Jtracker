@@ -2,14 +2,14 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
 import { expect, fn, waitFor } from 'storybook/test';
 import { StorageError } from '../../storage/errors';
-import { createSampleApplications } from '../../storage/sampleData';
+import { createStoryApplications } from '../../storage/storyApplications';
 import type { Application, ApplicationPatch } from '../../types/application';
 import { ApplicationsTable, type ApplicationsTableProps } from './ApplicationsTable';
 
 /** Fixed so ages, follow-up-due and dates don't drift from day to day. */
 const STORY_TODAY = new Date(2026, 9, 10);
 
-const sampleApplications = createSampleApplications(STORY_TODAY).map((app, index) => ({
+const sampleApplications = createStoryApplications(STORY_TODAY).map((app, index) => ({
   ...app,
   id: `story-${index + 1}`,
 }));
@@ -19,7 +19,7 @@ function manyApplications(count: number) {
   const today = STORY_TODAY;
   const copies = Math.ceil(count / sampleApplications.length);
   return Array.from({ length: copies }, (_, copy) =>
-    createSampleApplications(
+    createStoryApplications(
       new Date(today.getFullYear(), today.getMonth(), today.getDate() - copy * 61),
     ),
   )
