@@ -41,7 +41,7 @@ function searchSummary(applications: Application[], today: Date): string[] {
 export function App() {
   // Calculated once per page load so every derived value agrees, even across midnight.
   const [today] = useState(() => new Date());
-  const data = useApplications();
+  const data = useApplications(today);
   const { applications, connection, tab, idSetup } = data;
   const [positionsOpen, setPositionsOpen] = useState(false);
   const formRef = useRef<ApplicationFormHandle>(null);
@@ -136,6 +136,10 @@ export function App() {
         <ConnectionBar
           mode={data.mode}
           {...(connection && { sheetName: connection.name })}
+          {...(data.csvName && { fileName: data.csvName })}
+          {...(data.canOpenCsv && { onOpenCsv: () => void data.openCsv() })}
+          onAllowCsv={() => void data.allowCsv()}
+          onCloseCsv={data.closeCsv}
           sessionExpired={data.sessionExpired}
           syncPaused={data.syncPaused}
           busy={data.connecting}
@@ -156,11 +160,20 @@ export function App() {
           />
         )}
 
+        {data.csvError && (
+          <SaveError
+            className="app__notice"
+            error={data.csvError.error}
+            fallback="Couldn’t open the file."
+            onRetry={data.csvError.retry}
+          />
+        )}
+
         {data.loadError && (
           <SaveError
             className="app__notice"
             error={data.loadError.error}
-            fallback="Couldn’t load the sheet."
+            fallback={data.mode === 'csv' ? 'Couldn’t load the file.' : 'Couldn’t load the sheet.'}
             onRetry={() => void data.reload()}
           />
         )}
@@ -181,7 +194,11 @@ export function App() {
                 <div>
                   <h2 id="applications-heading">Applications History</h2>
                   <p className="app__subtitle">
-                    {connection ? (
+                    {data.mode === 'csv' ? (
+                      <>
+                        Saving to <strong className="app__sheet-name">{data.csvName}</strong>
+                      </>
+                    ) : connection ? (
                       <>
                         Connected to <strong className="app__sheet-name">{connection.name}</strong>
                         <span aria-hidden="true"> · </span>
@@ -193,6 +210,16 @@ export function App() {
                     )}
                   </p>
                 </div>
+                {data.mode === 'csv' && (
+                  <div className="sheet-actions">
+                    <button type="button" className="btn" onClick={() => void data.reload()}>
+                      Reload from file
+                    </button>
+                    <button type="button" className="btn" onClick={data.closeCsv}>
+                      Close file
+                    </button>
+                  </div>
+                )}
                 {data.mode === 'sheet' && (
                   <SheetActions
                     tab={tab}
@@ -260,7 +287,9 @@ export function App() {
             </section>
           </>
         ) : (
-          data.mode !== 'reconnect' && !data.loadError && <p>Loading…</p>
+          data.mode !== 'reconnect' &&
+          data.mode !== 'csv-reconnect' &&
+          !data.loadError && <p>Loading…</p>
         )}
 
         {applications && (

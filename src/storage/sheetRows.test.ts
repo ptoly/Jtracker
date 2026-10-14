@@ -62,6 +62,16 @@ describe('dates', () => {
     expect(parseSheetDate('10/9.26')).toBeNull();
     expect(parseSheetDate(0)).toBeNull();
   });
+
+  it('reads M/D with no year as the latest such date on or before today', () => {
+    const today = new Date(2026, 9, 14); // October 14, 2026
+    expect(parseSheetDate('10/2', today)).toBe('2026-10-02');
+    expect(parseSheetDate('10/14', today)).toBe('2026-10-14');
+    expect(parseSheetDate('12/30', today)).toBe('2025-12-30');
+    expect(parseSheetDate('2/30', today)).toBeNull();
+    // Without today, a yearless date isn't guessed.
+    expect(parseSheetDate('10/2')).toBeNull();
+  });
 });
 
 describe('parseStatus', () => {

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { getToken, hasValidToken, preloadAuth, signIn, signOut } from './google/auth';
 import { pickSpreadsheet, preloadPicker } from './google/picker';
 import {
+  createCsvFileAdapter,
   createGoogleSheetsAdapter,
   PartialAddError,
   sampleAdapter,
@@ -18,6 +19,14 @@ import {
   saveConnection,
   type SheetConnection,
 } from './storage/sheetConnection';
+import {
+  allowCsvEdits,
+  canOpenCsvFiles,
+  clearCsvHandle,
+  loadCsvHandle,
+  pickCsvFile,
+  saveCsvHandle,
+} from './storage/csvConnection';
 import type { Application, ApplicationPatch, NewApplication } from './types/application';
 import type { ConnectionMode } from './components/ConnectionBar/ConnectionBar';
 import { EMPTY_POSITION_LIST } from './lib/positions';
@@ -36,12 +45,19 @@ function preloadGoogle() {
 }
 
 /**
- * Where the applications come from (sample data or the connected Google Sheet),
- * and everything that keeps the two in step: loading, saving, sign-in and
- * reloading when the window regains focus.
+ * Where the applications come from (sample data, a CSV file on this computer,
+ * or the connected Google Sheet), and everything that keeps them in step:
+ * loading, saving, sign-in or file permission, and reloading when the window
+ * regains focus. An open CSV file takes the place of a sheet.
  */
-export function useApplications() {
+export function useApplications(today: Date) {
   const [connection, setConnection] = useState(loadConnection);
+  // The CSV file from last time is looked up before anything loads.
+  const [csvChecked, setCsvChecked] = useState(!canOpenCsvFiles);
+  const [csvFile, setCsvFile] = useState<FileSystemFileHandle | null>(null);
+  // The browser asks again on a later visit before Jtracker can use the file.
+  const [csvAllowed, setCsvAllowed] = useState(false);
+  const [csvError, setCsvError] = useState<{ error: unknown; retry: () => void } | null>(null);
   const [signedIn, setSignedIn] = useState(false);
   // Renewing failed (popup blocked or refused): saving needs Reconnect.
   const [sessionExpired, setSessionExpired] = useState(false);
@@ -68,7 +84,15 @@ export function useApplications() {
   const pendingWrites = useRef(0);
   const tableBusy = useRef(false);
 
-  const mode: ConnectionMode = !connection ? 'sample' : signedIn ? 'sheet' : 'reconnect';
+  const mode: ConnectionMode = csvFile
+    ? csvAllowed
+      ? 'csv'
+      : 'csv-reconnect'
+    : !connection
+      ? 'sample'
+      : signedIn
+        ? 'sheet'
+        : 'reconnect';
   const spreadsheetId = connection?.spreadsheetId;
   const tab = connection?.tab ?? DEFAULT_TAB;
 
@@ -79,7 +103,35 @@ export function useApplications() {
         : null,
     [mode, spreadsheetId, tab],
   );
-  const adapter: StorageAdapter | null = mode === 'sample' ? sampleAdapter : sheetAdapter;
+  const csvAdapter = useMemo(
+    () => (mode === 'csv' && csvFile ? createCsvFileAdapter({ handle: csvFile, today }) : null),
+    [mode, csvFile, today],
+  );
+  const adapter: StorageAdapter | null = !csvChecked
+    ? null
+    : mode === 'sample'
+      ? sampleAdapter
+      : (csvAdapter ?? sheetAdapter);
+
+  // A CSV file opened last time: use it again if the browser still allows it.
+  useEffect(() => {
+    if (!canOpenCsvFiles) return;
+    let current = true;
+    void (async () => {
+      const handle = await loadCsvHandle();
+      if (!current) return;
+      if (handle) {
+        const allowed = (await handle.queryPermission({ mode: 'readwrite' })) === 'granted';
+        if (!current) return;
+        setCsvFile(handle);
+        setCsvAllowed(allowed);
+      }
+      setCsvChecked(true);
+    })();
+    return () => {
+      current = false;
+    };
+  }, []);
 
   const reload = useCallback(async () => {
     if (!adapter) return;
@@ -111,15 +163,15 @@ export function useApplications() {
     if (mode === 'reconnect') preloadGoogle();
   }, [mode]);
 
-  // Pick up changes made in the sheet when the user comes back to the window.
+  // Pick up changes made in the sheet (or the file) when the user comes back to the window.
   useEffect(() => {
-    if (mode !== 'sheet') return;
+    if (mode !== 'sheet' && mode !== 'csv') return;
     function sync() {
       if (document.visibilityState !== 'visible') return;
       if (tableBusy.current || pendingWrites.current > 0) return;
       if (Date.now() - lastLoad.current < MIN_RELOAD_INTERVAL_MS) return;
       // Renewing opens a popup, which browsers block outside a click. Wait for one.
-      if (!hasValidToken()) {
+      if (mode === 'sheet' && !hasValidToken()) {
         setSyncPaused(true);
         return;
       }
@@ -145,6 +197,8 @@ export function useApplications() {
       return result;
     } catch (error) {
       if (isAuthError(error) && mode === 'sheet') setSessionExpired(true);
+      // The browser took back permission to edit the file: ask again.
+      if (isAuthError(error) && mode === 'csv') setCsvAllowed(false);
       throw error;
     } finally {
       pendingWrites.current -= 1;
@@ -262,6 +316,42 @@ export function useApplications() {
     setConnection(null);
   }
 
+  /** Picks a CSV file and asks to edit it; it replaces sample data or a sheet. */
+  async function openCsv() {
+    setCsvError(null);
+    try {
+      const handle = await pickCsvFile();
+      if (!handle) return;
+      const allowed = await allowCsvEdits(handle);
+      await saveCsvHandle(handle);
+      resetData();
+      setCsvFile(handle);
+      setCsvAllowed(allowed);
+    } catch (error) {
+      setCsvError({ error, retry: () => void openCsv() });
+    }
+  }
+
+  /** On a later visit: the browser asks once more before Jtracker edits the file. */
+  async function allowCsv() {
+    if (!csvFile) return;
+    setCsvError(null);
+    try {
+      setCsvAllowed(await allowCsvEdits(csvFile));
+    } catch (error) {
+      setCsvError({ error, retry: () => void allowCsv() });
+    }
+  }
+
+  /** Stops using the file (it stays on disk as it is) and goes back to sample data or the sheet. */
+  function closeCsv() {
+    void clearCsvHandle().catch(() => undefined);
+    resetData();
+    setCsvFile(null);
+    setCsvAllowed(false);
+    setCsvError(null);
+  }
+
   function changeTab(nextTab: string) {
     if (!connection) return;
     const next = { ...connection, tab: nextTab };
@@ -275,6 +365,13 @@ export function useApplications() {
   return {
     mode,
     connection,
+    /** The open CSV file's name, e.g. "Job hunt.csv". */
+    csvName: csvFile?.name ?? null,
+    canOpenCsv: canOpenCsvFiles,
+    csvError,
+    openCsv,
+    allowCsv,
+    closeCsv,
     tab,
     applications,
     /** Problems in the loaded rows, unless the user dismissed this same list. */

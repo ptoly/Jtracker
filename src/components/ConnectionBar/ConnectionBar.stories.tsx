@@ -42,3 +42,35 @@ export const SessionExpired: Story = {
   name: 'Sign-in couldn’t renew',
   args: { mode: 'sheet', sessionExpired: true },
 };
+
+export const SampleDataWithCsv: Story = {
+  name: 'Sample data (browser can open files)',
+  args: { onOpenCsv: fn() },
+  play: async ({ canvas, userEvent, args }) => {
+    await userEvent.click(canvas.getByRole('button', { name: 'Open CSV file' }));
+    await expect(args.onOpenCsv).toHaveBeenCalled();
+  },
+};
+
+export const CsvReconnect: Story = {
+  name: 'CSV file: allow again',
+  args: {
+    mode: 'csv-reconnect',
+    fileName: 'Job hunt 2026.csv',
+    onAllowCsv: fn(),
+    onCloseCsv: fn(),
+  },
+  play: async ({ canvas, userEvent, args }) => {
+    await userEvent.click(canvas.getByRole('button', { name: 'Allow' }));
+    await expect(args.onAllowCsv).toHaveBeenCalled();
+  },
+};
+
+export const ReconnectWithCsv: Story = {
+  name: 'Reconnect, or open a CSV file',
+  args: { mode: 'reconnect', onOpenCsv: fn() },
+  play: async ({ canvas, userEvent, args }) => {
+    await userEvent.click(canvas.getByRole('button', { name: 'Open CSV file' }));
+    await expect(args.onOpenCsv).toHaveBeenCalled();
+  },
+};

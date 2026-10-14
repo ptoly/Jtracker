@@ -94,9 +94,11 @@ function isoFromParts(year: number, month: number, day: number): string | null {
 /**
  * A date cell as an ISO date: '' when empty, null when it can't be read.
  * Accepts serial numbers and text in YYYY-MM-DD, M/D/YYYY, M/D/YY or M.D.YY
- * (US order; two-digit years are 20YY).
+ * (US order; two-digit years are 20YY). Given `today`, also M/D with no year
+ * (a sheet formatted to hide it, downloaded as CSV): the latest such date on
+ * or before today, so 12/30 read on 1/5 is last year's.
  */
-export function parseSheetDate(cell: Cell): string | null {
+export function parseSheetDate(cell: Cell, today?: Date): string | null {
   if (typeof cell === 'number') return cell > 0 ? serialToIsoDate(cell) : null;
   const text = cellText(cell);
   if (!text) return '';
@@ -106,6 +108,16 @@ export function parseSheetDate(cell: Cell): string | null {
   if (us) {
     const year = Number(us[4]);
     return isoFromParts(year < 100 ? 2000 + year : year, Number(us[1]), Number(us[3]));
+  }
+  const yearless = today && /^(\d{1,2})([/.])(\d{1,2})$/.exec(text);
+  if (yearless && today) {
+    const year = today.getFullYear();
+    const month = Number(yearless[1]);
+    const day = Number(yearless[3]);
+    const thisYear = isoFromParts(year, month, day);
+    if (!thisYear) return null;
+    const todayIso = isoFromParts(year, today.getMonth() + 1, today.getDate()) ?? '';
+    return thisYear <= todayIso ? thisYear : isoFromParts(year - 1, month, day);
   }
   return null;
 }
@@ -165,13 +177,13 @@ function at(row: Cell[], index: number | undefined): Cell {
   return index === undefined ? undefined : row[index];
 }
 
-function parseRow(row: Cell[], rowNumber: number, columns: Columns): SheetRow {
+function parseRow(row: Cell[], rowNumber: number, columns: Columns, today?: Date): SheetRow {
   const problems: string[] = [];
   const unparsed: UnparsedCells = {};
   const get = (key: ColumnKey) => at(row, columns[key]);
 
   const dateCell = get('dateApplied');
-  let dateApplied = parseSheetDate(dateCell);
+  let dateApplied = parseSheetDate(dateCell, today);
   if (dateApplied === '') problems.push('no date');
   if (dateApplied === null) {
     problems.push(`date “${cellText(dateCell)}” not recognized`);
@@ -188,7 +200,7 @@ function parseRow(row: Cell[], rowNumber: number, columns: Columns): SheetRow {
   }
 
   const followedCell = get('followedUpDate');
-  const followedUpDate = parseSheetDate(followedCell);
+  const followedUpDate = parseSheetDate(followedCell, today);
   if (followedUpDate === null) {
     problems.push(`followed-up date “${cellText(followedCell)}” not recognized`);
     unparsed.followedUpDate = cellText(followedCell);
@@ -214,8 +226,11 @@ function parseRow(row: Cell[], rowNumber: number, columns: Columns): SheetRow {
   return { rowNumber, sheetId, application, problems };
 }
 
-/** Reads a whole tab (row 1 = headers). Rows with nothing in Jtracker's columns are skipped. */
-export function parseSheet(values: Cell[][]): ParsedSheet | { error: string } {
+/**
+ * Reads a whole tab (row 1 = headers). Rows with nothing in Jtracker's columns are skipped.
+ * `today` lets dates without a year be read (see parseSheetDate).
+ */
+export function parseSheet(values: Cell[][], today?: Date): ParsedSheet | { error: string } {
   const header = values[0];
   if (!header || header.every((cell) => !cellText(cell))) {
     return { error: 'The sheet has no header row. Row 1 needs Date, Company, Position, Status.' };
@@ -227,7 +242,7 @@ export function parseSheet(values: Cell[][]): ParsedSheet | { error: string } {
   const rows: SheetRow[] = [];
   values.slice(1).forEach((row, index) => {
     const blank = CONTENT_COLUMNS.every((key) => !cellText(at(row, columns[key])));
-    if (!blank) rows.push(parseRow(row, index + 2, columns));
+    if (!blank) rows.push(parseRow(row, index + 2, columns, today));
   });
 
   // A shared ID can't identify a row: those rows get placeholder ids and stay read-only.
