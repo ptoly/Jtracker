@@ -14,7 +14,7 @@
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "test": "vitest run",
-    "deploy": "vite build --mode dreamhost && rsync -avz --delete dist/ USER@SERVER:~/jtracker.fredtranfield.com/"
+    "deploy": "npm run typecheck && vite build --mode dreamhost && rsync -avz --delete dist/ USER@SERVER:~/jtracker.fredtranfield.com/"
   },
   "dependencies": {
     "@fontsource/inter": "^5.3.0",

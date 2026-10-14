@@ -37,9 +37,11 @@ import type { ConnectionMode } from './components/ConnectionBar/ConnectionBar';
 import { EMPTY_POSITION_LIST } from './lib/positions';
 
 const google = storageOptions.has('google');
-// Open CSV file needs a browser that can save to a file; elsewhere it's Import / Export.
+// Open CSV file needs a browser that can save to a file; elsewhere it's Import.
+// Export works in every browser.
 const canOpenCsv = storageOptions.has('csv') && canOpenCsvFiles;
 const canImportCsv = storageOptions.has('csv') && !canOpenCsvFiles;
+const canExportCsv = storageOptions.has('csv');
 
 /** Focus can fire several times in a row; one reload is enough. */
 const MIN_RELOAD_INTERVAL_MS = 5000;
@@ -466,6 +468,7 @@ export function useApplications(today: Date) {
     csvName: csvFile?.name ?? null,
     canOpenCsv,
     canImportCsv,
+    canExportCsv,
     google,
     /** The demo: whether it can keep changes, and what it holds (null: sample data). */
     demo: demo && { persistent: demo.persistent, source: demoSource },

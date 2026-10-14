@@ -148,10 +148,9 @@ export function App() {
           onCloseCsv={data.closeCsv}
           demo={data.demo}
           {...(data.demo && { onResetDemo: () => setResetOpen(true) })}
-          {...(data.canImportCsv && {
-            onExportCsv: data.exportCsv,
-            ...(data.demo && { onImportCsv: (file: File) => void data.importCsv(file) }),
-          })}
+          {...(data.canExportCsv && { onExportCsv: data.exportCsv })}
+          {...(data.canImportCsv &&
+            data.demo && { onImportCsv: (file: File) => void data.importCsv(file) })}
           sessionExpired={data.sessionExpired}
           syncPaused={data.syncPaused}
           busy={data.connecting}

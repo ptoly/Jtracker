@@ -74,10 +74,15 @@ export const ReconnectWithCsv: Story = {
   },
 };
 
-/** The hosted demo in Chrome or Edge: sample data in this browser, or a CSV file. */
+/** The hosted demo in Chrome or Edge: sample data in this browser, a CSV file, or a download. */
 export const Demo: Story = {
   name: 'Demo (sample data in this browser)',
-  args: { demo: { persistent: true, source: null }, onOpenCsv: fn(), onResetDemo: fn() },
+  args: {
+    demo: { persistent: true, source: null },
+    onOpenCsv: fn(),
+    onExportCsv: fn(),
+    onResetDemo: fn(),
+  },
   play: async ({ canvas, userEvent, args }) => {
     await expect(
       canvas.getByText('Demo with sample data. Your changes stay in this browser.'),
