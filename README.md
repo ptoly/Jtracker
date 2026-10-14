@@ -7,8 +7,7 @@ applications are due for a follow-up.
 **Live demo:** <https://jtracker.fredtranfield.com> (sample data; your
 changes stay in your browser)
 
-<!-- TODO: add docs/screenshot.png (sample data only) -->
-<!-- ![Jtracker with sample data](docs/screenshot.png) -->
+![Jtracker with sample data: the form shows three earlier applications to the company being typed, above the applications table](docs/screenshot.png)
 
 ## Why I built it
 
@@ -48,7 +47,9 @@ control:
 | **CSV file** | A `.csv` file on your computer that you open once. Jtracker reads and saves it directly. | Chrome, Edge, Opera (desktop) |
 | **Google Sheets** | A Google Sheet you choose. Jtracker asks for access to that one file only (`drive.file`). | All |
 
-<!-- TODO: Import / Export CSV for Safari and Firefox -->
+In browsers that can't save to a file (Safari, Firefox), **Import CSV**
+loads a file into the demo's browser storage, and **Export CSV** downloads
+your applications in the same columns. Export works in every browser.
 
 Age and follow-up status are calculated each time the app loads, never
 stored, so they're always current.
@@ -59,7 +60,8 @@ stored, so they're always current.
 - **3:1 control borders.** Inputs and selects use a border that meets WCAG
   1.4.11 against the page (`#8b929f`, 3.05:1). Many popular UI kits ship
   field borders around 1.5:1.
-- **44px touch targets** for icon buttons, following Apple's guideline.
+- **48px minimum targets** for buttons and icon buttons, above Apple's 44px
+  guideline and WCAG 2.5.8's 24px.
 - **Explicit over minimal.** Required fields keep their asterisks, optional
   ones say so, and helper text spells out defaults. A form you use dozens of
   times a day shouldn't make you guess.
