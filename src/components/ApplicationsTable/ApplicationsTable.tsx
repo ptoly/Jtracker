@@ -1,4 +1,13 @@
-import { useEffect, useId, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
+import {
+  useEffect,
+  useId,
+  useImperativeHandle,
+  useRef,
+  useState,
+  type KeyboardEvent,
+  type ReactNode,
+  type Ref,
+} from 'react';
 import { distinctPositions } from '../../lib/applicationRules';
 import { toIsoDate } from '../../lib/dates';
 import { ageInDays, DEFAULT_FOLLOW_UP_DAYS, isFollowUpDue } from '../../lib/derive';
@@ -79,6 +88,15 @@ interface Row {
   age: number | null;
 }
 
+export interface ApplicationsTableHandle {
+  /**
+   * Back to the whole table, newest first, on page 1: clears the search, picks
+   * View all, and sorts by date applied (e.g. after adding an application, so
+   * it shows in the top row). Leaves a row being edited alone.
+   */
+  showLatest: () => void;
+}
+
 export interface ApplicationsTableProps {
   applications: Application[];
   followUpDays?: number;
@@ -100,6 +118,7 @@ export interface ApplicationsTableProps {
    * saved spelling is passed), otherwise as its company.
    */
   onAddForSearch?: (fill: ApplicationPrefill) => void;
+  ref?: Ref<ApplicationsTableHandle>;
 }
 
 function pluralize(count: number, noun: string): string {
@@ -193,6 +212,7 @@ export function ApplicationsTable({
   onEditingChange,
   positions: suggestions,
   onAddForSearch,
+  ref,
 }: ApplicationsTableProps) {
   const baseId = useId();
   const tabId = (key: TabKey) => `${baseId}-tab-${key}`;
@@ -254,6 +274,17 @@ export function ApplicationsTable({
   // A row deleted elsewhere (e.g. in the sheet, then reloaded) is no longer being edited.
   const editing = editingId !== null && applications.some((app) => app.id === editingId);
   const busy = editing || deleting !== null;
+
+  useImperativeHandle(ref, () => ({
+    showLatest() {
+      if (editing) return;
+      setQuery('');
+      setTab('all');
+      setSort({ key: 'date', direction: 'descending' });
+      setPage(1);
+      setPinned(null);
+    },
+  }));
   useEffect(() => {
     onEditingChange?.(busy);
   }, [busy, onEditingChange]);

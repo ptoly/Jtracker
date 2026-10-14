@@ -55,6 +55,14 @@ export function ChevronDownIcon(props: SVGProps<SVGSVGElement>) {
   );
 }
 
+export function CalendarIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon {...props}>
+      <path d="M17.5 8.333h-15M13.333 1.667V5M6.667 1.667V5M6.5 18.333h7c1.4 0 2.1 0 2.635-.272a2.5 2.5 0 001.093-1.093c.272-.535.272-1.235.272-2.635v-7c0-1.4 0-2.1-.272-2.635a2.5 2.5 0 00-1.093-1.093c-.535-.272-1.235-.272-2.635-.272h-7c-1.4 0-2.1 0-2.635.272a2.5 2.5 0 00-1.093 1.093C2.5 5.233 2.5 5.933 2.5 7.333v7c0 1.4 0 2.1.272 2.635a2.5 2.5 0 001.093 1.093c.535.272 1.235.272 2.635.272z" />
+    </Icon>
+  );
+}
+
 export function AlertCircleIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <Icon {...props}>

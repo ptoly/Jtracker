@@ -216,6 +216,14 @@ ol {
   padding-right: gridx(5.5);
 }
 
+// The date field's room for its icon, where the app's icon replaces the
+// browser's (see _date-input.scss).
+@supports selector(::-webkit-calendar-picker-indicator) {
+  .date-input__input {
+    padding-right: gridx(5.5);
+  }
+}
+
 .applications-table__search-input {
   padding-left: gridx(5.5);
 }
@@ -337,8 +345,8 @@ ol {
   @include scaled-spacing(margin-bottom, 3, 16px, 4);
 }
 
-// Company and Date Applied: 16px apart side by side. Each keeps the row
-// spacing below, so it's the same whether Date sits beside Company or wraps
+// Position and Date Applied: 16px apart side by side. Each keeps the row
+// spacing below, so it's the same whether Date sits beside Position or wraps
 // under it; the row itself adds none.
 .application-form__row {
   column-gap: gridx(2);

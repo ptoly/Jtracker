@@ -47,6 +47,7 @@
 // text, and centered on the line. (The combobox toggle gets there with its
 // own padding: it's a button, so it keeps a full-size target.)
 .select__icon,
+.date-input__icon,
 .applications-table__search-icon,
 .applications-table__shortcut {
   position: absolute;
@@ -55,6 +56,7 @@
 }
 
 .select__icon,
+.date-input__icon,
 .applications-table__shortcut {
   right: gridx(1.5);
 }

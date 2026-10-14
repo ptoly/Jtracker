@@ -4,7 +4,10 @@ import {
   type ApplicationFormHandle,
   type ApplicationPrefill,
 } from './components/ApplicationForm/ApplicationForm';
-import { ApplicationsTable } from './components/ApplicationsTable/ApplicationsTable';
+import {
+  ApplicationsTable,
+  type ApplicationsTableHandle,
+} from './components/ApplicationsTable/ApplicationsTable';
 import { ConfirmDialog } from './components/ConfirmDialog/ConfirmDialog';
 import { ConnectionBar } from './components/ConnectionBar/ConnectionBar';
 import { SheetActions } from './components/ConnectionBar/SheetActions';
@@ -25,6 +28,7 @@ export function App() {
   const { applications, connection, tab, idSetup } = data;
   const [positionsOpen, setPositionsOpen] = useState(false);
   const formRef = useRef<ApplicationFormHandle>(null);
+  const tableRef = useRef<ApplicationsTableHandle>(null);
 
   const positions = applications ? suggestedPositions(applications, data.positions) : [];
 
@@ -111,7 +115,11 @@ export function App() {
                     applications={applications}
                     positions={positions}
                     today={today}
-                    onAdd={data.add}
+                    onAdd={async (input) => {
+                      await data.add(input);
+                      // Show the whole table, newest first, so the new row is on top.
+                      tableRef.current?.showLatest();
+                    }}
                     onManagePositions={() => setPositionsOpen(true)}
                   />
                 )}
@@ -187,6 +195,7 @@ export function App() {
               )}
 
               <ApplicationsTable
+                ref={tableRef}
                 applications={applications}
                 today={today}
                 onUpdate={data.update}

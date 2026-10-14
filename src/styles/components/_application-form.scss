@@ -4,18 +4,18 @@
 //   <div class="card">
 //     <div class="card__body application-form__body">
 //       <div class="application-form__fields">
-//         <div class="application-form__row">
-//           <div class="field">                       (the shared field block, _field.scss)
-//             <label>Company/Search<span class="field__required">*</span></label>
-//             <div class="application-form__company">
-//               <input class="control application-form__company-input">
-//               <span class="application-form__clear"><IconButton ✕></span>
-//             </div>
+//         <div class="field">                         (the shared field block, _field.scss)
+//           <label>Company/Search<span class="field__required">*</span></label>
+//           <div class="application-form__company">
+//             <input class="control application-form__company-input">
+//             <span class="application-form__clear"><IconButton ✕ tabindex="-1"></span>
 //           </div>
-//           <div class="field application-form__date">… Date Applied + field__help</div>
 //         </div>
-//         <div class="field">Position (position-combobox block) +
-//           <button class="btn btn--link application-form__manage"></div>
+//         <div class="application-form__row">
+//           <div class="field">Position (position-combobox block) +
+//             <button class="btn btn--link application-form__manage"></div>
+//           <div class="field application-form__date">… Date Applied (date-input block) + field__help</div>
+//         </div>
 //         <button class="btn btn--link application-form__note-toggle"> or the Note field
 //       </div>
 //       <div class="application-form__matches"><div class="match-alert">…</div></div>
@@ -35,7 +35,7 @@
     display: grid;
     grid-template-columns: minmax(0, 1fr);
 
-    // Fields get three fifths, so Company and Date fit on one row on most
+    // Fields get three fifths, so Position and Date fit on one row on most
     // screens; the alert gets the rest.
     @include from(720px) {
       grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
@@ -55,8 +55,8 @@
     }
   }
 
-  // Company and Date Applied side by side: Company takes the room, Date its
-  // own width. Date wraps below when Company would get narrower than 176px.
+  // Position and Date Applied side by side: Position takes the room, Date its
+  // own width. Date wraps below when Position would get narrower than 176px.
   &__row {
     display: flex;
     flex-wrap: wrap;

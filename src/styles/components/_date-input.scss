@@ -1,0 +1,36 @@
+@use 'pkg:octet-scss/abstracts' as *;
+
+// <span class="date-input">
+//   <input type="date" class="control date-input__input">
+//   <span class="date-input__icon" aria-hidden="true"><svg>…</svg></span>
+// </span>
+// A native date field with the app's calendar icon in place of the browser's
+// (a tab stop in Chrome). The icon sits where a select's chevron does: its
+// position and the field's room for it are shared with other control icons
+// (theme files). Firefox has no way to hide its own button, so it keeps it
+// and the app's icon stays out.
+.date-input {
+  position: relative;
+  display: inline-grid;
+
+  &__icon {
+    display: none;
+    color: var(--text-muted);
+    cursor: pointer;
+  }
+
+  @supports selector(::-webkit-calendar-picker-indicator) {
+    &__input::-webkit-calendar-picker-indicator {
+      display: none;
+    }
+
+    &__icon {
+      display: flex;
+    }
+
+    &__input:disabled + &__icon {
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+  }
+}

@@ -16,6 +16,7 @@ import {
   useApplicationDraft,
   type DraftApplication,
 } from '../ApplicationFields/useApplicationDraft';
+import { DateInput } from '../DateInput/DateInput';
 import { Dialog } from '../Dialog/Dialog';
 import { IconButton } from '../IconButton/IconButton';
 import { PencilIcon } from '../Icons/Icons';
@@ -141,10 +142,8 @@ export function EditRow({
         <label htmlFor={ids.dateApplied} className={labelClass}>
           Date applied
         </label>
-        <input
+        <DateInput
           id={ids.dateApplied}
-          type="date"
-          className="control"
           required
           value={draft.dateApplied}
           onChange={(event) => setField('dateApplied', event.target.value)}
@@ -156,10 +155,8 @@ export function EditRow({
         <label htmlFor={ids.followedUpDate} className={labelClass}>
           Followed up
         </label>
-        <input
+        <DateInput
           id={ids.followedUpDate}
-          type="date"
-          className="control"
           value={draft.followedUpDate}
           onChange={(event) => setField('followedUpDate', event.target.value)}
         />

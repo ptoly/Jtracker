@@ -7,6 +7,7 @@ import type { Application, NewApplication } from '../../types/application';
 import { FieldError } from '../ApplicationFields/FieldError';
 import { PositionCombobox } from '../ApplicationFields/PositionCombobox';
 import { emptyDraft, useApplicationDraft } from '../ApplicationFields/useApplicationDraft';
+import { DateInput } from '../DateInput/DateInput';
 import { IconButton } from '../IconButton/IconButton';
 import { PlusIcon, XCloseIcon } from '../Icons/Icons';
 import { SaveError } from '../Notice/Notice';
@@ -127,44 +128,74 @@ export function ApplicationForm({
 
   const fields = (
     <div className="application-form__fields">
-      {/* Company and Date Applied share a row while there's room; Date drops below when not. */}
+      <div className="field">
+        <label htmlFor={ids.company}>Company/Search{required}</label>
+        <div className="application-form__company">
+          <input
+            id={ids.company}
+            type="text"
+            className="control application-form__company-input"
+            autoComplete="off"
+            required
+            value={draft.company}
+            onChange={(event) => setField('company', event.target.value)}
+            // Escape clears it: the keyboard's way to the ✕, which Tab skips.
+            onKeyDown={(event) => {
+              if (event.key === 'Escape' && draft.company) {
+                event.preventDefault();
+                setField('company', '');
+              }
+            }}
+            {...errorProps('company')}
+          />
+          {draft.company && (
+            <span className="application-form__clear">
+              {/* Out of the tab order, so Tab goes straight from Company to Position. */}
+              <IconButton
+                label="Clear company"
+                tooltip="Clear"
+                icon={<XCloseIcon />}
+                tabIndex={-1}
+                onClick={() => {
+                  setField('company', '');
+                  focusField(ids.company);
+                }}
+              />
+            </span>
+          )}
+        </div>
+        <FieldError id={errorId('company')} message={errors.company} />
+      </div>
+
+      {/* Position and Date Applied share a row while there's room; Date drops below when not.
+          Tab follows the reading order: Company, Position, Date. */}
       <div className="application-form__row">
         <div className="field">
-          <label htmlFor={ids.company}>Company/Search{required}</label>
-          <div className="application-form__company">
-            <input
-              id={ids.company}
-              type="text"
-              className="control application-form__company-input"
-              autoComplete="off"
-              required
-              value={draft.company}
-              onChange={(event) => setField('company', event.target.value)}
-              {...errorProps('company')}
-            />
-            {draft.company && (
-              <span className="application-form__clear">
-                <IconButton
-                  label="Clear company"
-                  tooltip="Clear"
-                  icon={<XCloseIcon />}
-                  onClick={() => {
-                    setField('company', '');
-                    focusField(ids.company);
-                  }}
-                />
-              </span>
-            )}
-          </div>
-          <FieldError id={errorId('company')} message={errors.company} />
+          <PositionCombobox
+            id={ids.position}
+            value={draft.position}
+            onValueChange={(value) => setField('position', value)}
+            positions={positions}
+            label={<>Position{required}</>}
+            inputClassName="control"
+            errorProps={errorProps('position')}
+          />
+          <FieldError id={errorId('position')} message={errors.position} />
+          {onManagePositions && (
+            <button
+              type="button"
+              className="btn btn--link application-form__manage"
+              onClick={onManagePositions}
+            >
+              Manage Positions
+            </button>
+          )}
         </div>
 
         <div className="field application-form__date">
           <label htmlFor={ids.dateApplied}>Date Applied{required}</label>
-          <input
+          <DateInput
             id={ids.dateApplied}
-            type="date"
-            className="control"
             required
             value={draft.dateApplied}
             onChange={(event) => setField('dateApplied', event.target.value)}
@@ -178,28 +209,6 @@ export function ApplicationForm({
           </div>
           <FieldError id={errorId('dateApplied')} message={errors.dateApplied} />
         </div>
-      </div>
-
-      <div className="field">
-        <PositionCombobox
-          id={ids.position}
-          value={draft.position}
-          onValueChange={(value) => setField('position', value)}
-          positions={positions}
-          label={<>Position{required}</>}
-          inputClassName="control"
-          errorProps={errorProps('position')}
-        />
-        <FieldError id={errorId('position')} message={errors.position} />
-        {onManagePositions && (
-          <button
-            type="button"
-            className="btn btn--link application-form__manage"
-            onClick={onManagePositions}
-          >
-            Manage Positions
-          </button>
-        )}
       </div>
 
       {noteOpen || draft.notes ? (
