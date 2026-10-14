@@ -1,0 +1,25 @@
+@use 'pkg:octet-scss/abstracts' as *;
+
+// <div class="clearable">
+//   <input class="control clearable__input">
+//   <span class="clearable__clear"><IconButton ✕ tabindex="-1"></span>   (while there's text)
+// </div>
+// A text field with its own clear ✕ over the right end: the add form's
+// Company field and the table's search box. The host shows the ✕ whenever
+// the field has text and keeps it out of the tab order (Escape in the field
+// does the same job). A search field's own ✕ (shown only on hover or focus
+// in Chrome and Safari) gives way to it. The room the text leaves for the ✕
+// is in _theme-spacing.scss (Controls).
+.clearable {
+  position: relative;
+
+  &__input::-webkit-search-cancel-button {
+    appearance: none;
+  }
+
+  &__clear {
+    position: absolute;
+    top: 0;
+    right: 0;
+  }
+}

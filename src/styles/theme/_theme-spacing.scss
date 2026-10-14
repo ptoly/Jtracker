@@ -112,7 +112,7 @@ ol {
 // section (above).
 .app__intro {
   > .app__page-header {
-    @include scaled-spacing(margin-bottom, 4, 24px, 4);
+    @include scaled-spacing(margin-bottom, 4, 48px);
   }
 
   > section {
@@ -189,6 +189,14 @@ ol {
   @include scaled-spacing(padding-left padding-right, 3, 24px, 4);
 }
 
+// Over the cards (under 720px) there are no cells: the search box and the
+// Show / Sort by selects line up with the cards' edges instead.
+.applications-table__controls {
+  @include until(720px) {
+    padding-inline: 0;
+  }
+}
+
 // Cells are top-aligned. A cell of plain text starts 12px lower, the same
 // inset as the text inside a control or around an icon button, so the first
 // lines across a row share a baseline: 20 → 28px instead of 8 → 16px.
@@ -259,16 +267,9 @@ ol {
   padding-left: gridx(3.5);
 }
 
-// Room on the right for the ⌘K hint while the search box is empty.
-.applications-table__search-input:placeholder-shown {
-  @include from(720px) {
-    padding-right: gridx(9);
-  }
-}
-
-// The company field's clear button is a full 48px target over the field's
-// right end, so the text stops short of it.
-.application-form__company-input {
+// A clear button is a full 48px target over the field's right end, so the
+// text stops short of it.
+.clearable__input {
   padding-right: gridx(6);
 }
 
@@ -363,17 +364,18 @@ ol {
   @include scaled-spacing(margin-bottom, 3, 16px, 4);
 }
 
-// Fields beside the match alert from 720px; above it when stacked (only when
-// it's showing; fixed, since it only applies under 720px).
+// Fields beside the match alert from 720px. Stacked, the alert sits between
+// Company/Search and the next row, spaced like a row (fixed, since it only
+// applies under 720px).
 .application-form__body {
   @include from(720px) {
     column-gap: gridx(3);
   }
 }
 
-.application-form__fields:has(+ .application-form__matches:not(:has(> [data-idle]))) {
+.application-form__matches {
   @include until(720px) {
-    margin-bottom: gridx(2);
+    margin-bottom: gridx(1);
   }
 }
 
@@ -428,7 +430,7 @@ ol {
   gap: gridx(0.5);
 }
 
-.applications-table__sort-by {
+.applications-table__pickers {
   column-gap: gridx(1.5);
 }
 
@@ -462,11 +464,15 @@ th:not([aria-sort]) .applications-table__sort-icon::before {
   @include scaled-spacing(margin-bottom, 3, 16px, 4);
 }
 
-// Cards (under 720px, so fixed values: the ramps never step there): Sort by,
-// then the cards, 16px apart, then pagination.
-.applications-table__sort-by {
-  padding-top: gridx(2);
-  margin-bottom: gridx(2);
+// Cards (under 720px, so fixed values: the ramps never step there): under
+// the search box (8px below it already), Show and Sort by, 8px apart and
+// 8px more below; then the cards, 16px apart, then pagination.
+.applications-table__picker:not(:last-child) {
+  margin-bottom: gridx(1);
+}
+
+.applications-table__pickers {
+  padding-bottom: gridx(1);
 }
 
 .applications-table__cards {

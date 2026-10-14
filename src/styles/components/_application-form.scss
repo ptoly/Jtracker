@@ -7,9 +7,9 @@
 //       <div class="application-form__fields">
 //         <div class="field field--inset">            (the shared field block, label inside the box; _field.scss)
 //           <label>Company/Search<span class="field__required">*</span></label>
-//           <div class="application-form__company">
-//             <input class="control application-form__company-input">
-//             <span class="application-form__clear"><IconButton ✕ tabindex="-1"></span>
+//           <div class="clearable">                     (the shared clear-✕ block, _clearable.scss)
+//             <input class="control clearable__input">
+//             <span class="clearable__clear"><IconButton ✕ tabindex="-1"></span>
 //           </div>
 //         </div>
 //         <div class="application-form__row">
@@ -29,7 +29,8 @@
 // </form>
 // From 720px the fields take three fifths of the card and the match alert
 // the rest, beside them for the card's full height (no footer). The alert
-// is always there; stacked, it's hidden until a company is typed.
+// is always there; stacked, it sits under Company/Search, hidden until a
+// company is typed.
 // Spacing between the parts is in _theme-spacing.scss (Add form).
 .application-form {
   display: grid;
@@ -57,9 +58,20 @@
     grid-template-columns: minmax(0, 1fr);
   }
 
-  // Below the fields when stacked, and only once there's a company to check.
-  &__matches:has(> [data-idle]) {
-    @include until(720px) {
+  // Stacked, the alert goes straight under Company/Search, where the eye
+  // is while typing: the fields' box steps aside (display: contents) so its
+  // rows and the alert share the body's one column, then order puts the
+  // alert after the first row. It shows only once there's a company to check.
+  @include until(720px) {
+    &__fields {
+      display: contents;
+    }
+
+    &__fields > :not(:first-child) {
+      order: 1;
+    }
+
+    &__matches:has(> [data-idle]) {
       display: none;
     }
   }
@@ -80,17 +92,6 @@
     > .application-form__date {
       flex: 0 0 auto;
     }
-  }
-
-  // Company field with its clear button over the right end.
-  &__company {
-    position: relative;
-  }
-
-  &__clear {
-    position: absolute;
-    top: 0;
-    right: 0;
   }
 
   // The text buttons after the fields: Add Note (with its leading icon) at

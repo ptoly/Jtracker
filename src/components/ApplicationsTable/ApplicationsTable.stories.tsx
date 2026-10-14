@@ -99,12 +99,22 @@ export const NeedsFollowUpTab: Story = {
   },
 };
 
-export const SearchShortcut: Story = {
-  name: 'Search shortcut (⌘K / Ctrl+K)',
+/** The ✕ stays while there's text, focused or not; Escape clears too. */
+export const ClearSearch: Story = {
+  name: 'Clear the search',
   play: async ({ canvas, userEvent }) => {
-    const apple = /Mac|iPhone|iPad/.test(navigator.userAgent);
-    await userEvent.keyboard(apple ? '{Meta>}k{/Meta}' : '{Control>}k{/Control}');
-    await expect(canvas.getByRole('searchbox')).toHaveFocus();
+    const search = canvas.getByRole('searchbox');
+    await expect(canvas.queryByRole('button', { name: 'Clear search' })).toBeNull();
+    await userEvent.type(search, 'labs');
+    search.blur();
+    await expect(canvas.getByRole('button', { name: 'Clear search' })).toBeVisible();
+    await userEvent.click(canvas.getByRole('button', { name: 'Clear search' }));
+    await expect(search).toHaveValue('');
+    await expect(search).toHaveFocus();
+    await expect(canvas.queryByRole('button', { name: 'Clear search' })).toBeNull();
+
+    await userEvent.type(search, 'labs{Escape}');
+    await expect(search).toHaveValue('');
   },
 };
 
@@ -339,9 +349,22 @@ export const NarrowCards: Story = {
     await expect(list).toBeVisible();
     await expect(canvas.queryByRole('table')).toBeNull();
     await expect(canvas.getByRole('heading', { name: 'Copperwick Labs' })).toBeVisible();
-    // The tabs stay on one row and scroll sideways.
-    const tablist = canvas.getByRole('tablist');
-    await expect(tablist.scrollWidth).toBeGreaterThan(tablist.clientWidth);
+    // The tabs don't fit: a Show select takes their place.
+    await expect(canvas.queryByRole('tablist')).toBeNull();
+    await expect(canvas.getByRole('combobox', { name: 'Show' })).toHaveDisplayValue(
+      'View all (30)',
+    );
+  },
+};
+
+export const NarrowShow: Story = {
+  name: 'Narrow screen: filter the cards',
+  ...narrow,
+  play: async ({ canvas, userEvent }) => {
+    await userEvent.selectOptions(canvas.getByRole('combobox', { name: 'Show' }), 'rejected');
+    const cards = canvas.getAllByRole('heading', { level: 3 });
+    await expect(cards).toHaveLength(6);
+    await expect(canvas.getByRole('status')).toHaveTextContent('6 applications');
   },
 };
 

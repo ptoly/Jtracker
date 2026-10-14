@@ -5,13 +5,17 @@
 // with the page's edges, separated by hairlines.
 // <div class="applications-table">
 //   <div class="applications-table__controls">
-//     <div class="applications-table__search">… <kbd class="applications-table__shortcut">⌘K</kbd></div>
+//     <div class="applications-table__search">… <div class="clearable"><input …>✕</div></div>
 //     <div role="tablist" class="tabs">…</div>      (the shared tabs block, _tabs.scss)
+//     (under 720px, instead of the tabs:)
+//     <div class="applications-table__pickers">
+//       <div class="applications-table__picker"><label>Show</label><span class="select">…</span></div>
+//       <div class="applications-table__picker"><label>Sort by</label><span class="select">…</span></div>
+//     </div>
 //   </div>
 //   <div role="tabpanel" class="applications-table__panel">
 //     <div class="applications-table__scroll"><table class="applications-table__table">…</table></div>
 //     (under 720px, instead of the table:)
-//     <div class="applications-table__sort-by"><label class="applications-table__sort-label">Sort by</label><span class="select applications-table__sort-select">…</span></div>
 //     <ul class="applications-table__cards">
 //       <li class="applications-table__card [data-editing]">
 //         <div class="applications-table__lines"><h3 class="applications-table__card-title">…</h3>…</div>
@@ -66,21 +70,6 @@
 
     @include until(720px) {
       width: 100%;
-    }
-  }
-
-  // The ⌘K hint, inside the empty box on screens wide enough to have a keyboard.
-  &__shortcut {
-    padding-inline: gridx(0.75);
-    border-radius: $radius-md;
-    @include hairline(all, var(--border-default));
-    color: var(--text-muted);
-    font-family: inherit;
-    font-size: inherit;
-    pointer-events: none;
-
-    @include until(720px) {
-      display: none;
     }
   }
 
@@ -261,20 +250,20 @@
   // Cards (under 720px) ---------------------------------------------------------------
   // One per application: company and position, status, dates and age, notes,
   // then the row's buttons. Hairline edges as inset shadows, like the table's.
-  // "Sort by" and its select, between the toolbar and the cards. The select
-  // takes the rest of the row.
-  &__sort-by {
-    display: flex;
+  // Above them, in the toolbar under the search box, "Show" (for the tabs)
+  // and "Sort by" (for the column headers): labels in one column and selects
+  // in the other, so the two selects line up and take the rest of the row.
+  &__pickers {
+    display: grid;
+    flex: 1 1 100%;
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  &__picker {
+    display: grid;
+    grid-column: 1 / -1;
+    grid-template-columns: subgrid;
     align-items: center;
-  }
-
-  &__sort-label {
-    flex: none;
-  }
-
-  &__sort-select {
-    flex: 1;
-    min-width: 0;
   }
 
   &__cards {

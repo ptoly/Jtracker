@@ -48,16 +48,14 @@
 // own padding: it's a button, so it keeps a full-size target.)
 .select__icon,
 .date-input__icon,
-.applications-table__search-icon,
-.applications-table__shortcut {
+.applications-table__search-icon {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
 }
 
 .select__icon,
-.date-input__icon,
-.applications-table__shortcut {
+.date-input__icon {
   right: gridx(1.5);
 }
 

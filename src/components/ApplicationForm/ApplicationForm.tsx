@@ -150,11 +150,11 @@ export function ApplicationForm({
     <div className="application-form__fields">
       <div className="field field--inset">
         <label htmlFor={ids.company}>Company/Search{required}</label>
-        <div className="application-form__company">
+        <div className="clearable">
           <input
             id={ids.company}
             type="text"
-            className="control application-form__company-input"
+            className="control clearable__input"
             autoComplete="off"
             required
             value={draft.company}
@@ -169,7 +169,7 @@ export function ApplicationForm({
             {...errorProps('company')}
           />
           {draft.company && (
-            <span className="application-form__clear">
+            <span className="clearable__clear">
               {/* Out of the tab order, so Tab goes straight from Company to Position. */}
               <IconButton
                 label="Clear company"

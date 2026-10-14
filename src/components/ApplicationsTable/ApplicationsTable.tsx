@@ -19,7 +19,14 @@ import { StatusOptions } from '../ApplicationFields/StatusOptions';
 import { ConfirmDialog } from '../ConfirmDialog/ConfirmDialog';
 import { DateText } from '../DateText/DateText';
 import { IconButton } from '../IconButton/IconButton';
-import { ArrowLeftIcon, ArrowRightIcon, PencilIcon, SearchIcon, TrashIcon } from '../Icons/Icons';
+import {
+  ArrowLeftIcon,
+  ArrowRightIcon,
+  PencilIcon,
+  SearchIcon,
+  TrashIcon,
+  XCloseIcon,
+} from '../Icons/Icons';
 import { NoteTip } from '../NoteTip/NoteTip';
 import { SaveError } from '../Notice/Notice';
 import { Select } from '../Select/Select';
@@ -29,9 +36,6 @@ const PAGE_SIZE = 100;
 
 /** How long typing must pause before the result count is announced. */
 const SEARCH_ANNOUNCE_DELAY_MS = 500;
-
-/** Apple keyboards say ⌘K; everyone else gets Ctrl K. */
-const IS_APPLE = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.userAgent);
 
 const TABS = [
   { key: 'all', label: 'View all' },
@@ -220,6 +224,7 @@ export function ApplicationsTable({
   const regionId = `${baseId}-region`;
   const searchId = `${baseId}-search`;
   const sortSelectId = `${baseId}-sort`;
+  const showSelectId = `${baseId}-show`;
   const editButtonId = (id: string) => `${baseId}-edit-${id}`;
   const deleteButtonId = (id: string) => `${baseId}-delete-${id}`;
   const dueId = (id: string) => `${baseId}-due-${id}`;
@@ -256,20 +261,6 @@ export function ApplicationsTable({
   const pendingFocus = useRef<string[] | null>(null);
 
   useEffect(() => () => window.clearTimeout(announceTimer.current), []);
-
-  // ⌘K (Ctrl+K off Apple) jumps to the search box from anywhere on the page.
-  useEffect(() => {
-    function handleKeyDown(event: globalThis.KeyboardEvent) {
-      if (event.key.toLowerCase() !== 'k' || !(IS_APPLE ? event.metaKey : event.ctrlKey)) return;
-      const search = document.getElementById(searchId);
-      if (!(search instanceof HTMLInputElement) || search.disabled) return;
-      event.preventDefault();
-      search.focus();
-      search.select();
-    }
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [searchId]);
 
   // A row deleted elsewhere (e.g. in the sheet, then reloaded) is no longer being edited.
   const editing = editingId !== null && applications.some((app) => app.id === editingId);
@@ -337,6 +328,14 @@ export function ApplicationsTable({
   }
 
   /** Announces the result count for a filter, immediately or once `delay` passes without another call. */
+  /** Typing (announced once it pauses) and clearing (announced at once) both land here. */
+  function changeQuery(value: string, delay = SEARCH_ANNOUNCE_DELAY_MS) {
+    setQuery(value);
+    setPage(1);
+    setPinned(null);
+    announceCount(tab, value, delay);
+  }
+
   function announceCount(nextTab: TabKey, nextQuery: string, delay = 0) {
     window.clearTimeout(announceTimer.current);
     const count = filterRows(applications, followUpDays, today, nextTab, nextQuery).length;
@@ -588,65 +587,127 @@ export function ApplicationsTable({
 
   return (
     <div className="applications-table">
-      {/* Search on the left, filter tabs on the right, on a raised bar. */}
+      {/* Search on the left, filter tabs on the right, on a raised bar
+          (stacked on narrow screens, with Show and Sort by selects for the tabs). */}
       <div className="applications-table__controls">
         <div className="applications-table__search">
-          <SearchIcon className="applications-table__search-icon" />
           <label htmlFor={searchId} className="sr-only">
             Search company, position and notes
           </label>
-          <input
-            id={searchId}
-            type="search"
-            className="control applications-table__search-input"
-            placeholder="Search"
-            aria-keyshortcuts={IS_APPLE ? 'Meta+K' : 'Control+K'}
-            value={query}
-            disabled={editing}
-            onChange={(event) => {
-              setQuery(event.target.value);
-              setPage(1);
-              setPinned(null);
-              announceCount(tab, event.target.value, SEARCH_ANNOUNCE_DELAY_MS);
-            }}
-          />
-          {/* Not while a row is being edited: the box (and the shortcut) is off then. */}
-          {!query && !editing && (
-            <kbd className="applications-table__shortcut" aria-hidden="true">
-              {IS_APPLE ? '⌘K' : 'Ctrl K'}
-            </kbd>
-          )}
+          <div className="clearable">
+            <SearchIcon className="applications-table__search-icon" />
+            <input
+              id={searchId}
+              type="search"
+              className="control clearable__input applications-table__search-input"
+              placeholder="Search"
+              value={query}
+              disabled={editing}
+              onChange={(event) => changeQuery(event.target.value)}
+              // Escape clears it in every browser (the keyboard's way to the ✕).
+              onKeyDown={(event) => {
+                if (event.key === 'Escape' && query) {
+                  event.preventDefault();
+                  changeQuery('', 0);
+                }
+              }}
+            />
+            {/* Whenever there's text, except while a row is being edited (the box is off then).
+                Out of the tab order, like the add form's. */}
+            {query && !editing && (
+              <span className="clearable__clear">
+                <IconButton
+                  label="Clear search"
+                  tooltip="Clear"
+                  icon={<XCloseIcon />}
+                  tabIndex={-1}
+                  onClick={() => {
+                    changeQuery('', 0);
+                    document.getElementById(searchId)?.focus();
+                  }}
+                />
+              </span>
+            )}
+          </div>
         </div>
 
-        <div role="tablist" aria-label="Filter applications" className="tabs">
-          {TABS.map(({ key, label }, index) => {
-            const selected = key === tab;
-            return (
-              <button
-                key={key}
-                ref={(el) => {
-                  if (el) tabRefs.current.set(key, el);
-                  else tabRefs.current.delete(key);
-                }}
-                type="button"
-                role="tab"
-                id={tabId(key)}
-                aria-selected={selected}
-                aria-controls={panelId}
-                tabIndex={selected ? 0 : -1}
-                className="tabs__tab"
+        {cards ? (
+          // Narrow screens: the tabs don't fit, so they become a "Show" select, and
+          // the cards (which have no column headers) get "Sort by".
+          <div className="applications-table__pickers">
+            <div className="applications-table__picker">
+              <label htmlFor={showSelectId}>Show</label>
+              <Select
+                id={showSelectId}
+                value={tab}
                 disabled={editing}
-                onClick={() => selectTab(key)}
-                onKeyDown={(event) => handleTabKeyDown(event, index)}
+                onChange={(event) => {
+                  const key = TABS.find((t) => t.key === event.target.value)?.key;
+                  if (key) selectTab(key);
+                }}
               >
-                {label}
-                <span className="tabs__count">
-                  {filterRows(applications, followUpDays, today, key, query).length}
-                </span>
-              </button>
-            );
-          })}
-        </div>
+                {TABS.map(({ key, label }) => (
+                  <option key={key} value={key}>
+                    {label} ({filterRows(applications, followUpDays, today, key, query).length})
+                  </option>
+                ))}
+              </Select>
+            </div>
+            <div className="applications-table__picker">
+              <label htmlFor={sortSelectId}>Sort by</label>
+              <Select
+                id={sortSelectId}
+                value={`${sort.key} ${sort.direction}`}
+                disabled={editing}
+                onChange={(event) => chooseSort(event.target.value)}
+              >
+                {/* A table sort with no card equivalent (e.g. status, descending) shows as the closest. */}
+                {!SORT_OPTIONS.some(
+                  (o) => o.key === sort.key && o.direction === sort.direction,
+                ) && (
+                  <option value={`${sort.key} ${sort.direction}`} hidden>
+                    {SORT_OPTIONS.find((o) => o.key === sort.key)?.label}
+                  </option>
+                )}
+                {SORT_OPTIONS.map((o) => (
+                  <option key={`${o.key} ${o.direction}`} value={`${o.key} ${o.direction}`}>
+                    {o.label}
+                  </option>
+                ))}
+              </Select>
+            </div>
+          </div>
+        ) : (
+          <div role="tablist" aria-label="Filter applications" className="tabs">
+            {TABS.map(({ key, label }, index) => {
+              const selected = key === tab;
+              return (
+                <button
+                  key={key}
+                  ref={(el) => {
+                    if (el) tabRefs.current.set(key, el);
+                    else tabRefs.current.delete(key);
+                  }}
+                  type="button"
+                  role="tab"
+                  id={tabId(key)}
+                  aria-selected={selected}
+                  aria-controls={panelId}
+                  tabIndex={selected ? 0 : -1}
+                  className="tabs__tab"
+                  disabled={editing}
+                  onClick={() => selectTab(key)}
+                  onKeyDown={(event) => handleTabKeyDown(event, index)}
+                >
+                  {label}
+                  <span className="tabs__count">
+                    {filterRows(applications, followUpDays, today, key, query).length}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {statusError && (
@@ -665,9 +726,9 @@ export function ApplicationsTable({
       </p>
 
       <div
-        role="tabpanel"
         id={panelId}
-        aria-labelledby={tabId(tab)}
+        // A tab panel only beside the tabs; on narrow screens the Show select filters it.
+        {...(!cards && { role: 'tabpanel', 'aria-labelledby': tabId(tab) })}
         className="applications-table__panel"
         {...(pageRows.length === 0 && { tabIndex: 0 })}
       >
@@ -686,33 +747,6 @@ export function ApplicationsTable({
           <>
             {cards ? (
               <>
-                {/* The table's column headers sort it; the cards get this instead. */}
-                <div className="applications-table__sort-by">
-                  <label htmlFor={sortSelectId} className="applications-table__sort-label">
-                    Sort by
-                  </label>
-                  <Select
-                    id={sortSelectId}
-                    className="applications-table__sort-select"
-                    value={`${sort.key} ${sort.direction}`}
-                    disabled={editing}
-                    onChange={(event) => chooseSort(event.target.value)}
-                  >
-                    {/* A table sort with no card equivalent (e.g. status, descending) shows as the closest. */}
-                    {!SORT_OPTIONS.some(
-                      (o) => o.key === sort.key && o.direction === sort.direction,
-                    ) && (
-                      <option value={`${sort.key} ${sort.direction}`} hidden>
-                        {SORT_OPTIONS.find((o) => o.key === sort.key)?.label}
-                      </option>
-                    )}
-                    {SORT_OPTIONS.map((o) => (
-                      <option key={`${o.key} ${o.direction}`} value={`${o.key} ${o.direction}`}>
-                        {o.label}
-                      </option>
-                    ))}
-                  </Select>
-                </div>
                 {/* Narrow screens: one card per application, in the order of the columns.
                   Focusable from script only, as the fallback when the focused card goes away. */}
                 <ul
