@@ -13,12 +13,28 @@ import { ConnectionBar } from './components/ConnectionBar/ConnectionBar';
 import { SheetActions } from './components/ConnectionBar/SheetActions';
 import { Notice, SaveError } from './components/Notice/Notice';
 import { PositionsDialog } from './components/PositionsDialog/PositionsDialog';
+import { isFollowUpDue } from './lib/derive';
 import { suggestedPositions } from './lib/positions';
+import type { Application } from './types/application';
 import { useApplications } from './useApplications';
 import logoUrl from './assets/jtracker-logo.svg';
 
 function pluralizeRows(count: number): string {
   return `${count} row${count === 1 ? '' : 's'}`;
+}
+
+/**
+ * The page title's summary, e.g. "296 applications", "155 need follow-up",
+ * "1 interview". Counted the same way as the table's tabs.
+ */
+function searchSummary(applications: Application[], today: Date): string[] {
+  const due = applications.filter((app) => isFollowUpDue(app, undefined, today)).length;
+  const interviews = applications.filter((app) => app.status === 'Interviewed').length;
+  return [
+    `${applications.length} application${applications.length === 1 ? '' : 's'}`,
+    `${due} ${due === 1 ? 'needs' : 'need'} follow-up`,
+    `${interviews} interview${interviews === 1 ? '' : 's'}`,
+  ];
 }
 
 export function App() {
@@ -50,7 +66,23 @@ export function App() {
 
       <main className="app max-width">
         <div className="app__page-header has-divider">
-          <h1>Job Tracker History</h1>
+          <h1>Your job search</h1>
+          {applications && (
+            <p className="app__subtitle">
+              {searchSummary(applications, today).map((part, index) => (
+                <span key={part}>
+                  {/* A dot between the counts on screen; a comma for screen readers. */}
+                  {index > 0 && (
+                    <>
+                      <span aria-hidden="true"> · </span>
+                      <span className="sr-only">, </span>
+                    </>
+                  )}
+                  {part}
+                </span>
+              ))}
+            </p>
+          )}
         </div>
 
         <ConnectionBar
@@ -100,9 +132,10 @@ export function App() {
             <section className="app__add" aria-labelledby="add-application-heading">
               <div className="app__section-header">
                 <div>
-                  <h2 id="add-application-heading">Check/Add Job Application Record</h2>
+                  <h2 id="add-application-heading">Check/Add Job App</h2>
                   <p className="app__subtitle">
-                    Fill in the company field to check if you’ve applied to them before.
+                    Start with the company name. If you’ve applied there before, your past
+                    application(s) appear. If not, add the position and role and save it.
                   </p>
                 </div>
               </div>

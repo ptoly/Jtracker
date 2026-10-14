@@ -1,6 +1,6 @@
 import { useId, useImperativeHandle, useState, type FormEvent, type Ref } from 'react';
 import { distinctPositions } from '../../lib/applicationRules';
-import { companyKey, findCompanyMatches, matchSummary } from '../../lib/companyMatch';
+import { findCompanyMatches, matchSummary } from '../../lib/companyMatch';
 import { toIsoDate } from '../../lib/dates';
 import { useDebouncedValue } from '../../lib/useDebouncedValue';
 import type { Application, NewApplication } from '../../types/application';
@@ -11,6 +11,7 @@ import { DateInput } from '../DateInput/DateInput';
 import { IconButton } from '../IconButton/IconButton';
 import { PlusIcon, XCloseIcon } from '../Icons/Icons';
 import { SaveError } from '../Notice/Notice';
+import { useTooltip } from '../Tooltip/useTooltip';
 import { MatchAlert } from './MatchAlert';
 
 /** How long typing pauses before Company is checked against earlier applications. */
@@ -33,7 +34,7 @@ export interface ApplicationFormProps {
   today: Date;
   /** Persists the new application. The form resets once this resolves. */
   onAdd: (input: NewApplication) => Promise<unknown>;
-  /** Shows a "Manage Positions" button under the Position field. */
+  /** Shows a "Manage Positions" button on the line after the fields (with Add Note). */
   onManagePositions?: () => void;
   ref?: Ref<ApplicationFormHandle>;
 }
@@ -54,6 +55,7 @@ export function ApplicationForm({
     notes: `${baseId}-notes`,
   };
   const dateHelpId = `${baseId}-date-help`;
+  const dateTip = useTooltip();
 
   const todayIso = toIsoDate(today);
   const positions = suggestions ?? distinctPositions(applications);
@@ -67,8 +69,6 @@ export function ApplicationForm({
   const [noteOpen, setNoteOpen] = useState(false);
   // Set by "Add Note", so the textarea takes focus when it appears.
   const [focusNote, setFocusNote] = useState(false);
-  // The company key the match alert was dismissed for; typing another brings it back.
-  const [dismissedKey, setDismissedKey] = useState<string | null>(null);
 
   const focusField = (id: string) => document.getElementById(id)?.focus();
 
@@ -87,9 +87,8 @@ export function ApplicationForm({
   // Matches follow the debounced text, but an emptied field (cleared, or
   // reset after adding) hides them at once.
   const companyQuery = useDebouncedValue(draft.company, MATCH_DELAY_MS);
-  const matchKey = companyKey(companyQuery);
   const matches = draft.company.trim() ? findCompanyMatches(applications, companyQuery) : [];
-  const showMatches = matches.length > 0 && dismissedKey !== matchKey;
+  const showMatches = matches.length > 0;
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -115,7 +114,6 @@ export function ApplicationForm({
     setSubmitError(null);
     reset(emptyDraft(todayIso));
     setNoteOpen(false);
-    setDismissedKey(null);
     setAnnouncement((prev) => ({ text: `Added ${input.company}`, count: prev.count + 1 }));
     focusField(ids.company);
   }
@@ -125,6 +123,8 @@ export function ApplicationForm({
       *
     </span>
   );
+
+  const showNote = noteOpen || Boolean(draft.notes);
 
   const fields = (
     <div className="application-form__fields">
@@ -181,37 +181,39 @@ export function ApplicationForm({
             errorProps={errorProps('position')}
           />
           <FieldError id={errorId('position')} message={errors.position} />
-          {onManagePositions && (
-            <button
-              type="button"
-              className="btn btn--link application-form__manage"
-              onClick={onManagePositions}
-            >
-              Manage Positions
-            </button>
-          )}
         </div>
 
         <div className="field application-form__date">
           <label htmlFor={ids.dateApplied}>Date Applied{required}</label>
-          <DateInput
-            id={ids.dateApplied}
-            required
-            value={draft.dateApplied}
-            onChange={(event) => setField('dateApplied', event.target.value)}
-            {...errorProps('dateApplied')}
-            aria-describedby={
-              errors.dateApplied ? `${dateHelpId} ${errorId('dateApplied')}` : dateHelpId
-            }
-          />
-          <div id={dateHelpId} className="field__help">
-            Defaults to today
-          </div>
+          {/* The hint is a tip under the field (hover or focus), to save a line.
+              Screen readers still get it as the field's description. */}
+          {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
+          <span className="tooltip" {...dateTip.hoverProps}>
+            <DateInput
+              id={ids.dateApplied}
+              required
+              value={draft.dateApplied}
+              onChange={(event) => setField('dateApplied', event.target.value)}
+              onFocus={dateTip.onFocus}
+              onBlur={dateTip.onBlur}
+              {...errorProps('dateApplied')}
+              aria-describedby={
+                errors.dateApplied ? `${dateHelpId} ${errorId('dateApplied')}` : dateHelpId
+              }
+            />
+            <span
+              id={dateHelpId}
+              className="tooltip__bubble tooltip__bubble--below"
+              data-open={dateTip.open ? '' : undefined}
+            >
+              Defaults to today
+            </span>
+          </span>
           <FieldError id={errorId('dateApplied')} message={errors.dateApplied} />
         </div>
       </div>
 
-      {noteOpen || draft.notes ? (
+      {showNote && (
         <div className="field">
           <label htmlFor={ids.notes}>
             Note <span className="field__optional">(optional)</span>
@@ -230,18 +232,35 @@ export function ApplicationForm({
             onChange={(event) => setField('notes', event.target.value)}
           />
         </div>
-      ) : (
-        <button
-          type="button"
-          className="btn btn--link application-form__note-toggle"
-          onClick={() => {
-            setNoteOpen(true);
-            setFocusNote(true);
-          }}
-        >
-          <PlusIcon />
-          Add Note (optional)
-        </button>
+      )}
+
+      {/* The form's text buttons, after the fields so Tab reaches them last:
+          Add Note on the left, Manage Positions on the right. */}
+      {(!showNote || onManagePositions) && (
+        <div className="application-form__links">
+          {!showNote && (
+            <button
+              type="button"
+              className="btn btn--link"
+              onClick={() => {
+                setNoteOpen(true);
+                setFocusNote(true);
+              }}
+            >
+              <PlusIcon />
+              Add Note (optional)
+            </button>
+          )}
+          {onManagePositions && (
+            <button
+              type="button"
+              className="btn btn--link application-form__manage"
+              onClick={onManagePositions}
+            >
+              Manage Positions
+            </button>
+          )}
+        </div>
       )}
     </div>
   );
@@ -257,8 +276,9 @@ export function ApplicationForm({
               <MatchAlert
                 matches={matches}
                 today={today}
+                // Dismissing clears Company too, so the next search starts fresh.
                 onDismiss={() => {
-                  setDismissedKey(matchKey);
+                  setField('company', '');
                   focusField(ids.company);
                 }}
               />

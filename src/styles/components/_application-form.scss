@@ -12,11 +12,14 @@
 //           </div>
 //         </div>
 //         <div class="application-form__row">
-//           <div class="field">Position (position-combobox block) +
-//             <button class="btn btn--link application-form__manage"></div>
-//           <div class="field application-form__date">… Date Applied (date-input block) + field__help</div>
+//           <div class="field">Position (position-combobox block)</div>
+//           <div class="field application-form__date">… Date Applied (date-input block), its hint in a tooltip</div>
 //         </div>
-//         <button class="btn btn--link application-form__note-toggle"> or the Note field
+//         <div class="field">Note</div>                (once opened)
+//         <div class="application-form__links">
+//           <button class="btn btn--link">+ Add Note (optional)</button>   (until opened)
+//           <button class="btn btn--link application-form__manage">Manage Positions</button>
+//         </div>
 //       </div>
 //       <div class="application-form__matches"><div class="match-alert">…</div></div>
 //     </div>
@@ -84,14 +87,16 @@
     right: 0;
   }
 
-  // Add Note (a .btn--link with a leading icon), at the fields' left edge.
-  &__note-toggle {
-    justify-self: start;
+  // The text buttons after the fields: Add Note (with its leading icon) at
+  // the fields' left edge, Manage Positions at the right, on one line.
+  &__links {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
   }
 
-  // Manage Positions: right-aligned under the Position field.
   &__manage {
-    justify-self: end;
+    margin-left: auto; // stays right when Add Note has gone (the note is open)
   }
 
   // Footer, errors ------------------------------------------------------------

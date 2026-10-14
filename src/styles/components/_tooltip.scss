@@ -2,11 +2,14 @@
 
 // <span class="tooltip">
 //   <button class="icon-button">…</button>
-//   <span class="tooltip__bubble" data-open aria-hidden="true">Delete</span>
+//   <span class="tooltip__bubble [tooltip__bubble--below]" data-open aria-hidden="true">Delete</span>
 // </span>
-// Shown/hidden by IconButton (hover, focus, Escape) via [data-open]. The bubble
-// sits above the trigger, right-aligned so it stays inside clipping
-// containers at a row's end.
+// Shown/hidden by useTooltip (hover, focus, Escape) via [data-open]: icon
+// buttons, and the add form's date hint (not aria-hidden there: it's the
+// field's description). The bubble sits above the trigger, right-aligned so
+// it stays inside clipping containers at a row's end.
+// --below: under the trigger instead (a field's hint, where above would
+// cover its label).
 // --popover: the same bubble for longer text (NoteTip). It opens in the top
 // layer, so nothing clips it; the script places it beside its trigger.
 .tooltip {
@@ -31,6 +34,11 @@
     &[data-open] {
       opacity: 1;
       visibility: visible;
+    }
+
+    &--below {
+      top: calc(100% + #{gridx(0.5)});
+      bottom: auto;
     }
 
     &--popover {

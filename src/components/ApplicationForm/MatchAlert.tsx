@@ -9,6 +9,7 @@ export interface MatchAlertProps {
   matches: CompanyMatch[];
   /** The app's reference date, for the age of applications still at Applied. */
   today: Date;
+  /** The ✕: the form clears Company, which closes the alert. */
   onDismiss: () => void;
 }
 
@@ -62,7 +63,7 @@ export function MatchAlert({ matches, today, onDismiss }: MatchAlertProps) {
         ))}
       </div>
       <IconButton
-        label="Dismiss"
+        label="Dismiss and clear company"
         tooltip="Dismiss"
         icon={<XCloseIcon />}
         className="match-alert__dismiss"

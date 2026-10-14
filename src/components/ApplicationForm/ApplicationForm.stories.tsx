@@ -76,9 +76,10 @@ export const AppliedBefore: Story = {
       'Applied to Copperwick Labs before: 2 applications',
     );
 
-    // Dismissed, it stays away for this company; focus returns to the field.
-    await userEvent.click(canvas.getByRole('button', { name: 'Dismiss' }));
+    // Dismissing also clears Company; focus returns to the field.
+    await userEvent.click(canvas.getByRole('button', { name: 'Dismiss and clear company' }));
     await expect(canvas.queryByText('Applied to Copperwick Labs before:')).toBeNull();
+    await expect(company).toHaveValue('');
     await expect(company).toHaveFocus();
   },
 };

@@ -1,4 +1,5 @@
-import { useEffect, useState, type ButtonHTMLAttributes, type ReactNode } from 'react';
+import type { ButtonHTMLAttributes, ReactNode } from 'react';
+import { useTooltip } from '../Tooltip/useTooltip';
 
 export interface IconButtonProps extends Omit<
   ButtonHTMLAttributes<HTMLButtonElement>,
@@ -13,9 +14,8 @@ export interface IconButtonProps extends Omit<
 }
 
 /**
- * Icon-only button with a tooltip that meets WCAG 1.4.13: it shows on hover
- * and on keyboard focus, stays while the pointer is over it, and Escape
- * dismisses it. The tooltip is aria-hidden; screen readers get `label`.
+ * Icon-only button with a tooltip (useTooltip: hover, keyboard focus,
+ * Escape; WCAG 1.4.13). The tooltip is aria-hidden; screen readers get `label`.
  */
 export function IconButton({
   label,
@@ -28,52 +28,30 @@ export function IconButton({
   onBlur,
   ...buttonProps
 }: IconButtonProps) {
-  const [hovered, setHovered] = useState(false);
-  const [focused, setFocused] = useState(false);
-  const [dismissed, setDismissed] = useState(false);
-  const open = (hovered || focused) && !dismissed && !disabled;
-
-  // Escape dismisses an open tooltip whether it came from hover or focus,
-  // without moving the pointer or focus (WCAG 1.4.13).
-  useEffect(() => {
-    if (!open) return;
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === 'Escape') setDismissed(true);
-    }
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [open]);
+  const tip = useTooltip(disabled);
 
   return (
     // Hover only toggles the tooltip; the keyboard equivalent is the button's focus.
     // eslint-disable-next-line jsx-a11y/no-static-element-interactions
-    <span
-      className="tooltip"
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => {
-        setHovered(false);
-        setDismissed(false);
-      }}
-    >
+    <span className="tooltip" {...tip.hoverProps}>
       <button
         type="button"
         className={`quiet-button icon-button${variant === 'danger' ? ' icon-button--danger' : ''} ${className}`}
         aria-label={label}
         disabled={disabled}
         onFocus={(event) => {
-          setFocused(true);
+          tip.onFocus();
           onFocus?.(event);
         }}
         onBlur={(event) => {
-          setFocused(false);
-          setDismissed(false);
+          tip.onBlur();
           onBlur?.(event);
         }}
         {...buttonProps}
       >
         {icon}
       </button>
-      <span className="tooltip__bubble" data-open={open ? '' : undefined} aria-hidden="true">
+      <span className="tooltip__bubble" data-open={tip.open ? '' : undefined} aria-hidden="true">
         {tooltip}
       </span>
     </span>
