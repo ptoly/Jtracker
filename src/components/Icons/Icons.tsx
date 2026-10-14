@@ -31,6 +31,14 @@ export function TrashIcon(props: SVGProps<SVGSVGElement>) {
   );
 }
 
+export function HelpCircleIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon {...props}>
+      <path d="M7.575 7.5a2.5 2.5 0 014.858.833c0 1.667-2.5 2.5-2.5 2.5M10 14.167h.008M18.333 10a8.333 8.333 0 11-16.666 0 8.333 8.333 0 0116.666 0z" />
+    </Icon>
+  );
+}
+
 export function PencilIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <Icon {...props}>

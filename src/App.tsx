@@ -11,6 +11,8 @@ import {
 import { ConfirmDialog } from './components/ConfirmDialog/ConfirmDialog';
 import { ConnectionBar } from './components/ConnectionBar/ConnectionBar';
 import { SheetActions } from './components/ConnectionBar/SheetActions';
+import { IconLink } from './components/IconButton/IconLink';
+import { HelpCircleIcon } from './components/Icons/Icons';
 import { MoreActions } from './components/MoreActions/MoreActions';
 import { Notice, SaveError } from './components/Notice/Notice';
 import { PositionsDialog } from './components/PositionsDialog/PositionsDialog';
@@ -20,6 +22,9 @@ import { suggestedPositions } from './lib/positions';
 import type { Application } from './types/application';
 import { useApplications } from './useApplications';
 import logoUrl from './assets/jtracker-logo.svg';
+
+/** The header's Help: the project README on GitHub. */
+const README_URL = 'https://github.com/ptoly/Jtracker#readme';
 
 function pluralizeRows(count: number): string {
   return `${count} row${count === 1 ? '' : 's'}`;
@@ -82,6 +87,14 @@ export function App() {
               className="site-header__logo"
             />
           </a>
+          <IconLink
+            href={README_URL}
+            label="Help"
+            tooltip="Help"
+            icon={<HelpCircleIcon />}
+            className="site-header__help"
+            tooltipPlacement="below"
+          />
         </div>
       </header>
 
