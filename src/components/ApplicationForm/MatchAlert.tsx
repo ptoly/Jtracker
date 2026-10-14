@@ -52,25 +52,25 @@ function MatchLine({ app, today }: { app: Application; today: Date }) {
 export function MatchAlert({ query, matches, today }: MatchAlertProps) {
   return (
     <div className="card match-alert" data-idle={query ? undefined : ''}>
-        {matches.length > 0 ? (
-          matches.map((match) => (
-            <div key={match.company} className="match-alert__group">
-              <div className="match-alert__title">Applied to {match.company} before:</div>
-              <ul className="bullets">
-                {match.applications.map((app) => (
-                  <MatchLine key={app.id} app={app} today={today} />
-                ))}
-              </ul>
-            </div>
-          ))
-        ) : query ? (
-          <>
-            <div className="match-alert__title">No matches</div>
-            <p>You haven’t applied to “{query}” before.</p>
-          </>
-        ) : (
-          <div className="match-alert__title">No applications found</div>
-        )}
+      {matches.length > 0 ? (
+        matches.map((match) => (
+          <div key={match.company} className="match-alert__group">
+            <div className="match-alert__title">Applied to {match.company} before:</div>
+            <ul className="bullets">
+              {match.applications.map((app) => (
+                <MatchLine key={app.id} app={app} today={today} />
+              ))}
+            </ul>
+          </div>
+        ))
+      ) : query ? (
+        <>
+          <div className="match-alert__title">No matches</div>
+          <p>You haven’t applied to “{query}” before.</p>
+        </>
+      ) : (
+        <div className="match-alert__title">No applications found</div>
+      )}
     </div>
   );
 }

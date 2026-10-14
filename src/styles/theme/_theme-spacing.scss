@@ -130,7 +130,7 @@ ol {
 
 // The match alert starts its first line 8px down, like an inset field's
 // label, so "No applications found" (or the first match) sits on the
-// Company/Search label's baseline. Its ✕ still centers on that line.
+// Company/Search label's baseline.
 .application-form__matches > .match-alert {
   padding-top: gridx(1);
 }
@@ -282,17 +282,13 @@ ol {
 }
 
 // A notice's icon, text, buttons and ✕ sit in a row that wraps on narrow
-// screens; the match alert's list sits beside its ✕.
+// screens.
 .notice {
   gap: gridx(1) gridx(2);
 }
 
 .notice__actions {
   gap: gridx(1);
-}
-
-.match-alert {
-  column-gap: gridx(2);
 }
 
 // Expanded sheet problems: the intro, then the list.
@@ -309,7 +305,6 @@ ol {
 // it takes one 24px line and its icon sits exactly at the box's text inset,
 // whatever that inset is at the current width. (Dialogs do the same.)
 .notice__dismiss,
-.match-alert__dismiss,
 .dialog__close {
   margin-block: gridx(-1.5);
   margin-inline-end: gridx(-1.5);

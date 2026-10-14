@@ -1,25 +1,19 @@
 @use 'pkg:octet-scss/abstracts' as *;
 
 // <div class="card match-alert">
-//   <div class="match-alert__content">
-//     <div class="match-alert__group">
-//       <div class="match-alert__title">Applied to Acme before:</div>
-//       <ul class="bullets"><li>Position · date · status · N days</li>…</ul>
-//     </div>
-//     (or, with no matches: <div class="match-alert__title">No matches</div><p>…</p>)
+//   <div class="match-alert__group">
+//     <div class="match-alert__title">Applied to Acme before:</div>
+//     <ul class="bullets"><li>Position · date · status · N days</li>…</ul>
 //   </div>
-//   <span class="tooltip"><button class="icon-button match-alert__dismiss">✕</button></span>
+//   (or, with no matches: <div class="match-alert__title">No matches</div><p>…</p>)
 // </div>
 // Earlier applications to the company being typed, in the add form (always
-// there; data-idle before a company is typed, when it has no ✕): a
-// small card (_card.scss), a bold title and a bulleted list in secondary
-// text. Padding is shared with .notice (_theme-spacing.scss). Spacing between
-// its parts, and the ✕ reaching into the padding, are in _theme-spacing.scss
-// (Message boxes). It fades in; the global reduced-motion reset turns the
-// fade off.
+// there; data-idle before a company is typed): a small card (_card.scss), a
+// bold title and a bulleted list in secondary text. No ✕: the Company
+// field's clears. Padding is shared with .notice (_theme-spacing.scss), and
+// so is the spacing between its parts (Message boxes). It fades in; the
+// global reduced-motion reset turns the fade off.
 .match-alert {
-  display: flex;
-  align-items: flex-start;
   color: var(--text-secondary);
   box-shadow: none;
   @include transition(opacity);
@@ -28,13 +22,9 @@
     opacity: 0;
   }
 
-  &__content {
-    flex: 1;
-    min-width: 0;
-  }
-
   &__title {
     color: var(--text-primary);
     font-weight: 600;
+    margin-bottom: 8px;
   }
 }

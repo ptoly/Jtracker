@@ -300,11 +300,7 @@ export function ApplicationForm({
           {header && <div className="application-form__header">{header}</div>}
           {fields}
           <div className="application-form__matches">
-            <MatchAlert
-              query={checkedQuery}
-              matches={matches}
-              today={today}
-            />
+            <MatchAlert query={checkedQuery} matches={matches} today={today} />
           </div>
         </div>
       </div>
