@@ -1,4 +1,11 @@
-import { useId, useImperativeHandle, useState, type FormEvent, type Ref } from 'react';
+import {
+  useId,
+  useImperativeHandle,
+  useState,
+  type FormEvent,
+  type ReactNode,
+  type Ref,
+} from 'react';
 import { distinctPositions } from '../../lib/applicationRules';
 import {
   MIN_COMPANY_QUERY,
@@ -41,6 +48,8 @@ export interface ApplicationFormProps {
   onAdd: (input: NewApplication) => Promise<unknown>;
   /** Shows a "Manage Positions" button on the line after the fields (with Add Note). */
   onManagePositions?: () => void;
+  /** The form's title (and description), at the top of the card over both columns. */
+  header?: ReactNode;
   ref?: Ref<ApplicationFormHandle>;
 }
 
@@ -50,6 +59,7 @@ export function ApplicationForm({
   today,
   onAdd,
   onManagePositions,
+  header,
   ref,
 }: ApplicationFormProps) {
   const baseId = useId();
@@ -284,19 +294,16 @@ export function ApplicationForm({
   return (
     <form className="application-form" noValidate onSubmit={handleSubmit}>
       <div className="card">
-        {/* Fields on the left and earlier applications on the right; stacked when narrow. */}
+        {/* The title over both columns, then fields on the left and earlier
+            applications on the right; stacked when narrow. */}
         <div className="card__body application-form__body">
+          {header && <div className="application-form__header">{header}</div>}
           {fields}
           <div className="application-form__matches">
             <MatchAlert
               query={checkedQuery}
               matches={matches}
               today={today}
-              // Dismissing clears Company too, so the next search starts fresh.
-              onDismiss={() => {
-                setField('company', '');
-                focusField(ids.company);
-              }}
             />
           </div>
         </div>

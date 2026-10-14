@@ -48,6 +48,19 @@ export function App() {
 
   const positions = applications ? suggestedPositions(applications, data.positions) : [];
 
+  // The add form's title, inside its card.
+  const addHeader = (
+    <div className="app__section-header">
+      <div>
+        <h2 id="add-application-heading" className="size-h4">Check/Add Job Application</h2>
+        <p className="app__subtitle">
+          Enter the company name. If you’ve applied there before, your past application(s)
+          appear.
+        </p>
+      </div>
+    </div>
+  );
+
   return (
     <>
       <header className="site-header">
@@ -65,23 +78,53 @@ export function App() {
       </header>
 
       <main className="app max-width">
-        <div className="app__page-header has-divider">
-          <h1>Your job search</h1>
+        {/* The page title on the left, the add form on the right; stacked when narrow. */}
+        <div className="app__intro">
+          <div className="app__page-header has-divider">
+            <h1>Your job search</h1>
+            {applications && (
+              <p className="app__subtitle">
+                {searchSummary(applications, today).map((part, index) => (
+                  <span key={part}>
+                    {/* A dot between the counts on screen; a comma for screen readers. */}
+                    {index > 0 && (
+                      <>
+                        <span aria-hidden="true"> · </span>
+                        <span className="sr-only">, </span>
+                      </>
+                    )}
+                    {part}
+                  </span>
+                ))}
+              </p>
+            )}
+          </div>
+
           {applications && (
-            <p className="app__subtitle">
-              {searchSummary(applications, today).map((part, index) => (
-                <span key={part}>
-                  {/* A dot between the counts on screen; a comma for screen readers. */}
-                  {index > 0 && (
-                    <>
-                      <span aria-hidden="true"> · </span>
-                      <span className="sr-only">, </span>
-                    </>
-                  )}
-                  {part}
-                </span>
-              ))}
-            </p>
+            <section aria-labelledby="add-application-heading">
+              {data.readOnly ? (
+                <div className="card">
+                  <div className="card__body">
+                    {addHeader}
+                    <p>Adding is off until the sheet has IDs.</p>
+                  </div>
+                </div>
+              ) : (
+                <ApplicationForm
+                  ref={formRef}
+                  applications={applications}
+                  positions={positions}
+                  today={today}
+                  header={addHeader}
+                  onAdd={async (input) => {
+                    await data.add(input);
+                    // Show the whole table, newest first, so the new row is on top.
+                    tableRef.current?.showLatest();
+                  }}
+                  onManagePositions={() => setPositionsOpen(true)}
+                />
+              )}
+            </section>
           )}
         </div>
 
@@ -128,37 +171,6 @@ export function App() {
 
         {applications ? (
           <>
-            {/* Title and description on the left, the form card on the right; stacked when narrow. */}
-            <section className="app__add" aria-labelledby="add-application-heading">
-              <div className="app__section-header">
-                <div>
-                  <h2 id="add-application-heading">Check/Add Job App</h2>
-                  <p className="app__subtitle">
-                    Start with the company name. If you’ve applied there before, your past
-                    application(s) appear. If not, add the position and role and save it.
-                  </p>
-                </div>
-              </div>
-              <div className="app__add-form">
-                {data.readOnly ? (
-                  <p>Adding is off until the sheet has IDs.</p>
-                ) : (
-                  <ApplicationForm
-                    ref={formRef}
-                    applications={applications}
-                    positions={positions}
-                    today={today}
-                    onAdd={async (input) => {
-                      await data.add(input);
-                      // Show the whole table, newest first, so the new row is on top.
-                      tableRef.current?.showLatest();
-                    }}
-                    onManagePositions={() => setPositionsOpen(true)}
-                  />
-                )}
-              </div>
-            </section>
-
             <section aria-labelledby="applications-heading">
               <div className="app__section-header has-divider">
                 <div>

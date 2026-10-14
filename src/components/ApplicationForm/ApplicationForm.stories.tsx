@@ -75,12 +75,6 @@ export const AppliedBefore: Story = {
     await expect(canvasElement.querySelector('[aria-live="polite"]')).toHaveTextContent(
       'Applied to Copperwick Labs before: 2 applications',
     );
-
-    // Dismissing also clears Company; focus returns to the field.
-    await userEvent.click(canvas.getByRole('button', { name: 'Dismiss and clear company' }));
-    await expect(canvas.queryByText('Applied to Copperwick Labs before:')).toBeNull();
-    await expect(company).toHaveValue('');
-    await expect(company).toHaveFocus();
   },
 };
 
@@ -97,15 +91,14 @@ export const PartialMatch: Story = {
 export const NoMatches: Story = {
   name: 'No matches',
   play: async ({ canvas, userEvent }) => {
-    await expect(canvas.getByText('Earlier applications')).toBeVisible();
-    await expect(canvas.queryByRole('button', { name: 'Dismiss and clear company' })).toBeNull();
+    await expect(canvas.getByText('No applications found')).toBeVisible();
     const company = canvas.getByRole('textbox', { name: 'Company/Search' });
     await userEvent.type(company, 'Zzyzx Works');
     await expect(await canvas.findByText('No matches')).toBeVisible();
     await expect(canvas.getByText('You haven’t applied to “Zzyzx Works” before.')).toBeVisible();
-    await userEvent.click(canvas.getByRole('button', { name: 'Dismiss and clear company' }));
+    await userEvent.click(canvas.getByRole('button', { name: 'Clear company' }));
     await expect(company).toHaveValue('');
-    await expect(canvas.getByText('Earlier applications')).toBeVisible();
+    await expect(canvas.getByText('No applications found')).toBeVisible();
   },
 };
 

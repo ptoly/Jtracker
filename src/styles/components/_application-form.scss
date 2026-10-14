@@ -3,6 +3,7 @@
 // <form class="application-form">
 //   <div class="card">
 //     <div class="card__body application-form__body">
+//       <div class="application-form__header">…title…</div>   (optional)
 //       <div class="application-form__fields">
 //         <div class="field field--inset">            (the shared field block, label inside the box; _field.scss)
 //           <label>Company/Search<span class="field__required">*</span></label>
@@ -44,6 +45,11 @@
       grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
       align-items: start;
     }
+  }
+
+  // The title spans both columns.
+  &__header {
+    grid-column: 1 / -1;
   }
 
   &__fields {

@@ -32,7 +32,7 @@
 
 // Space between stacked sections.
 section,
-.app__page-header {
+.app__intro {
   @include scaled-spacing(margin-bottom, 5, 64px); // tight, app-like rhythm: 32 → 64px (the starter went to 88px)
 
   &.has-divider {
@@ -94,6 +94,10 @@ ol {
 // Page header (title + subtitle), then sections. A section opens with its
 // title, or a header row of title, subtitle and actions.
 
+.has-divider {
+  @include scaled-spacing(padding-bottom, 4, 32px);
+}
+
 .app__section-header {
   gap: gridx(2);
   @include scaled-spacing(margin-bottom, 4, 24px, 4);
@@ -103,16 +107,38 @@ ol {
   }
 }
 
-// Check/Add: the title block over the form card when stacked; side by side
-// from 900px, with a column gap instead.
-.app__add {
+// Intro row: the page title over the add form when stacked; side by side
+// from 900px, with a column gap instead. The row as a whole is spaced like a
+// section (above).
+.app__intro {
+  > .app__page-header {
+    @include scaled-spacing(margin-bottom, 4, 24px, 4);
+  }
+
+  > section {
+    margin-bottom: 0;
+  }
+
   @include from(900px) {
     column-gap: gridx(4);
 
-    > .app__section-header {
+    > .app__page-header {
       margin-bottom: 0;
     }
   }
+}
+
+// The match alert starts its first line 8px down, like an inset field's
+// label, so "No applications found" (or the first match) sits on the
+// Company/Search label's baseline. Its ✕ still centers on that line.
+.application-form__matches > .match-alert {
+  padding-top: gridx(1);
+}
+
+// The add form's title, inside its card: the card's padding is the space
+// above it.
+.application-form__header > .app__section-header {
+  @include scaled-spacing(margin-bottom, 3, 16px, 4);
 }
 
 // The connection banners and page notices sit above the content they're about.

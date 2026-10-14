@@ -21,10 +21,10 @@
   justify-content: space-between;
 }
 
-// ---- Check/Add section --------------------------------------------------------------
-// Title and description on the left, the form card on the right from 900px;
+// ---- Intro row ---------------------------------------------------------------------
+// The page title on the left, the add form's card on the right from 900px;
 // stacked below that.
-.app__add {
+.app__intro {
   display: grid;
   grid-template-columns: minmax(0, 1fr); // lets the card shrink to the screen
 
