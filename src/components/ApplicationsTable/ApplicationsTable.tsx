@@ -91,6 +91,8 @@ interface Row {
   statusLabel: StatusLabel | null;
   /** Days since applied while status is Applied (and the date is readable); otherwise null. */
   age: number | null;
+  /** Position in storage: applications are added at the end, so higher = entered later. */
+  order: number;
 }
 
 export interface ApplicationsTableHandle {
@@ -130,13 +132,14 @@ function pluralize(count: number, noun: string): string {
   return `${count} ${noun}${count === 1 ? '' : 's'}`;
 }
 
-function toRow(app: Application, followUpDays: number, today: Date): Row {
+function toRow(app: Application, order: number, followUpDays: number, today: Date): Row {
   const due = isFollowUpDue(app, followUpDays, today);
   return {
     app,
     due,
     statusLabel: due ? 'Follow Up Due' : app.status || null,
     age: app.status === 'Applied' ? ageInDays(app, today) : null,
+    order,
   };
 }
 
@@ -169,7 +172,7 @@ function filterRows(
   query: string,
 ): Row[] {
   return applications
-    .map((app) => toRow(app, followUpDays, today))
+    .map((app, order) => toRow(app, order, followUpDays, today))
     .filter((row) => matchesTab(row, tab) && matchesQuery(row, query));
 }
 
@@ -191,7 +194,11 @@ function compareValues(a: string | number, b: string | number): number {
   return String(a).localeCompare(String(b), undefined, { sensitivity: 'base' });
 }
 
-/** Blanks always sort last, whatever the direction; ties fall back to newest first. */
+/**
+ * Blanks always sort last, whatever the direction. Ties fall back to newest
+ * first: by date applied, then by when it was entered, so of two applications
+ * on the same day the one added last is on top (oldest first reverses it).
+ */
 function compareRows(a: Row, b: Row, key: SortKey, direction: SortDirection): number {
   const av = sortValue(a, key);
   const bv = sortValue(b, key);
@@ -201,10 +208,9 @@ function compareRows(a: Row, b: Row, key: SortKey, direction: SortDirection): nu
     const result = compareValues(av, bv);
     if (result !== 0) return direction === 'ascending' ? result : -result;
   }
-  return (
-    b.app.dateApplied.localeCompare(a.app.dateApplied) ||
-    compareValues(a.app.company, b.app.company)
-  );
+  const entered = b.order - a.order;
+  if (key === 'date') return direction === 'ascending' ? -entered : entered;
+  return b.app.dateApplied.localeCompare(a.app.dateApplied) || entered;
 }
 
 export function ApplicationsTable({
@@ -318,11 +324,11 @@ export function ApplicationsTable({
   const currentPage = Math.min(page, pageCount);
 
   const activePin = pinned && pinned.total === applications.length ? pinned : null;
-  const byId = new Map(applications.map((app) => [app.id, app]));
+  const byId = new Map(applications.map((app, order) => [app.id, { app, order }]));
   const pageRows = activePin
     ? activePin.ids.flatMap((id) => {
-        const app = byId.get(id);
-        return app ? [toRow(app, followUpDays, today)] : [];
+        const entry = byId.get(id);
+        return entry ? [toRow(entry.app, entry.order, followUpDays, today)] : [];
       })
     : rows.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 

@@ -86,6 +86,35 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {};
 
+/** Two applications on the same day: the one entered last is on top (not A→Z). */
+export const SameDayNewestOnTop: Story = {
+  name: 'Same day: last entered on top',
+  args: {
+    applications: [
+      ...sampleApplications,
+      {
+        id: 'story-same-day-1',
+        dateApplied: '2026-10-10',
+        company: 'Obblewick',
+        position: 'Product Designer',
+        status: 'Applied',
+      },
+      {
+        id: 'story-same-day-2',
+        dateApplied: '2026-10-10',
+        company: 'Tidemark Labs',
+        position: 'UX Designer',
+        status: 'Applied',
+      },
+    ],
+  },
+  play: async ({ canvas }) => {
+    const statuses = canvas.getAllByRole('combobox', { name: /^Status, / });
+    await expect(statuses[0]).toHaveAccessibleName('Status, Tidemark Labs, UX Designer');
+    await expect(statuses[1]).toHaveAccessibleName('Status, Obblewick, Product Designer');
+  },
+};
+
 export const NeedsFollowUpTab: Story = {
   name: 'Needs Follow Up tab',
   play: async ({ canvas, userEvent }) => {
