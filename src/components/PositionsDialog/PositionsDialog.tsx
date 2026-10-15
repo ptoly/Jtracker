@@ -92,9 +92,14 @@ export function PositionsDialog({
     const name = query.trim();
     void run(async () => {
       await onUpdate((list) => addPosition(list, name));
-      setQuery('');
+      // The name stays, so the list shows the new position (not somewhere
+      // below the fold). Selected, so typing starts the next one.
+      setQuery(name);
+      const input = document.getElementById(queryId) as HTMLInputElement | null;
+      input?.focus();
+      input?.select();
       return `Added ${name}`;
-    }, queryId);
+    });
   }
 
   function remove(name: string) {

@@ -62,9 +62,6 @@ export function PositionCombobox({
   } = useCombobox({
     items,
     inputValue: value,
-    // Never kept: each pick is reported once (as text, or as the action), so
-    // choosing "Manage positions…" twice in a row opens it twice.
-    selectedItem: null,
     inputId: id,
     labelId: `${id}-label`,
     menuId: `${id}-menu`,
@@ -75,16 +72,13 @@ export function PositionCombobox({
     onInputValueChange: ({ inputValue, type }) => {
       if (type !== useCombobox.stateChangeTypes.InputChange) onValueChange(inputValue);
     },
-    onSelectedItemChange: ({ selectedItem }) => {
-      if (selectedItem === MANAGE) onManage?.();
-    },
-    // The action leaves the text alone, and isn't picked by tabbing away from it.
-    stateReducer: (state, { type, changes }) => {
+    // "Manage positions…" is an action, not a pick: it opens the dialog (its
+    // own click, and Enter below) and leaves the selection and text alone,
+    // even when tabbing away from it. selectedItem stays uncontrolled: held at
+    // null, Downshift would reset the text to "" after every pick.
+    stateReducer: (state, { changes }) => {
       if (changes.selectedItem !== MANAGE) return changes;
-      if (type === useCombobox.stateChangeTypes.InputBlur) {
-        return { ...changes, selectedItem: state.selectedItem, inputValue: state.inputValue };
-      }
-      return { ...changes, inputValue: state.inputValue };
+      return { ...changes, selectedItem: state.selectedItem, inputValue: state.inputValue };
     },
   });
 
@@ -104,6 +98,7 @@ export function PositionCombobox({
     if (event.key === 'Escape' || (event.key === 'Enter' && highlightedIndex >= 0)) {
       event.stopPropagation();
     }
+    if (event.key === 'Enter' && onManage && highlightedIndex === matches.length) onManage();
   }
 
   const open = isOpen && items.length > 0;
@@ -150,7 +145,7 @@ export function PositionCombobox({
         {isOpen && onManage && (
           <li
             className="menu__item position-combobox__manage"
-            {...getItemProps({ item: MANAGE, index: matches.length })}
+            {...getItemProps({ item: MANAGE, index: matches.length, onClick: onManage })}
           >
             Manage positions…
           </li>

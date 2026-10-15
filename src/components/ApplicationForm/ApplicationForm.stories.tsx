@@ -187,6 +187,25 @@ export const FillPositionFromSearch: Story = {
   },
 };
 
+/** A clicked suggestion stays in Position: after leaving the field, and after reopening the list. */
+export const PickPositionByClick: Story = {
+  name: 'Position picked with a click',
+  play: async ({ canvas, userEvent }) => {
+    const position = canvas.getByRole('combobox', { name: 'Position' });
+    await userEvent.click(canvas.getByRole('button', { name: 'Show positions' }));
+    const option = (await canvas.findAllByRole('option'))[0];
+    if (!option) throw new Error('no suggestions');
+    const name = option.textContent ?? '';
+    await userEvent.click(option);
+    await expect(position).toHaveValue(name);
+    await userEvent.tab();
+    await expect(position).toHaveValue(name);
+    await userEvent.click(canvas.getByRole('button', { name: 'Show positions' }));
+    await userEvent.click(canvas.getByRole('button', { name: 'Show positions' }));
+    await expect(position).toHaveValue(name);
+  },
+};
+
 /** "Manage positions…" is the last item in Position's list; it leaves the text as typed. */
 export const ManagePositions: Story = {
   name: 'Manage positions (from the list)',

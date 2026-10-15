@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
-import { expect, within } from 'storybook/test';
+import { expect, waitFor, within } from 'storybook/test';
 import { normalize } from '../../lib/applicationRules';
 import { renameInList } from '../../lib/positions';
 import type { PositionList } from '../../storage';
@@ -109,7 +109,14 @@ export const FindOrAdd: Story = {
     await expect(page().getByText('No positions match “staff”.')).toBeVisible();
     await userEvent.clear(query);
     await userEvent.type(query, 'Staff Designer{Enter}');
-    await expect(page().getByText('Staff Designer')).toBeVisible();
-    await expect(page().getByText('Added')).toBeVisible();
+    // The new position stays in view: the name is kept, and selected for the next one.
+    const list = page().getByRole('list', { name: 'Positions' });
+    await expect(within(list).getAllByRole('listitem')).toHaveLength(1);
+    await expect(within(list).getByText('Staff Designer')).toBeVisible();
+    await expect(within(list).getByText('Added')).toBeVisible();
+    await expect(query).toHaveValue('Staff Designer');
+    await waitFor(() => expect(query).toHaveFocus());
+    await userEvent.keyboard('Motion');
+    await expect(query).toHaveValue('Motion');
   },
 };
