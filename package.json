@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
+    "build:local": "tsc -b && VITE_STORAGE_OPTIONS=csv vite build --outDir dist-local",
     "typecheck": "tsc -b",
     "lint": "eslint .",
     "format": "prettier --write .",

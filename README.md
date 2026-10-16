@@ -98,6 +98,29 @@ npm test             # unit tests
 Without any setup, the app runs in demo mode. Opening a CSV file needs no
 setup either.
 
+### Everyday use without a dev server
+
+For your own job search, you don't need a dev server running all day.
+Jtracker builds to static files, so any local web server can serve them:
+
+```bash
+npm run build:local  # CSV-only build in dist-local/ (ignored by Git)
+```
+
+Serve `dist-local/` over **HTTPS**: the browser only lets a page open and
+save a file on a secure connection (localhost is the exception). With
+[Laravel Herd](https://herd.laravel.com) (or Valet):
+
+```bash
+cd dist-local
+herd link jtracker     # https://jtracker.test …
+herd secure jtracker   # … once it has a certificate
+```
+
+Open the site and pick your CSV once; the browser remembers it for that
+address. After changing the code, run `npm run build:local` again and reload.
+It's a separate folder from `dist/`, which the hosted demo's deploy rebuilds.
+
 ### Optional: Google Sheets
 
 1. In [Google Cloud](https://console.cloud.google.com), create a project and

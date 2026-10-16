@@ -64,10 +64,12 @@
   }
 
   // "Manage positions…": an action, so link-coloured, under a divider, and
-  // stuck to the list's bottom so a long list doesn't scroll it away.
+  // stuck to the list's bottom so a long list doesn't scroll it away. Sticky
+  // stops at the list's padding, so it reaches down through the 4px bottom
+  // padding (.menu, _theme-spacing.scss) to keep rows from showing under it.
   &__manage {
     position: sticky;
-    bottom: 0;
+    bottom: gridx(-0.5);
     background-color: var(--surface-elevated);
     color: var(--brand);
     font-weight: 600;
