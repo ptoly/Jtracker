@@ -176,6 +176,13 @@
     display: grid;
   }
 
+  // Except the dates: a date field can't shrink below its date and icon, and
+  // a .field lets its control shrink to nothing, so the column wouldn't know
+  // to make room (the fields spilled into Company, the icon over the date).
+  &__stack:has(.date-input) {
+    min-width: max-content;
+  }
+
   // The edit row's Notes box keeps a usable width in a squeezed table.
   &__notes-field {
     min-width: gridx(24);
@@ -199,6 +206,15 @@
   &__notes {
     max-width: 0;
     overflow: clip;
+  }
+
+  // While a row is being edited, Notes gives up its minimum (down to the
+  // edit row's pencil), so the row's date fields and Save / Cancel fit.
+  &__table:has(.applications-table__row[data-editing]) {
+    .applications-table__notes-header,
+    .applications-table__notes {
+      min-width: 0;
+    }
   }
 
   &__notes-edit {
