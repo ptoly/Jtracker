@@ -13,7 +13,7 @@ import {
   findCompanyMatches,
   matchSummary,
 } from '../../lib/companyMatch';
-import { toIsoDate } from '../../lib/dates';
+import { freshDateApplied, toIsoDate } from '../../lib/dates';
 import { useDebouncedValue } from '../../lib/useDebouncedValue';
 import type { Application, NewApplication } from '../../types/application';
 import { FieldError } from '../ApplicationFields/FieldError';
@@ -77,6 +77,14 @@ export function ApplicationForm({
   const { draft, setField, errors, errorId, errorProps, validate, toApplication, reset } =
     useApplicationDraft(emptyDraft(todayIso), { ids, errorIdPrefix: baseId, positions });
 
+  // The date the blank form defaulted to. When the app's today moves on (back
+  // to the tab on a new day), an untouched Date follows it; one you chose stays.
+  const [defaultIso, setDefaultIso] = useState(todayIso);
+  if (todayIso > defaultIso) {
+    setDefaultIso(todayIso);
+    if (draft.dateApplied === defaultIso) setField('dateApplied', todayIso);
+  }
+
   const [submitError, setSubmitError] = useState<{ error: unknown } | null>(null);
   const [submitting, setSubmitting] = useState(false);
   // The counter keys the message so a repeat ("Added Acme" twice) is still a DOM change and re-announces.
@@ -119,8 +127,14 @@ export function ApplicationForm({
   async function add() {
     if (submitting || !validate()) return;
 
+    // Checked again on Add, in case the day changed with the tab in front:
+    // the old default date becomes today's (freshDateApplied).
+    const nowIso = toIsoDate(new Date());
+    const dateApplied = freshDateApplied(draft.dateApplied, defaultIso, nowIso);
+    if (dateApplied !== draft.dateApplied) setField('dateApplied', dateApplied);
+
     // New applications always start as Applied.
-    const input: NewApplication = { ...toApplication(), status: 'Applied' };
+    const input: NewApplication = { ...toApplication(), dateApplied, status: 'Applied' };
     setSubmitting(true);
     try {
       await onAdd(input);
@@ -132,7 +146,10 @@ export function ApplicationForm({
     }
 
     setSubmitError(null);
-    reset(emptyDraft(todayIso));
+    // The next blank form starts on the real today.
+    const nextIso = nowIso > todayIso ? nowIso : todayIso;
+    setDefaultIso(nextIso);
+    reset(emptyDraft(nextIso));
     setNoteOpen(false);
     setAnnouncement((prev) => ({ text: `Added ${input.company}`, count: prev.count + 1 }));
     focusField(ids.company);

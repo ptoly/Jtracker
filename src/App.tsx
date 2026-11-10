@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   ApplicationForm,
   type ApplicationFormHandle,
@@ -17,6 +17,7 @@ import { MoreActions } from './components/MoreActions/MoreActions';
 import { Notice, SaveError } from './components/Notice/Notice';
 import { PositionsDialog } from './components/PositionsDialog/PositionsDialog';
 import { ScrollTop } from './components/ScrollTop/ScrollTop';
+import { toIsoDate } from './lib/dates';
 import { isFollowUpDue } from './lib/derive';
 import { suggestedPositions } from './lib/positions';
 import type { Application } from './types/application';
@@ -49,8 +50,23 @@ function searchSummary(applications: Application[], today: Date): string[] {
 }
 
 export function App() {
-  // Calculated once per page load so every derived value agrees, even across midnight.
-  const [today] = useState(() => new Date());
+  // Calculated here so every derived value agrees. Refreshed when you come back
+  // to the tab on a new calendar day (Fred, 2026-11-10), so the form's date and
+  // the follow-up counts don't need a reload; otherwise it stays put.
+  const [today, setToday] = useState(() => new Date());
+  useEffect(() => {
+    function onReturn() {
+      if (document.visibilityState !== 'visible') return;
+      const now = new Date();
+      setToday((prev) => (toIsoDate(prev) === toIsoDate(now) ? prev : now));
+    }
+    document.addEventListener('visibilitychange', onReturn);
+    window.addEventListener('focus', onReturn);
+    return () => {
+      document.removeEventListener('visibilitychange', onReturn);
+      window.removeEventListener('focus', onReturn);
+    };
+  }, []);
   const data = useApplications(today);
   const { applications, connection, tab, idSetup } = data;
   const [positionsOpen, setPositionsOpen] = useState(false);

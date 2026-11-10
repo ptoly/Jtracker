@@ -11,6 +11,19 @@ export function toIsoDate(date: Date): string {
   return `${date.getFullYear()}-${mm}-${dd}`;
 }
 
+/**
+ * The add form's date when you press Add (Fred, 2026-11-10): a date still on
+ * the form's old default (the tab left open overnight) becomes today's; a
+ * date you chose stays. All YYYY-MM-DD.
+ */
+export function freshDateApplied(
+  dateApplied: string,
+  defaultIso: string,
+  todayIso: string,
+): string {
+  return dateApplied === defaultIso && defaultIso < todayIso ? todayIso : dateApplied;
+}
+
 /** m.d.yy, e.g. "10.9.26". */
 export function formatShortDate(date: Date): string {
   const yy = String(date.getFullYear() % 100).padStart(2, '0');
