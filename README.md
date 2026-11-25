@@ -9,6 +9,9 @@ applications are due for a follow-up.
 **Live demo:** <https://jtracker.fredtranfield.com> (sample data; your
 changes stay in your browser)
 
+**Storybook:** <https://jtracker-storybook.fredtranfield.com> (every
+component, with its interaction tests and accessibility checks)
+
 ![Jtracker with sample data: the form shows earlier applications to the company being typed, one of them skipped, above the applications table and its status tabs](docs/screenshot.png)
 
 ## Why I built it
