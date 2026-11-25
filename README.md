@@ -9,7 +9,7 @@ applications are due for a follow-up.
 **Live demo:** <https://jtracker.fredtranfield.com> (sample data; your
 changes stay in your browser)
 
-![Jtracker with sample data: the form shows three earlier applications to the company being typed, above the applications table](docs/screenshot.png)
+![Jtracker with sample data: the form shows earlier applications to the company being typed, one of them skipped, above the applications table and its status tabs](docs/screenshot.png)
 
 ## Why I built it
 
@@ -28,11 +28,18 @@ my own 8-point grid SCSS framework.
   applied there before, your past applications appear under the field.
   Matching is forgiving: case, punctuation and suffixes like Inc or LLC
   don't matter.
+- **Remember the roles you passed on.** Tick **Skipped** beside Add
+  Application to record a role you saw but didn't apply for. The next time
+  you type that company, it shows up with the rest, marked *Skipped*.
 - **Follow-up reminders.** An application is due for a follow-up when it's
   still *Applied*, has no follow-up date, and is 10 or more days old. Due
   rows are flagged and collected in their own tab.
+- **Tabs with counts.** View all, Applied, Needs Follow Up, Rejected,
+  Interviewed and Skipped, each with its number; a *Show* menu on smaller
+  screens.
 - **A summary that answers "how am I doing?"** The page title shows totals:
-  applications, follow-ups due and interviews.
+  applications (skipped roles aren't counted), follow-ups due and
+  interviews.
 - **Fast updates.** Change a status right in the table; choosing *Followed
   Up* fills in today's date. Everything else is one Edit away.
 - **Your own position list.** Pick positions from the ones you've used,
