@@ -5,6 +5,8 @@ export const STATUSES = [
   'Interviewed - Rejected',
   'Rejected',
   'Filled',
+  // Seen but not applied for, so it shows up the next time the company is typed.
+  'Skipped',
 ] as const;
 
 export type Status = (typeof STATUSES)[number];

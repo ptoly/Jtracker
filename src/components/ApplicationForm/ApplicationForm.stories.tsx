@@ -230,6 +230,50 @@ export const ManagePositions: Story = {
   },
 };
 
+/** Skipped adds the role with the Skipped status, then turns itself off for the next one. */
+export const AddSkipped: Story = {
+  name: 'Add a skipped role',
+  play: async ({ canvas, userEvent, args }) => {
+    const skipped = canvas.getByRole('checkbox', { name: 'Skipped' });
+    await expect(skipped).not.toBeChecked();
+    await userEvent.type(canvas.getByRole('textbox', { name: 'Company/Search' }), 'Quillmere');
+    await userEvent.type(canvas.getByRole('combobox', { name: 'Position' }), 'Product Designer');
+    await userEvent.click(skipped);
+    await userEvent.click(canvas.getByRole('button', { name: 'Add Application' }));
+    await expect(args.onAdd).toHaveBeenCalledWith(
+      expect.objectContaining({ company: 'Quillmere', status: 'Skipped' }),
+    );
+    await waitFor(() => expect(skipped).not.toBeChecked());
+    await expect(await canvas.findByText('Added Quillmere as skipped')).toBeInTheDocument();
+  },
+};
+
+/** A company whose only earlier role was skipped says so. */
+export const SkippedBefore: Story = {
+  name: 'Skipped before',
+  args: {
+    applications: [
+      {
+        id: 'story-skipped',
+        dateApplied: '2026-10-06',
+        company: 'Thornbury Analytics',
+        position: 'Data Visualization Engineer',
+        status: 'Skipped',
+      },
+    ],
+  },
+  play: async ({ canvas, canvasElement, userEvent }) => {
+    await userEvent.type(canvas.getByRole('textbox', { name: 'Company/Search' }), 'Thornbury');
+    await expect(await canvas.findByText('Skipped Thornbury Analytics before:')).toBeVisible();
+    await expect(canvas.getByRole('listitem')).toHaveTextContent(
+      /^Data Visualization Engineer.*October 6, 2026.*Skipped$/,
+    );
+    await expect(canvasElement.querySelector('[aria-live="polite"]')).toHaveTextContent(
+      'Skipped Thornbury Analytics before: 1 role',
+    );
+  },
+};
+
 export const EmptyPositionList: Story = {
   name: 'Empty position list',
   args: { applications: [] },

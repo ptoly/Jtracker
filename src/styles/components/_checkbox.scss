@@ -1,0 +1,23 @@
+@use 'pkg:octet-scss/abstracts' as *;
+
+// <label class="checkbox"><input type="checkbox" class="checkbox__input"> Skipped</label>
+// A native checkbox and its label. The whole label is the target: the
+// shared 24px line plus control padding (_theme-spacing.scss) makes it a
+// 48px row, like a button beside it. The box takes the brand colour when
+// checked; the browser draws it, so it keeps its own focus ring and
+// forced-colors look.
+.checkbox {
+  display: inline-flex;
+  align-items: center;
+  color: var(--text-primary);
+  cursor: pointer;
+
+  &__input {
+    flex: none;
+    width: gridx(2.5);
+    height: gridx(2.5);
+    margin: 0;
+    accent-color: var(--brand);
+    cursor: pointer;
+  }
+}

@@ -128,6 +128,46 @@ export const NeedsFollowUpTab: Story = {
   },
 };
 
+/** Applied: everything still at Applied, due for a follow-up or not. */
+export const AppliedTab: Story = {
+  name: 'Applied tab',
+  play: async ({ canvas, userEvent }) => {
+    const tab = canvas.getByRole('tab', { name: /^Applied \d+$/ });
+    await userEvent.click(tab);
+    await expect(tab).toHaveAttribute('aria-selected', 'true');
+    const statuses = canvas.getAllByRole('combobox', { name: /^Status, / });
+    await expect(tab).toHaveTextContent(String(statuses.length));
+    for (const select of statuses) await expect(select).toHaveValue('Applied');
+  },
+};
+
+/** Skipped: roles seen but not applied for. */
+export const SkippedTab: Story = {
+  name: 'Skipped tab',
+  args: {
+    applications: [
+      ...sampleApplications,
+      {
+        id: 'story-skipped',
+        dateApplied: '2026-10-06',
+        company: 'Thornbury Analytics',
+        position: 'Data Visualization Engineer',
+        status: 'Skipped',
+      },
+    ],
+  },
+  play: async ({ canvas, userEvent }) => {
+    const tab = canvas.getByRole('tab', { name: 'Skipped 1' });
+    await userEvent.click(tab);
+    const statuses = canvas.getAllByRole('combobox', { name: /^Status, / });
+    await expect(statuses).toHaveLength(1);
+    await expect(statuses[0]).toHaveAccessibleName(
+      'Status, Thornbury Analytics, Data Visualization Engineer',
+    );
+    await expect(statuses[0]).toHaveValue('Skipped');
+  },
+};
+
 /** The ✕ stays while there's text, focused or not; Escape clears too. */
 export const ClearSearch: Story = {
   name: 'Clear the search',

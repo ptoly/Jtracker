@@ -232,7 +232,8 @@ ol {
 .applications-table__page,
 .btn,
 .icon-button,
-.position-combobox__toggle {
+.position-combobox__toggle,
+.checkbox {
   padding-block: gridx(1.5);
 }
 
@@ -324,8 +325,10 @@ ol {
 }
 
 // ---- Buttons ----------------------------------------------------------------------
-// An icon and its text inside a button sit 8px apart.
-.btn {
+// An icon and its text inside a button sit 8px apart; so do a checkbox and
+// its label.
+.btn,
+.checkbox {
   column-gap: gridx(1);
 }
 
@@ -377,6 +380,11 @@ ol {
   @include until(720px) {
     margin-bottom: gridx(2);
   }
+}
+
+// Add Application and the Skipped checkbox, side by side.
+.application-form__actions {
+  column-gap: gridx(3);
 }
 
 // Form rows: 16px apart.

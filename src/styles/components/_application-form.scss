@@ -20,7 +20,10 @@
 //         <div class="application-form__links">   (until the note is opened)
 //           <button class="btn btn--link">+ Add Note</button>
 //         </div>
-//         <div class="application-form__actions"><button class="btn btn--primary">Add Application</button></div>
+//         <div class="application-form__actions">
+//           <button class="btn btn--primary">Add Application</button>
+//           <label class="checkbox">… Skipped</label>   (the shared checkbox block, _checkbox.scss)
+//         </div>
 //       </div>
 //       <div class="application-form__matches"><div class="match-alert">…</div></div>
 //     </div>
@@ -104,8 +107,9 @@
     display: flex;
   }
 
-  // Add Application, last, at the fields' left edge.
+  // Add Application, last, at the fields' left edge, with Skipped beside it.
   &__actions {
     display: flex;
+    align-items: center;
   }
 }

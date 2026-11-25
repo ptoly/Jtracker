@@ -60,8 +60,20 @@ export function findCompanyMatches(applications: Application[], query: string): 
   });
 }
 
-/** "Applied to <Company> before: N applications", the line the add form announces. */
-export function matchSummary({ company, applications }: CompanyMatch): string {
-  const count = applications.length;
-  return `Applied to ${company} before: ${count} application${count === 1 ? '' : 's'}`;
+/** "Applied to <Company> before:", or "Skipped <Company> before:" when every role there was skipped. */
+export function matchTitle({ company, applications }: CompanyMatch): string {
+  const allSkipped = applications.every((app) => app.status === 'Skipped');
+  return allSkipped ? `Skipped ${company} before:` : `Applied to ${company} before:`;
+}
+
+/**
+ * The line the add form announces: "Applied to <Company> before: N applications",
+ * plus ", N skipped" for roles passed on there.
+ */
+export function matchSummary(match: CompanyMatch): string {
+  const skipped = match.applications.filter((app) => app.status === 'Skipped').length;
+  const applied = match.applications.length - skipped;
+  if (applied === 0) return `${matchTitle(match)} ${skipped} role${skipped === 1 ? '' : 's'}`;
+  const summary = `${matchTitle(match)} ${applied} application${applied === 1 ? '' : 's'}`;
+  return skipped > 0 ? `${summary}, ${skipped} skipped` : summary;
 }

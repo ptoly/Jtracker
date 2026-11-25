@@ -42,8 +42,10 @@ function pluralizeApplications(count: number): string {
 function searchSummary(applications: Application[], today: Date): string[] {
   const due = applications.filter((app) => isFollowUpDue(app, undefined, today)).length;
   const interviews = applications.filter((app) => app.status === 'Interviewed').length;
+  // A skipped role was never applied for, so it isn't counted.
+  const applied = applications.filter((app) => app.status !== 'Skipped').length;
   return [
-    `${applications.length} application${applications.length === 1 ? '' : 's'}`,
+    pluralizeApplications(applied),
     `${due} ${due === 1 ? 'needs' : 'need'} follow-up`,
     `${interviews} interview${interviews === 1 ? '' : 's'}`,
   ];

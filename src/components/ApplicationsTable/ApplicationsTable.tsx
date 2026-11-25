@@ -40,9 +40,11 @@ const SEARCH_ANNOUNCE_DELAY_MS = 500;
 
 const TABS = [
   { key: 'all', label: 'View all' },
+  { key: 'applied', label: 'Applied' },
   { key: 'follow-up', label: 'Needs Follow Up' },
   { key: 'rejected', label: 'Rejected' },
   { key: 'interviewed', label: 'Interviewed' },
+  { key: 'skipped', label: 'Skipped' },
 ] as const;
 
 type TabKey = (typeof TABS)[number]['key'];
@@ -58,6 +60,7 @@ const STATUS_ORDER = [
   'Filled',
   'Interviewed - Rejected',
   'Rejected',
+  'Skipped',
 ] as const;
 
 type StatusLabel = (typeof STATUS_ORDER)[number];
@@ -147,6 +150,9 @@ function matchesTab(row: Row, tab: TabKey): boolean {
   switch (tab) {
     case 'all':
       return true;
+    case 'applied':
+      // Still waiting to hear, follow-up due or not.
+      return row.app.status === 'Applied';
     case 'rejected':
       // Both rejections, whether or not it got to an interview.
       return row.app.status === 'Rejected' || row.app.status === 'Interviewed - Rejected';
@@ -154,6 +160,8 @@ function matchesTab(row: Row, tab: TabKey): boolean {
       return row.app.status === 'Interviewed';
     case 'follow-up':
       return row.due;
+    case 'skipped':
+      return row.app.status === 'Skipped';
   }
 }
 

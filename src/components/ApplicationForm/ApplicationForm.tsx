@@ -68,6 +68,7 @@ export function ApplicationForm({
     company: `${baseId}-company`,
     position: `${baseId}-position`,
     notes: `${baseId}-notes`,
+    skipped: `${baseId}-skipped`,
   };
   const dateHelpId = `${baseId}-date-help`;
   const dateTip = useTooltip();
@@ -92,6 +93,8 @@ export function ApplicationForm({
   const [noteOpen, setNoteOpen] = useState(false);
   // Set by "Add Note", so the textarea takes focus when it appears.
   const [focusNote, setFocusNote] = useState(false);
+  // Records a role you saw but passed on, so it comes up the next time you type the company.
+  const [skipped, setSkipped] = useState(false);
 
   const focusField = (id: string) => document.getElementById(id)?.focus();
 
@@ -133,8 +136,12 @@ export function ApplicationForm({
     const dateApplied = freshDateApplied(draft.dateApplied, defaultIso, nowIso);
     if (dateApplied !== draft.dateApplied) setField('dateApplied', dateApplied);
 
-    // New applications always start as Applied.
-    const input: NewApplication = { ...toApplication(), dateApplied, status: 'Applied' };
+    // New applications start as Applied; a role you passed on, as Skipped.
+    const input: NewApplication = {
+      ...toApplication(),
+      dateApplied,
+      status: skipped ? 'Skipped' : 'Applied',
+    };
     setSubmitting(true);
     try {
       await onAdd(input);
@@ -151,7 +158,9 @@ export function ApplicationForm({
     setDefaultIso(nextIso);
     reset(emptyDraft(nextIso));
     setNoteOpen(false);
-    setAnnouncement((prev) => ({ text: `Added ${input.company}`, count: prev.count + 1 }));
+    setSkipped(false);
+    const added = skipped ? `Added ${input.company} as skipped` : `Added ${input.company}`;
+    setAnnouncement((prev) => ({ text: added, count: prev.count + 1 }));
     focusField(ids.company);
   }
 
@@ -287,11 +296,22 @@ export function ApplicationForm({
         </div>
       )}
 
-      {/* Under the fields, at the left, so the alert beside them has the card's full height. */}
+      {/* Under the fields, at the left, so the alert beside them has the card's full height.
+          Skipped, beside the button, adds it with the Skipped status instead of Applied. */}
       <div className="application-form__actions">
         <button type="submit" className="btn btn--primary" aria-disabled={submitting}>
           Add Application
         </button>
+        <label className="checkbox" htmlFor={ids.skipped}>
+          <input
+            id={ids.skipped}
+            type="checkbox"
+            className="checkbox__input"
+            checked={skipped}
+            onChange={(event) => setSkipped(event.target.checked)}
+          />
+          Skipped
+        </label>
       </div>
     </div>
   );
